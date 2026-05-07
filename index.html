@@ -1585,7 +1585,14 @@ function renderCijferend(p,area){
               optRemInputs.forEach(function(ri){
                 if(ri&&ri.col===absCol3-1)onthoudLinks=ri.inp;
               });
-              if(onthoudLinks&&onthoudLinks.isConnected){onthoudLinks.focus();return;}
+              // Alleen naar onthoud springen als er in de kolom links ook iets op te tellen valt
+              var linksHeeftWaarden=false;
+              vermInputRows.forEach(function(vr3){
+                vr3.inputs.forEach(function(it3){
+                  if(it3.col===absCol3-1&&it3.inp.value!=='')linksHeeftWaarden=true;
+                });
+              });
+              if(onthoudLinks&&onthoudLinks.isConnected&&linksHeeftWaarden){onthoudLinks.focus();return;}
             }
             if(idx2<ansRL.length-1)ansRL[idx2+1].inp.focus();
           }
