@@ -1291,8 +1291,8 @@ function renderCijferend(p,area){
       var bdVal=parseInt(bStr[bdIdx]);
       var absCol=cols-1-colFromRight;
       var aDigStart=cols-aStr.length;
-      var aDigit=(absCol>=aDigStart)?parseInt(aStr[absCol-aDigStart]):null;
-      if(aDigit===null){dsTd.innerHTML='';return;}
+      var aDigit=(absCol>=aDigStart&&absCol<cols)?parseInt(aStr[absCol-aDigStart]):null;
+      if(aDigit===null||isNaN(aDigit)){dsTd.innerHTML='';return;}
       var bColAbs=cols-1-(bStr.length-1-bdIdx);
       highlightVermCells(absCol,bColAbs);
       var remVal=0;
@@ -1368,12 +1368,17 @@ function renderCijferend(p,area){
               vr.dsTd.innerHTML='<div class="cij-deelsom-wrap"><div class="cij-deelsom-som" style="font-size:calc(var(--font-size)*0.85)">Denk aan de nul'+(vr.numNullen>1?'len':'')+'</div></div>';
             }
           } else if(nullenNog>0&&rowIdx2===0){
-            // Rij 0 met nullen: geen melding, maar ook geen deelsom tonen
-            g1VermCells.forEach(function(d){d.classList.remove('hulp-active');});
-            g2VermCells.forEach(function(d){d.classList.remove('hulp-active');});
-            vr.dsTd.innerHTML='';
+            // Rij 0: geen melding, maar wél de deelsom tonen
+            var echteColFromRight0=colFromRight-vr.numNullen;
+            if(echteColFromRight0<0)echteColFromRight0=0;
+            var absCol0=cols-1-echteColFromRight0;
+            var bdIdx0=bStr.length-1-rowIdx2;
+            var bColAbs0=cols-1-(bStr.length-1-bdIdx0);
+            highlightEnOnthoud(absCol0,bColAbs0);
+            if(cfg.veelHulp){showVermDeelsom(vr.dsTd,rowIdx2,echteColFromRight0,remTds);}
           } else {
             var echteColFromRight=colFromRight-vr.numNullen;
+            if(echteColFromRight<0){vr.dsTd.innerHTML='';return;}
             var absCol2=cols-1-echteColFromRight;
             var bdIdx2=bStr.length-1-rowIdx2;
             var bColAbs2=cols-1-(bStr.length-1-bdIdx2);
