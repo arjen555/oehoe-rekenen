@@ -1367,6 +1367,11 @@ function renderCijferend(p,area){
             if(cfg.eenBeetjeHulp){
               vr.dsTd.innerHTML='<div class="cij-deelsom-wrap"><div class="cij-deelsom-som" style="font-size:calc(var(--font-size)*0.85)">Denk aan de nul'+(vr.numNullen>1?'len':'')+'</div></div>';
             }
+          } else if(nullenNog>0&&rowIdx2===0){
+            // Rij 0 met nullen: geen melding, maar ook geen deelsom tonen
+            g1VermCells.forEach(function(d){d.classList.remove('hulp-active');});
+            g2VermCells.forEach(function(d){d.classList.remove('hulp-active');});
+            vr.dsTd.innerHTML='';
           } else {
             var echteColFromRight=colFromRight-vr.numNullen;
             var absCol2=cols-1-echteColFromRight;
