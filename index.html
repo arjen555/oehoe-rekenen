@@ -175,7 +175,7 @@ body.inverted .cell-remember:focus{border-color:#cc0000;box-shadow:0 0 0 2px rgb
 .tafelkaart-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(37,99,235,0.5);}
 .tafelkaart-btn:focus{outline:3px solid #FCD34D;outline-offset:2px;}
 .tafelkaart-T{font-size:56px;font-weight:800;line-height:1;}
-.tafelkaart-label{font-size:10px;font-weight:700;letter-spacing:0.04em;opacity:0.9;}
+.tafelkaart-label{font-size:16px;font-weight:700;letter-spacing:0.04em;opacity:0.9;}
 .tafelkaart-panel{position:fixed;top:80px;right:110px;background:var(--surface);border:3px solid var(--blue-mid);border-radius:var(--radius-lg);padding:14px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:fadeIn 0.2s ease;}
 .tafelkaart-nums{display:flex;flex-direction:column;gap:5px;}
 .tafelkaart-num{background:var(--cell-static-bg);border:2px solid var(--border);border-radius:var(--radius-sm);padding:8px 18px;font-family:var(--font);font-size:var(--font-size);font-weight:800;color:var(--text);cursor:pointer;text-align:center;transition:background 0.15s,border-color 0.15s;}
@@ -239,9 +239,9 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 <div class="app" id="app">
 <div class="screen" id="screen-role" role="main">
   <a href="https://www.eduvip.nl" target="_blank" rel="noopener" style="position:fixed;top:40px;left:80px;z-index:50;display:block;">
-    <img id="eduvip-logo" src="" alt="eduVIP logo" class="eduvip-logo" style="position:static;top:auto;left:auto;">
+    <img id="eduvip-logo" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/eduvip.png" alt="eduVIP logo" class="eduvip-logo" style="position:static;top:auto;left:auto;">
   </a>
-  <img id="owl-welcome" src="" alt="Uil" class="welcome-img">
+  <img id="owl-welcome" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_start.png" alt="Uil" class="welcome-img">
   <p class="welcome-title">Rekenen met grote getallen</p>
   <p class="welcome-sub" style="font-size:1.15rem;color:#93C5FD;font-weight:600;letter-spacing:0.02em;">Kolomsgewijs en cijferend oefenen</p>
   <button class="start-card" id="btn-start">
@@ -253,7 +253,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 <a href="mailto:arjenvandewetering@visio.org" class="suggesties-btn">&#128172; Suggesties ter verbetering?</a>
 <div class="screen" id="screen-setup" role="main">
   <div class="setup-owl-above">
-    <img id="owl-vraagt" src="" alt="Uil die vraagt wat je wilt oefenen" class="setup-owl-img">
+    <img id="owl-vraagt" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_vraagt.png" alt="Uil die vraagt wat je wilt oefenen" class="setup-owl-img">
   </div>
   <div class="app-header"><button class="back-btn" id="back-setup">&#8592;</button><div><div class="header-main">Kies je oefening</div><div class="header-sub">Stel in hoe en wat je wilt oefenen</div></div></div>
   <div class="card"><div id="setup-form"></div></div>
@@ -303,12 +303,12 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   <div id="uitleg-content"></div>
   <div style="display:flex;align-items:flex-end;gap:2rem;margin-top:1.5rem;flex-wrap:wrap;">
     <div><button class="btn-primary" id="btn-terug-som">&#8592; Terug naar de som</button></div>
-    <div style="flex:1;display:flex;justify-content:flex-end;"><img id="owl-staart-uitleg" src="" alt="Uil op een tak" style="width:400px;max-width:100%;height:auto;border-radius:var(--radius);display:block;"></div>
+    <div style="flex:1;display:flex;justify-content:flex-end;"><img id="owl-staart-uitleg" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_staart.png" alt="Uil op een tak" style="width:400px;max-width:100%;height:auto;border-radius:var(--radius);display:block;"></div>
   </div>
 </div>
 <div class="screen" id="screen-analysis" role="main">
   <div class="score-hero">
-    <img id="owl-analysis" src="" alt="Uil nakijkend" class="score-owl-big">
+    <img id="owl-analysis" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil-nakijken.png" alt="Uil nakijkend" class="score-owl-big">
     <div class="score-number" id="score-pct">-</div>
     <div class="score-lbl-txt" id="score-lbl"></div>
   </div>
@@ -345,11 +345,11 @@ var invertedContrast=false;
 var currentProblem=null,inputFields=[],rememberFields=[],expectedAnswers=[],rowInfo=[],stepHighlightCells=[],currentHulpRow=-1,stepChecked=false,aStaticCells=[],aftrDeelsomTd=null,vermEersteInput=null,vermFocusIngesteld=false;
 
 window.addEventListener('DOMContentLoaded',function(){
-  document.getElementById('owl-welcome').src=OWL_WELKOM;
-  document.getElementById('owl-analysis').src=OWL_EINDE;
-  document.getElementById('owl-vraagt').src=OWL_VRAAGT;
-  document.getElementById('owl-staart-uitleg').src=OWL_STAART;
-  document.getElementById('eduvip-logo').src=EDUVIP_LOGO;
+  var imgWelcome=document.getElementById('owl-welcome');if(imgWelcome)imgWelcome.src=OWL_WELKOM;
+  var imgAnalysis=document.getElementById('owl-analysis');if(imgAnalysis)imgAnalysis.src=OWL_EINDE;
+  var imgVraagt=document.getElementById('owl-vraagt');if(imgVraagt)imgVraagt.src=OWL_VRAAGT;
+  var imgStraart=document.getElementById('owl-staart-uitleg');if(imgStraart)imgStraart.src=OWL_STAART;
+  var imgLogo=document.getElementById('eduvip-logo');if(imgLogo)imgLogo.src=EDUVIP_LOGO;
   bind('btn-start',showSetup);
   bind('back-setup',goHome);
   bind('back-exercise',backFromExercise);
