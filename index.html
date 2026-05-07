@@ -1296,10 +1296,9 @@ function renderCijferend(p,area){
       var bColAbs=cols-1-(bStr.length-1-bdIdx);
       highlightVermCells(absCol,bColAbs);
       var remVal=0;
-      if(remTds2&&colFromRight>0){
-        var remColAbs=absCol-1;
+      if(remTds2){
         for(var rr=0;rr<remTds2.length;rr++){
-          if(remTds2[rr]&&remTds2[rr].col===remColAbs){
+          if(remTds2[rr]&&remTds2[rr].col===absCol){
             var remElV=remTds2[rr].td.querySelector('input');
             if(remElV&&remElV.value)remVal=parseInt(remElV.value)||0;
             break;
@@ -1329,7 +1328,17 @@ function renderCijferend(p,area){
       var vals=[];
       vermInputRows.forEach(function(vr){vr.inputs.forEach(function(item){if(item.col===absCol&&item.inp.value!=='')vals.push(item.inp.value);});});
       if(!vals.length){dsTd.innerHTML='';return;}
-      dsTd.innerHTML='<div class="cij-deelsom-wrap"><div class="cij-deelsom-som">'+vals.join(' + ')+'</div></div>';
+      // Zoek onthoudwaarde voor deze kolom
+      var onthoudVal=0;
+      var optRemRij=t.querySelector('tr.opt-rem-rij');
+      if(optRemRij){
+        var cells=Array.from(optRemRij.cells);
+        cells.forEach(function(td,i){
+          if(i-1===absCol){var inp=td.querySelector('input');if(inp&&inp.value)onthoudVal=parseInt(inp.value)||0;}
+        });
+      }
+      var somTekst=vals.join(' + ')+(onthoudVal?' (+ '+onthoudVal+')':'');
+      dsTd.innerHTML='<div class="cij-deelsom-wrap"><div class="cij-deelsom-som">'+somTekst+'</div></div>';
     }
 
     if(vermInputRows.length>0){
@@ -1502,6 +1511,7 @@ function renderCijferend(p,area){
       var eersteInvulTr=vermInputRows[0].inputs[0].inp.closest('tr');
       var invoegIdx=eersteInvulTr?eersteInvulTr.rowIndex:2;
       var optRemRij=t.insertRow(invoegIdx);
+      optRemRij.className='opt-rem-rij';
       optRemRij.insertCell().className='cell-label-col';
       var optRemInputs=[];
       for(var c2=0;c2<cols;c2++){
@@ -1589,6 +1599,8 @@ function renderCijferend(p,area){
           if(v.length===1){
             var doelItem=null;
             ansRL.forEach(function(ai){if(ai.col===ri.col)doelItem=ai;});
+            // Update deelsom display met onthoud
+            showAnsDeelsom(ansDsTd,cols-1-ri.col);
             if(doelItem&&doelItem.inp.isConnected)doelItem.inp.focus();
           }
         });
