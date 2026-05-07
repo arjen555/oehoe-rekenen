@@ -131,7 +131,7 @@ body.inverted .btn-opnieuw{background:linear-gradient(135deg,#047857,#10b981);bo
 .cell-label-col{font-family:var(--font);font-size:12px;color:var(--label-color);font-weight:700;padding:2px 8px;text-align:right;vertical-align:middle;white-space:nowrap;}
 .cell-static{border:2px solid var(--cell-static-border);border-radius:var(--radius-sm);background:var(--cell-static-bg);font-family:var(--font);font-weight:800;color:var(--cell-static-color);text-align:center;vertical-align:middle;width:var(--cell-size);height:var(--cell-size);font-size:var(--font-size);display:table-cell;}
 .cell-static.hulp-active{outline:3px solid #FCD34D;outline-offset:2px;}
-body.inverted .cell-static.hulp-active{outline:4px solid #7c3aed;outline-offset:2px;background:#ede9fe!important;}
+body.inverted .cell-static.hulp-active{outline:6px solid #7c3aed;outline-offset:-1px;background:#ede9fe!important;}
 .cell-op{font-family:var(--font);font-size:var(--font-size);font-weight:800;color:var(--cell-op-color);text-align:center;vertical-align:middle;padding:2px 8px;}
 .cell-empty{width:var(--cell-size);height:var(--cell-size);display:table-cell;}
 .cell-input{border:3px solid var(--cell-input-border);border-radius:var(--radius-sm);background:var(--cell-input-bg);font-family:var(--font);font-weight:800;color:var(--cell-input-color);text-align:center;vertical-align:middle;padding:2px;outline:none;transition:border-color 0.15s,background 0.15s,box-shadow 0.15s;width:var(--cell-size);height:var(--cell-size);font-size:var(--font-size);}
@@ -1360,7 +1360,7 @@ function renderCijferend(p,area){
           vermDeelsomTds.forEach(function(dt){dt.innerHTML='';});
           ansDsTd.innerHTML='';
           var nullenNog=vr.numNullen-nullenIngevuld;
-          if(nullenNog>0){
+          if(nullenNog>0&&rowIdx2>0){
             g1VermCells.forEach(function(d){d.classList.remove('hulp-active');});
             g2VermCells.forEach(function(d){d.classList.remove('hulp-active');});
             if(cfg.veelHulp)showNulInstructie(vr.dsTd,vr.numNullen,rowIdx2);
@@ -1522,12 +1522,12 @@ function renderCijferend(p,area){
         });
         if(numRowsWithDigitRechts===0){
           vermInputRows.forEach(function(vr2){
-            if(c2+1>=vr2.startCol&&c2+1<vr2.startCol+String(vr2.val||0).length)numRowsWithDigitRechts++;
+            if(c2+1>=vr2.startCol&&c2+1<vr2.startCol+vr2.partialStr.length)numRowsWithDigitRechts++;
           });
         }
         if(numRowsWithDigitRechts>1&&c2<cols-1){
           colNeedsRem=true;
-        } else if(numRowsWithDigit>1&&c2<cols-1&&!colNeedsRem){
+        } else if(numRowsWithDigit>1&&c2<cols-1&&!colNeedsRem&&numRowsWithDigitRechts>1){
           colNeedsRem=true;
         }
         if(colNeedsRem){
