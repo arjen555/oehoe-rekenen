@@ -1027,6 +1027,46 @@ function renderKolomOpAf(p,area){
     var td=ar.insertCell();var inp=mkInput('Uitkomst positie '+(c+1),rowIdx);
     expectedAnswers.push(c>=sd?parseInt(ansStr[c-sd]):-1);inputFields.push(inp);td.appendChild(inp);
   }
+  // Geel hulpkader voor einduitkomstrij (veel hulp)
+  if(cfg.veelHulp){
+    var eindhulpTd=ar.insertCell();
+    eindhulpTd.className='cij-deelsom-cel';
+    eindhulpTd.style.cssText='padding-left:12px;vertical-align:middle;white-space:normal;max-width:220px;';
+    function toonEindHulp(){
+      if(!cfg.veelHulp)return;
+      var delen=[];
+      inputFields.forEach(function(el,i){
+        var ri=rowInfo[i];
+        if(ri===undefined||ri<0||ri>=rowIdx)return; // alleen tussenrijen
+        if(expectedAnswers[i]===-2)return; // sla tekenvakjes over
+        var v=el.value.trim();
+        if(v===''||v==='0'&&isOptional(expectedAnswers[i]))return;
+        if(v==='')return;
+        // Zoek bijbehorend tekenvakje in dezelfde rij
+        var tekenEl=null;
+        for(var j=0;j<inputFields.length;j++){
+          if(rowInfo[j]===ri&&expectedAnswers[j]===-2){tekenEl=inputFields[j];break;}
+        }
+        var teken=tekenEl&&tekenEl.value==='-'?'-':'+';
+        if(v!=='0')delen.push({teken:teken,val:v});
+      });
+      if(!delen.length){eindhulpTd.innerHTML='';return;}
+      var somTekst='';
+      delen.forEach(function(d,i){
+        if(i===0){somTekst+=(d.teken==='-'?'- ':'')+d.val;}
+        else{somTekst+=' '+d.teken+' '+d.val;}
+      });
+      eindhulpTd.innerHTML='<div class="cij-deelsom-wrap" style="min-width:80px;max-width:200px;white-space:normal;word-break:break-word;font-size:calc(var(--font-size)*0.85)"><div class="cij-deelsom-som">'+somTekst+' =</div></div>';
+    }
+    // Koppel focus-handler aan alle uitkomst-invulvakjes
+    var ansInputStart=inputFields.length-numDigitCols-1;
+    for(var ai2=ansInputStart;ai2<inputFields.length;ai2++){
+      if(inputFields[ai2]){
+        inputFields[ai2].addEventListener('focus',toonEindHulp);
+      }
+    }
+    asI.addEventListener('focus',toonEindHulp);
+  }
   area.innerHTML='';area.appendChild(t);
 }
 
@@ -2029,7 +2069,7 @@ function checkStep(){
   if(allCorrect){
     if(!wasVerbeterPoging)session.correct++;
     else session.verbeterd++;
-    var posMsg=['Super! Helemaal goed! Geweldig gedaan!','Wat ben jij goed bezig!','Rekenkanjer!','Jij komt er wel!','Toppie topper!','Hatsjikidee, die is goed!','Nou en of, zo moet het dus!','Oehoe oehoe, hier wordt uil blij van!','Alle staartveren, wat knap!','Daar gaan mijn veertjes van wiebelen, zo goed!'];
+    var posMsg=['Super! Helemaal goed! Geweldig gedaan!','Wat ben jij goed bezig!','Rekenkanjer!','Jij komt er wel!','Toppie topper!','Hatsjikidee, die is goed!','Nou en of, zo moet het dus!','Oehoe oehoe, hier wordt uil blij van!','Alle staartveren, wat knap!','Daar gaan mijn veertjes van wiebelen, zo goed!','Sapperdeflapper dit is top!','Holy moly ja zo moet het!','Je bent een wandelende rekenmachine!','Als ik het niet meer snap, vraag ik het aan jou','Ik wiebel bijna van mijn tak af, zo goed!','Jij hebt een lekker muisje verdiend hoor!','Top, hier ga ik salto\'s van vliegen!','Ga zo door en je krijgt een eigen standbeeld!','Oehoe oe oe oeioeioei wat goe oe oed!','Jij kunt super rekenen, maar kun je ook vliegen?','Mmm, dat heerlijke gevoel van een som die goed is','Top topper de topper die je bent!'];
     showFeedback(posMsg[Math.floor(Math.random()*posMsg.length)],'ok',OWL_OK);
   }
   else{
