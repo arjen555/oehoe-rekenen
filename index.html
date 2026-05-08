@@ -2356,7 +2356,7 @@ function showFeedback(msg,type,owlSrc){
   if(btnOpnieuw)btnOpnieuw.style.display=type==='fout'?'inline-flex':'none';
   setTimeout(function(){
     window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
-  },100);
+  },300);
   speakTekst(msg);
 }
 function hideFeedback(){
@@ -2503,6 +2503,8 @@ function showUitleg(){
 /* ---- ANALYSIS ---- */
 function showAnalysis(){
   showScreen('screen-analysis');
+  var owlAn=document.getElementById('owl-analysis');
+  if(owlAn)owlAn.src=OWL_EINDE;
   var total=session.problems.length,pct=Math.round(session.correct/total*100);
   document.getElementById('score-pct').textContent=pct+'%';
   document.getElementById('score-lbl').textContent=session.correct+' van de '+total+' opgaven goed';
