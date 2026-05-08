@@ -1039,7 +1039,7 @@ function renderKolomOpAf(p,area){
   if(cfg.veelHulp){
     var eindhulpTd=ar.insertCell();
     eindhulpTd.className='cij-deelsom-cel';
-    eindhulpTd.style.cssText='padding-left:12px;vertical-align:middle;white-space:normal;max-width:220px;';
+    eindhulpTd.style.cssText='padding-left:12px;vertical-align:middle;';
     function toonEindHulp(){
       if(!cfg.veelHulp)return;
       var delen=[];
@@ -2354,7 +2354,10 @@ function showFeedback(msg,type,owlSrc){
   var btnOpnieuw=document.getElementById('btn-opnieuw');
   if(btnVerbeter)btnVerbeter.style.display=type==='fout'?'inline-flex':'none';
   if(btnOpnieuw)btnOpnieuw.style.display=type==='fout'?'inline-flex':'none';
-  setTimeout(function(){fb.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
+  setTimeout(function(){
+    var btnRow=document.getElementById('main-btn-row');
+    if(btnRow)btnRow.scrollIntoView({behavior:'smooth',block:'end'});
+  },50);
   speakTekst(msg);
 }
 function hideFeedback(){
@@ -2531,6 +2534,14 @@ function errPattern(){
 }
 function restartSame(){startExercise();}
 
+function clearEindHulp(){
+  // Wis alle cij-deelsom-wrap cellen in de einduitkomstrij
+  var calcArea=document.getElementById('calc-area');
+  if(calcArea){
+    calcArea.querySelectorAll('td.cij-deelsom-cel').forEach(function(td){td.innerHTML='';});
+  }
+}
+
 function verbeterSom(){
   var wasTelGoed=session.results[session.currentIdx]&&session.results[session.currentIdx].allCorrect;
   if(!wasTelGoed){
@@ -2543,6 +2554,7 @@ function verbeterSom(){
   rememberFields.forEach(function(el){if(el)el.disabled=false;});
   stepChecked=false;
   hideFeedback();
+  clearEindHulp();
   document.getElementById('btn-check').style.display='inline-flex';
   var isLast=session.currentIdx===session.problems.length-1;
   document.getElementById(isLast?'btn-finish':'btn-next').style.display='none';
@@ -2565,6 +2577,7 @@ function opnieuwSom(){
   rememberFields.forEach(function(el){if(el){el.disabled=false;el.value='';}});
   stepChecked=false;
   hideFeedback();
+  clearEindHulp();
   document.getElementById('btn-check').style.display='inline-flex';
   var isLast=session.currentIdx===session.problems.length-1;
   document.getElementById(isLast?'btn-finish':'btn-next').style.display='none';
