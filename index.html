@@ -783,9 +783,9 @@ function addAutoAdvance(el,ri){
               if(rowInfo[j]===nextRow&&expectedAnswers[j]!==-2&&inputFields[j]&&!inputFields[j].disabled){next=inputFields[j];break;}
             }
           }
-        } else if(isOptional(expectedAnswers[ni])&&cfg.hulp){
+        } else if(isOptional(expectedAnswers[ni])&&expectedAnswers[ni]!==-2&&cfg.hulp){
+          // Sla optionele vakjes over, maar NIET tekenvakjes (-2) — die zijn een geldig cursorpunt
           var targetRow=rowInfo[ni];
-          // Gebruik firstRealInRow zodat tekenvakjes bij negatieve rijen correct worden meegenomen
           var realTarget=firstRealInRow(targetRow);
           if(realTarget){next=realTarget;}
           else{
