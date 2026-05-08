@@ -908,44 +908,15 @@ function renderProblem(p){
       for(var fi=0;fi<inputFields.length;fi++){
         if(rowInfo[fi]===0&&inputFields[fi]&&!inputFields[fi].disabled)rij0inputs.push(inputFields[fi]);
       }
-      if(cfg.hulp&&currentProblem&&vermInputRows&&vermInputRows.length>0){
-        var eersteRij=vermInputRows[0];
-        if(eersteRij){
-          var eersteVal=0;
-          var aStr0=String(currentProblem.a),bStr0=String(currentProblem.b);
-          var aDigit=parseInt(aStr0[aStr0.length-1])||0;
-          var bDigit=parseInt(bStr0[bStr0.length-1])||0;
-          eersteVal=aDigit*bDigit;
-          var numCijfers0=eersteVal===0?1:String(eersteVal).length;
-          var rij0Echt=[];
-          for(var fi2=0;fi2<inputFields.length;fi2++){
-            if(rowInfo[fi2]===0&&!isOptional(expectedAnswers[fi2])&&inputFields[fi2]&&!inputFields[fi2].disabled)rij0Echt.push(inputFields[fi2]);
-          }
-          var startPos0=rij0Echt.length-numCijfers0;
-          if(startPos0<0)startPos0=0;
-          focusTarget=rij0Echt[startPos0]||rij0inputs[rij0inputs.length-1]||null;
-        } else {
-          focusTarget=rij0inputs[rij0inputs.length-1]||null;
-        }
-      } else if(currentProblem&&vermInputRows&&vermInputRows.length>0){
-        // Zonder hulp: cursor op meest linkse vakje dat nodig is voor de eerste deelsom
-        var eersteRijZ=vermInputRows[0];
-        if(eersteRijZ){
-          var aStr0z=String(currentProblem.a),bStr0z=String(currentProblem.b);
-          var aDigitz=parseInt(aStr0z[aStr0z.length-1])||0;
-          var bDigitz=parseInt(bStr0z[bStr0z.length-1])||0;
-          var eersteValz=aDigitz*bDigitz;
-          var numCijfers0z=eersteValz===0?1:String(eersteValz).length;
-          var rij0EchtZ=[];
-          for(var fi3=0;fi3<inputFields.length;fi3++){
-            if(rowInfo[fi3]===0&&inputFields[fi3]&&!inputFields[fi3].disabled)rij0EchtZ.push(inputFields[fi3]);
-          }
-          var startPos0z=rij0EchtZ.length-numCijfers0z;
-          if(startPos0z<0)startPos0z=0;
-          focusTarget=rij0EchtZ[startPos0z]||rij0inputs[rij0inputs.length-1]||null;
-        } else {
-          focusTarget=rij0inputs[rij0inputs.length-1]||null;
-        }
+      if(currentProblem){
+        var aStr0=String(currentProblem.a),bStr0=String(currentProblem.b);
+        var aDigit0=parseInt(aStr0[aStr0.length-1])||0;
+        var bDigit0=parseInt(bStr0[bStr0.length-1])||0;
+        var eersteVal0=aDigit0*bDigit0;
+        var numCijfers0=eersteVal0===0?1:String(eersteVal0).length;
+        var startPos0=rij0inputs.length-numCijfers0;
+        if(startPos0<0)startPos0=0;
+        focusTarget=rij0inputs[startPos0]||rij0inputs[rij0inputs.length-1]||null;
       } else {
         focusTarget=rij0inputs[rij0inputs.length-1]||null;
       }
