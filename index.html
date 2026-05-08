@@ -343,7 +343,7 @@ var cfg={method:'kolomsgewijs',op:'optellen',count:5,fontSize:24,cellSize:62,get
 Object.defineProperty(cfg,'hulp',{get:function(){return cfg.eenBeetjeHulp||cfg.veelHulp;}});
 var session={problems:[],currentIdx:0,correct:0,wrong:0,hints:0,results:[],highestVisited:0};
 var invertedContrast=false;
-var currentProblem=null,inputFields=[],rememberFields=[],expectedAnswers=[],rowInfo=[],stepHighlightCells=[],currentHulpRow=-1,stepChecked=false,aStaticCells=[],aftrDeelsomTd=null,vermEersteInput=null,vermFocusIngesteld=false;
+var currentProblem=null,inputFields=[],rememberFields=[],expectedAnswers=[],rowInfo=[],stepHighlightCells=[],currentHulpRow=-1,stepChecked=false,aStaticCells=[],aftrDeelsomTd=null,vermEersteInput=null,vermFocusIngesteld=false,vermInputRows=[];
 
 window.addEventListener('DOMContentLoaded',function(){
   var imgWelcome=document.getElementById('owl-welcome');if(imgWelcome)imgWelcome.src=OWL_WELKOM;
@@ -890,7 +890,7 @@ function mkRemember(size,fontSize){
 
 /* ---- RENDER ---- */
 function renderProblem(p){
-  inputFields=[];rememberFields=[];expectedAnswers=[];rowInfo=[];stepHighlightCells=[];currentHulpRow=-1;aStaticCells=[];aftrDeelsomTd=null;vermEersteInput=null;vermFocusIngesteld=false;
+  inputFields=[];rememberFields=[];expectedAnswers=[];rowInfo=[];stepHighlightCells=[];currentHulpRow=-1;aStaticCells=[];aftrDeelsomTd=null;vermEersteInput=null;vermFocusIngesteld=false;vermInputRows=[];
   applySize();
   var area=document.getElementById('calc-area');
   if(cfg.method==='kolomsgewijs'){
@@ -1306,7 +1306,7 @@ function renderCijferend(p,area){
       }
     }
 
-    var vermInputRows=[],vermDeelsomTds=[];
+    vermInputRows=[];var vermDeelsomTds=[];
 
     for(var bi=bStr.length-1;bi>=0;bi--){
       var bd=parseInt(bStr[bi]),bPlace=Math.pow(10,bStr.length-1-bi);
