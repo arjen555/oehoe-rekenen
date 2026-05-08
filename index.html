@@ -1034,21 +1034,11 @@ function renderKolomOpAf(p,area){
     eindhulpTd.style.cssText='padding-left:12px;vertical-align:middle;white-space:normal;max-width:220px;';
     function toonEindHulp(){
       if(!cfg.veelHulp)return;
+      // Gebruik de subtotals rechtstreeks — die bevatten de echte waarden
       var delen=[];
-      inputFields.forEach(function(el,i){
-        var ri=rowInfo[i];
-        if(ri===undefined||ri<0||ri>=rowIdx)return; // alleen tussenrijen
-        if(expectedAnswers[i]===-2)return; // sla tekenvakjes over
-        var v=el.value.trim();
-        if(v===''||v==='0'&&isOptional(expectedAnswers[i]))return;
-        if(v==='')return;
-        // Zoek bijbehorend tekenvakje in dezelfde rij
-        var tekenEl=null;
-        for(var j=0;j<inputFields.length;j++){
-          if(rowInfo[j]===ri&&expectedAnswers[j]===-2){tekenEl=inputFields[j];break;}
-        }
-        var teken=tekenEl&&tekenEl.value==='-'?'-':'+';
-        if(v!=='0')delen.push({teken:teken,val:v});
+      subtotals.forEach(function(sub){
+        if(sub.val===0)return;
+        delen.push({teken:sub.val<0?'-':'+',val:Math.abs(sub.val)});
       });
       if(!delen.length){eindhulpTd.innerHTML='';return;}
       var somTekst='';
@@ -1056,7 +1046,7 @@ function renderKolomOpAf(p,area){
         if(i===0){somTekst+=(d.teken==='-'?'- ':'')+d.val;}
         else{somTekst+=' '+d.teken+' '+d.val;}
       });
-      eindhulpTd.innerHTML='<div class="cij-deelsom-wrap" style="min-width:80px;max-width:200px;white-space:normal;word-break:break-word;font-size:calc(var(--font-size)*0.85)"><div class="cij-deelsom-som">'+somTekst+' =</div></div>';
+      eindhulpTd.innerHTML='<div class="cij-deelsom-wrap" style="min-width:80px;max-width:220px;white-space:normal;word-break:break-word;font-size:calc(var(--font-size)*0.85)"><div class="cij-deelsom-som">'+somTekst+' =</div></div>';
     }
     // Koppel focus-handler aan alle uitkomst-invulvakjes
     var ansInputStart=inputFields.length-numDigitCols-1;
