@@ -309,7 +309,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 </div>
 <div class="screen" id="screen-analysis" role="main">
   <div class="score-hero">
-    <img id="owl-analysis" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil-nakijken.png" alt="Uil nakijkend" class="score-owl-big">
+    <img id="owl-analysis" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_nakijken.png" alt="Uil nakijkend" class="score-owl-big">
     <div class="score-number" id="score-pct">-</div>
     <div class="score-lbl-txt" id="score-lbl"></div>
   </div>
@@ -327,7 +327,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 <script>
 var BASE_URL='https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/';
 var OWL_WELKOM=BASE_URL+'uil_start.png';
-var OWL_EINDE=BASE_URL+'uil-nakijken.png';
+var OWL_EINDE=BASE_URL+'uil_nakijken.png';
 var OWL_VRAAGT=BASE_URL+'uil_vraagt.png';
 var OWL_STAART=BASE_URL+'uil_staart.png';
 var EDUVIP_LOGO=BASE_URL+'eduvip.png';
@@ -2355,9 +2355,8 @@ function showFeedback(msg,type,owlSrc){
   if(btnVerbeter)btnVerbeter.style.display=type==='fout'?'inline-flex':'none';
   if(btnOpnieuw)btnOpnieuw.style.display=type==='fout'?'inline-flex':'none';
   setTimeout(function(){
-    var btnRow=document.getElementById('main-btn-row');
-    if(btnRow)btnRow.scrollIntoView({behavior:'smooth',block:'end'});
-  },50);
+    window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  },100);
   speakTekst(msg);
 }
 function hideFeedback(){
