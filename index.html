@@ -731,16 +731,16 @@ function firstRealInRow(targetRow){
       var val=dA-dB;
       if(val<0){
         // Vind het eerste echte (niet-optionele) cijfervakje in deze rij
-        var eersteEchte=null;
+        var eersteEchteIdx=null;
         for(var j=0;j<inputFields.length;j++){
           if(rowInfo[j]===targetRow&&!isOptional(expectedAnswers[j])&&expectedAnswers[j]!==-2&&inputFields[j]&&!inputFields[j].disabled){
-            eersteEchte=j;break;
+            eersteEchteIdx=j;break;
           }
         }
-        // Zoek het tekenvakje dat direct voor dit cijfervakje staat (één positie eerder in inputFields)
-        if(eersteEchte!==null){
-          for(var j=eersteEchte-1;j>=0;j--){
-            if(rowInfo[j]===targetRow&&expectedAnswers[j]===-2&&inputFields[j]&&!inputFields[j].disabled){
+        if(eersteEchteIdx!==null){
+          // Ga één stap terug in inputFields binnen dezelfde rij
+          for(var j=eersteEchteIdx-1;j>=0;j--){
+            if(rowInfo[j]===targetRow&&inputFields[j]&&!inputFields[j].disabled){
               return inputFields[j];
             }
           }
@@ -784,14 +784,9 @@ function addAutoAdvance(el,ri){
             }
           }
         } else if(isOptional(expectedAnswers[ni])&&expectedAnswers[ni]!==-2&&cfg.hulp){
-          // Sla optionele vakjes over, maar NIET tekenvakjes (-2) — die zijn een geldig cursorpunt
           var targetRow=rowInfo[ni];
-          var realTarget=firstRealInRow(targetRow);
-          if(realTarget){next=realTarget;}
-          else{
-            for(var j=ni+1;j<inputFields.length;j++){
-              if(rowInfo[j]===targetRow&&!isOptional(expectedAnswers[j])&&inputFields[j]&&!inputFields[j].disabled){next=inputFields[j];break;}
-            }
+          for(var j=ni+1;j<inputFields.length;j++){
+            if(rowInfo[j]===targetRow&&!isOptional(expectedAnswers[j])&&inputFields[j]&&!inputFields[j].disabled){next=inputFields[j];break;}
           }
         }
         next.focus();
