@@ -286,20 +286,17 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <div id="tafelkaart-container"></div>
   </div>
   <div id="hulp-area"></div>
-  <div class="btn-row">
-    <button class="nav-btn" id="btn-prev">&#8592; Vorige</button>
+  <div id="step-feedback" class="step-feedback" role="alert" aria-live="assertive" style="margin-top:1rem;">
+    <div id="feedback-msg-wrap"></div>
+  </div>
+  <div class="btn-row" id="main-btn-row">
+    <button class="nav-btn" id="btn-prev">&#8592; Vorige som</button>
     <button class="btn-primary" id="btn-check">Controleer</button>
     <button class="btn-secondary" id="btn-uitleg">&#128218; Uitleg</button>
-    <button class="btn-secondary" id="btn-next" style="display:none;">Volgende &#8594;</button>
+    <button class="btn-verbeter" id="btn-verbeter" style="display:none;">&#9998; Verbeter</button>
+    <button class="btn-opnieuw" id="btn-opnieuw" style="display:none;">&#8635; Opnieuw</button>
+    <button class="btn-secondary" id="btn-next" style="display:none;">Volgende som &#8594;</button>
     <button class="btn-primary" id="btn-finish" style="display:none;">Klaar! &#8594;</button>
-  </div>
-  <div id="step-feedback" class="step-feedback" role="alert" aria-live="assertive" style="margin-top:1rem;">
-    <div id="feedback-verbeter-row" class="feedback-verbeter-row" style="display:none;">
-      <button class="btn-verbeter" id="btn-verbeter">&#9998; Verbeter</button>
-      <div class="feedback-owl-wrap"><img id="feedback-owl-img" class="feedback-owl" alt="" src=""></div>
-      <button class="btn-opnieuw" id="btn-opnieuw">&#8635; Opnieuw</button>
-    </div>
-    <div id="feedback-msg-wrap"></div>
   </div>
 </div>
 <div class="screen" id="screen-uitleg" role="main">
@@ -2085,11 +2082,13 @@ function checkStep(){
 
 function showHulpAfterCheck(correctArr){
   if(!cfg.hulp||cfg.method==='cijferend')return;
-  var p=currentProblem;var hulpArea=document.getElementById('hulp-area');hulpArea.innerHTML='';
+  var p=currentProblem;
+  var hulpArea=document.getElementById('hulp-area');hulpArea.innerHTML='';
+  var msgWrap=document.getElementById('feedback-msg-wrap');
   var aStr=String(p.a),bStr=String(p.b);
   var wrongRows={};
   inputFields.forEach(function(el,i){if(!correctArr[i]&&rowInfo[i]>=0)wrongRows[rowInfo[i]]=true;});
-
+  var hints=[];
   if(cfg.op==='vermenigvuldigen'){
     var steps=[];
     for(var bi=0;bi<bStr.length;bi++){
@@ -2101,11 +2100,7 @@ function showHulpAfterCheck(correctArr){
     }
     Object.keys(wrongRows).forEach(function(ri){
       ri=parseInt(ri);
-      if(ri<steps.length){
-        var div=document.createElement('div');div.className='hulp-hint';
-        div.innerHTML='<img src="'+OWL_WRONG+'" class="hulp-hint-owl" alt=""><span class="hulp-hint-tekst">'+steps[ri].formula+'</span>';
-        hulpArea.appendChild(div);
-      }
+      if(ri<steps.length)hints.push(steps[ri].formula);
     });
   } else {
     var maxPlaces=Math.max(aStr.length,bStr.length);
@@ -2118,12 +2113,17 @@ function showHulpAfterCheck(correctArr){
     }
     Object.keys(wrongRows).forEach(function(ri){
       ri=parseInt(ri);
-      if(ri<subtotals.length){
-        var div=document.createElement('div');div.className='hulp-hint';
-        div.innerHTML='<img src="'+OWL_WRONG+'" class="hulp-hint-owl" alt=""><span class="hulp-hint-tekst">'+subtotals[ri].formula+'</span>';
-        hulpArea.appendChild(div);
-      }
+      if(ri<subtotals.length)hints.push(subtotals[ri].formula);
     });
+  }
+  // Voeg hints toe bovenaan het feedbackblok
+  if(hints.length>0&&msgWrap){
+    var hintHtml='<div style="margin-bottom:12px;">';
+    hints.forEach(function(h){
+      hintHtml+='<div class="hulp-hint-tekst" style="font-size:calc(var(--font-size)*0.9);margin-bottom:6px;">'+h+'</div>';
+    });
+    hintHtml+='</div>';
+    msgWrap.innerHTML=hintHtml+msgWrap.innerHTML;
   }
 }
 
@@ -2342,34 +2342,30 @@ function analyzeErrors(correctArr){
 
 function showFeedback(msg,type,owlSrc){
   var fb=document.getElementById('step-feedback');
-  fb.className='step-feedback show '+type;fb.style.fontSize=cfg.fontSize+'px';
-  var verbRow=document.getElementById('feedback-verbeter-row');
+  fb.className='step-feedback show '+type;
+  fb.style.fontSize=cfg.fontSize+'px';
   var msgWrap=document.getElementById('feedback-msg-wrap');
-  if(verbRow&&msgWrap){
-    if(type==='fout'){
-      if(owlSrc){
-        var owlImg=document.getElementById('feedback-owl-img');
-        if(owlImg)owlImg.src=owlSrc;
-      }
-      verbRow.style.display='flex';
-      msgWrap.innerHTML='<span class="feedback-text">'+msg+'</span>';
-    } else {
-      verbRow.style.display='none';
-      msgWrap.innerHTML=(owlSrc?'<img src="'+owlSrc+'" class="feedback-owl" alt="">':'')+'<span class="feedback-text">'+msg+'</span>';
-    }
-  } else {
-    fb.innerHTML=(owlSrc?'<img src="'+owlSrc+'" class="feedback-owl" alt="">':'')+'<span class="feedback-text">'+msg+'</span>';
+  if(msgWrap){
+    var owlHtml=owlSrc?'<img src="'+owlSrc+'" class="feedback-owl" alt="">':'';
+    msgWrap.innerHTML=owlHtml+'<span class="feedback-text">'+msg+'</span>';
   }
+  // Verbeter/Opnieuw knoppen tonen of verbergen
+  var btnVerbeter=document.getElementById('btn-verbeter');
+  var btnOpnieuw=document.getElementById('btn-opnieuw');
+  if(btnVerbeter)btnVerbeter.style.display=type==='fout'?'inline-flex':'none';
+  if(btnOpnieuw)btnOpnieuw.style.display=type==='fout'?'inline-flex':'none';
   setTimeout(function(){fb.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
   speakTekst(msg);
 }
 function hideFeedback(){
   var fb=document.getElementById('step-feedback');
   fb.className='step-feedback';
-  var verbRow=document.getElementById('feedback-verbeter-row');
-  if(verbRow)verbRow.style.display='none';
   var msgWrap=document.getElementById('feedback-msg-wrap');
   if(msgWrap)msgWrap.innerHTML='';
+  var btnVerbeter=document.getElementById('btn-verbeter');
+  var btnOpnieuw=document.getElementById('btn-opnieuw');
+  if(btnVerbeter)btnVerbeter.style.display='none';
+  if(btnOpnieuw)btnOpnieuw.style.display='none';
 }
 
 function speakTekst(tekst){
