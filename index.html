@@ -1035,33 +1035,16 @@ function renderKolomOpAf(p,area){
     function toonEindHulp(){
       if(!cfg.veelHulp)return;
       var delen=[];
-      for(var ri=0;ri<rowIdx;ri++){
-        var teken='+';
-        var cijferStr='';
-        for(var j=0;j<inputFields.length;j++){
-          if(rowInfo[j]!==ri)continue;
-          if(expectedAnswers[j]===-2){
-            if(inputFields[j].value==='-')teken='-';
-          } else {
-            var v=inputFields[j].value.trim();
-            cijferStr+=(v===''?'0':v);
-          }
-        }
-        if(cijferStr==='')continue;
-        var getal=parseInt(cijferStr,10);
-        if(isNaN(getal)||getal===0)continue;
-        delen.push({teken:teken,val:getal});
-      }
+      subtotals.forEach(function(sub){
+        if(sub.val===0)return;
+        delen.push({teken:sub.val<0?'-':'+',val:Math.abs(sub.val)});
+      });
       if(!delen.length){eindhulpTd.innerHTML='';return;}
       var somTekst='';
       delen.forEach(function(d,i){
-        if(i===0){
-          somTekst+=(d.teken==='-'?'- ':'')+d.val;
-        } else {
-          somTekst+=' '+(d.teken==='-'?'- ':'+ ')+d.val;
-        }
+        if(i===0){somTekst+=(d.teken==='-'?'- ':'')+d.val;}
+        else{somTekst+=' '+(d.teken==='-'?'- ':'+ ')+d.val;}
       });
-      somTekst=somTekst.replace(/\+ -/g,'- ').replace(/\+  -/g,'- ');
       eindhulpTd.innerHTML='<div class="cij-deelsom-wrap" style="min-width:80px;max-width:400px;white-space:nowrap;font-size:calc(var(--font-size)*0.85)"><div class="cij-deelsom-som">'+somTekst+' =</div></div>';
     }
     // Koppel focus-handler aan alle uitkomst-invulvakjes
