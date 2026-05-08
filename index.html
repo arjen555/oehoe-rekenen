@@ -1035,31 +1035,33 @@ function renderKolomOpAf(p,area){
     function toonEindHulp(){
       if(!cfg.veelHulp)return;
       var delen=[];
-      // Loop door elke tussenrij en lees het ingevulde getal uit
       for(var ri=0;ri<rowIdx;ri++){
         var teken='+';
-        var cijfers='';
+        var cijferStr='';
         for(var j=0;j<inputFields.length;j++){
           if(rowInfo[j]!==ri)continue;
           if(expectedAnswers[j]===-2){
-            // tekenvakje
             if(inputFields[j].value==='-')teken='-';
           } else {
             var v=inputFields[j].value.trim();
-            cijfers+=v===''?'0':v;
+            cijferStr+=(v===''?'0':v);
           }
         }
-        // Verwijder voorloopnullen maar behoud minstens één cijfer
-        var getal=parseInt(cijfers)||0;
-        if(getal!==0)delen.push({teken:teken,val:getal});
+        if(cijferStr==='')continue;
+        var getal=parseInt(cijferStr,10);
+        if(isNaN(getal)||getal===0)continue;
+        delen.push({teken:teken,val:getal});
       }
       if(!delen.length){eindhulpTd.innerHTML='';return;}
       var somTekst='';
       delen.forEach(function(d,i){
-        if(i===0){somTekst+=(d.teken==='-'?'- ':'')+d.val;}
-        else{somTekst+=' '+d.teken+' '+d.val;}
+        if(i===0){
+          somTekst+=(d.teken==='-'?'- ':'')+d.val;
+        } else {
+          somTekst+=' '+d.teken+' '+d.val;
+        }
       });
-      eindhulpTd.innerHTML='<div class="cij-deelsom-wrap" style="min-width:80px;max-width:220px;white-space:normal;word-break:break-word;font-size:calc(var(--font-size)*0.85)"><div class="cij-deelsom-som">'+somTekst+' =</div></div>';
+      eindhulpTd.innerHTML='<div class="cij-deelsom-wrap" style="min-width:80px;max-width:400px;white-space:nowrap;font-size:calc(var(--font-size)*0.85)"><div class="cij-deelsom-som">'+somTekst+' =</div></div>';
     }
     // Koppel focus-handler aan alle uitkomst-invulvakjes
     var ansInputStart=inputFields.length-numDigitCols-1;
