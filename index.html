@@ -2346,9 +2346,11 @@ function showFeedback(msg,type,owlSrc){
   var verbRow=document.getElementById('feedback-verbeter-row');
   var msgWrap=document.getElementById('feedback-msg-wrap');
   if(verbRow&&msgWrap){
-    if(type==='fout'&&owlSrc){
-      var owlImg=document.getElementById('feedback-owl-img');
-      if(owlImg)owlImg.src=owlSrc;
+    if(type==='fout'){
+      if(owlSrc){
+        var owlImg=document.getElementById('feedback-owl-img');
+        if(owlImg)owlImg.src=owlSrc;
+      }
       verbRow.style.display='flex';
       msgWrap.innerHTML='<span class="feedback-text">'+msg+'</span>';
     } else {
