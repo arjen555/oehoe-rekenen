@@ -2361,7 +2361,14 @@ function showFeedback(msg,type,owlSrc){
   setTimeout(function(){fb.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
   speakTekst(msg);
 }
-function hideFeedback(){var fb=document.getElementById('step-feedback');fb.className='step-feedback';fb.innerHTML='';}
+function hideFeedback(){
+  var fb=document.getElementById('step-feedback');
+  fb.className='step-feedback';
+  var verbRow=document.getElementById('feedback-verbeter-row');
+  if(verbRow)verbRow.style.display='none';
+  var msgWrap=document.getElementById('feedback-msg-wrap');
+  if(msgWrap)msgWrap.innerHTML='';
+}
 
 function speakTekst(tekst){
   if(!cfg.autoVoorlezen||!window.speechSynthesis||!tekst)return;
