@@ -1034,12 +1034,25 @@ function renderKolomOpAf(p,area){
     eindhulpTd.style.cssText='padding-left:12px;vertical-align:middle;white-space:normal;max-width:220px;';
     function toonEindHulp(){
       if(!cfg.veelHulp)return;
-      // Gebruik de subtotals rechtstreeks — die bevatten de echte waarden
       var delen=[];
-      subtotals.forEach(function(sub){
-        if(sub.val===0)return;
-        delen.push({teken:sub.val<0?'-':'+',val:Math.abs(sub.val)});
-      });
+      // Loop door elke tussenrij en lees het ingevulde getal uit
+      for(var ri=0;ri<rowIdx;ri++){
+        var teken='+';
+        var cijfers='';
+        for(var j=0;j<inputFields.length;j++){
+          if(rowInfo[j]!==ri)continue;
+          if(expectedAnswers[j]===-2){
+            // tekenvakje
+            if(inputFields[j].value==='-')teken='-';
+          } else {
+            var v=inputFields[j].value.trim();
+            cijfers+=v===''?'0':v;
+          }
+        }
+        // Verwijder voorloopnullen maar behoud minstens één cijfer
+        var getal=parseInt(cijfers)||0;
+        if(getal!==0)delen.push({teken:teken,val:getal});
+      }
       if(!delen.length){eindhulpTd.innerHTML='';return;}
       var somTekst='';
       delen.forEach(function(d,i){
