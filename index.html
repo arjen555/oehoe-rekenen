@@ -2540,7 +2540,7 @@ function verbeterSom(){
     if(!session.results[session.currentIdx].verbeterPoging)session.results[session.currentIdx].verbeterPoging=true;
   }
   inputFields.forEach(function(el){
-    if(el){el.disabled=false;el.classList.remove('correct','incorrect');el.style.outline='';}
+    if(el){el.disabled=false;el.style.outline='';}
   });
   rememberFields.forEach(function(el){if(el)el.disabled=false;});
   stepChecked=false;
