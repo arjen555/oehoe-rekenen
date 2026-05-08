@@ -909,8 +909,8 @@ function renderProblem(p){
         if(rowInfo[fi]===0&&inputFields[fi]&&!inputFields[fi].disabled)rij0inputs.push(inputFields[fi]);
       }
       if(cfg.hulp&&currentProblem&&vermInputRows&&vermInputRows.length>0){
-        var eersteDeelsom=vermInputRows[0];
-        if(eersteDeelsom){
+        var eersteRij=vermInputRows[0];
+        if(eersteRij){
           var eersteVal=0;
           var aStr0=String(currentProblem.a),bStr0=String(currentProblem.b);
           var aDigit=parseInt(aStr0[aStr0.length-1])||0;
@@ -924,6 +924,25 @@ function renderProblem(p){
           var startPos0=rij0Echt.length-numCijfers0;
           if(startPos0<0)startPos0=0;
           focusTarget=rij0Echt[startPos0]||rij0inputs[rij0inputs.length-1]||null;
+        } else {
+          focusTarget=rij0inputs[rij0inputs.length-1]||null;
+        }
+      } else if(currentProblem&&vermInputRows&&vermInputRows.length>0){
+        // Zonder hulp: cursor op meest linkse vakje dat nodig is voor de eerste deelsom
+        var eersteRijZ=vermInputRows[0];
+        if(eersteRijZ){
+          var aStr0z=String(currentProblem.a),bStr0z=String(currentProblem.b);
+          var aDigitz=parseInt(aStr0z[aStr0z.length-1])||0;
+          var bDigitz=parseInt(bStr0z[bStr0z.length-1])||0;
+          var eersteValz=aDigitz*bDigitz;
+          var numCijfers0z=eersteValz===0?1:String(eersteValz).length;
+          var rij0EchtZ=[];
+          for(var fi3=0;fi3<inputFields.length;fi3++){
+            if(rowInfo[fi3]===0&&inputFields[fi3]&&!inputFields[fi3].disabled)rij0EchtZ.push(inputFields[fi3]);
+          }
+          var startPos0z=rij0EchtZ.length-numCijfers0z;
+          if(startPos0z<0)startPos0z=0;
+          focusTarget=rij0EchtZ[startPos0z]||rij0inputs[rij0inputs.length-1]||null;
         } else {
           focusTarget=rij0inputs[rij0inputs.length-1]||null;
         }
