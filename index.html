@@ -1058,7 +1058,7 @@ function renderKolomOpAf(p,area){
         if(i===0){
           somTekst+=(d.teken==='-'?'- ':'')+d.val;
         } else {
-          somTekst+=' '+d.teken+' '+d.val;
+          somTekst+=' '+(d.teken==='-'?'- ':'+ ')+d.val;
         }
       });
       eindhulpTd.innerHTML='<div class="cij-deelsom-wrap" style="min-width:80px;max-width:400px;white-space:nowrap;font-size:calc(var(--font-size)*0.85)"><div class="cij-deelsom-som">'+somTekst+' =</div></div>';
