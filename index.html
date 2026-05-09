@@ -1122,21 +1122,27 @@ function renderKolomVerm(p,area){
         inputFields.push(inp);td.appendChild(inp);
       }
     }
-    if(isNulRij&&!cfg.veelHulp){
+    if(isNulRij){
       (function(rij,startKol){
         var rijInputs=Array.from(rij.querySelectorAll('input'));
-        var echteInputs=rijInputs.slice(startKol);
+        var echteInputs=cfg.veelHulp?rijInputs:rijInputs.slice(startKol);
         function animeerWeg(){
           var h=rij.offsetHeight;
           if(h===0)return;
-          rij.style.overflow='hidden';
-          rij.style.maxHeight=h+'px';
+          var cells=Array.from(rij.cells);
+          cells.forEach(function(td){
+            td.style.overflow='hidden';
+            td.style.height=td.offsetHeight+'px';
+            td.style.transition='height 0.45s ease 0.2s, padding 0.45s ease 0.2s';
+            td.style.padding='0';
+          });
           rij.style.opacity='1';
-          rij.style.transition='opacity 0.35s ease, max-height 0.45s ease 0.2s';
+          rij.style.transition='opacity 0.35s ease';
           requestAnimationFrame(function(){
             requestAnimationFrame(function(){
               rij.style.opacity='0';
-              rij.style.maxHeight='0';
+              cells.forEach(function(td){td.style.height='0';});
+              setTimeout(function(){rij.style.display='none';},500);
             });
           });
         }
