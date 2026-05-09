@@ -139,6 +139,8 @@ body.inverted .cell-static.hulp-active{outline:6px solid #7c3aed;outline-offset:
 .cell-empty{width:var(--cell-size);height:var(--cell-size);display:table-cell;}
 .cell-input{border:3px solid var(--cell-input-border);border-radius:var(--radius-sm);background:var(--cell-input-bg);font-family:var(--font);font-weight:800;color:var(--cell-input-color);text-align:center;vertical-align:middle;padding:2px;outline:none;transition:border-color 0.15s,background 0.15s,box-shadow 0.15s;width:var(--cell-size);height:var(--cell-size);font-size:var(--font-size);}
 .cell-input:focus{border-color:#3B82F6;box-shadow:0 0 0 3px rgba(59,130,246,0.4);}
+.cell-input.kolom-hulp-active{outline:3px solid #FCD34D!important;outline-offset:2px;}
+body.inverted .cell-input.kolom-hulp-active{outline:6px solid #7c3aed!important;outline-offset:-1px;background:#ede9fe!important;}
 .cell-input.correct{border-color:#10B981!important;background:#052e16!important;color:#6EE7B7!important;border-width:3px!important;}
 .cell-input.incorrect{border-color:#EF4444!important;background:#450a0a!important;color:#FCA5A5!important;border-width:4px!important;}
 .cell-sign{border:3px solid var(--cell-input-border);border-radius:var(--radius-sm);background:var(--cell-input-bg);font-family:var(--font);font-weight:800;color:var(--cell-input-color);text-align:center;vertical-align:middle;padding:2px;outline:none;width:var(--cell-size);height:var(--cell-size);font-size:var(--font-size);}
@@ -711,6 +713,7 @@ function nextProblem(){
 function clearHulp(){
   document.getElementById('hulp-area').innerHTML='';
   document.querySelectorAll('.cell-static.hulp-active').forEach(function(c){c.classList.remove('hulp-active');c.style.outline='';});
+  document.querySelectorAll('.cell-input.kolom-hulp-active').forEach(function(c){c.classList.remove('kolom-hulp-active');});
   currentHulpRow=-1;
 }
 
@@ -813,10 +816,12 @@ function addAutoAdvance(el,ri){
 }
 function updateHulpHighlight(ri){
   document.querySelectorAll('.cell-static.hulp-active').forEach(function(c){c.classList.remove('hulp-active');c.style.outline='';});
+  document.querySelectorAll('.cell-input.kolom-hulp-active').forEach(function(c){c.classList.remove('kolom-hulp-active');});
   if(!cfg.hulp||ri<0) return;
   if(stepHighlightCells[ri]){
     stepHighlightCells[ri].forEach(function(cell){
-      cell.classList.add('hulp-active');
+      if(cell.tagName==='INPUT'){cell.classList.add('kolom-hulp-active');}
+      else{cell.classList.add('hulp-active');}
     });
   }
 }
@@ -1097,6 +1102,7 @@ function renderKolomVerm(p,area){
   addHR(t,numCols+1);
 
   var rowIdx=0;
+  var keersom_inputs_per_rij=[];
   steps.forEach(function(step,si){
     var valStr=String(step.val),startCol=numCols-valStr.length;
     var aPos=numCols-1-(aStr.length-1-step.ai);
@@ -1107,10 +1113,11 @@ function renderKolomVerm(p,area){
     stepHighlightCells[rowIdx]=hc;
     var r=t.insertRow();r.insertCell().className='cell-label-col';
     var isNulRij=(step.val===0);
+    var rijInputsPerKolom={}; // kolom -> input element
     if(cfg.veelHulp){
       for(var c=0;c<numCols;c++){
         var td=r.insertCell();
-        if(c>=startCol){var inp=mkInput('Deelsom '+(si+1)+' cijfer '+(c-startCol+1),rowIdx);expectedAnswers.push(parseInt(valStr[c-startCol]));inputFields.push(inp);td.appendChild(inp);}
+        if(c>=startCol){var inp=mkInput('Deelsom '+(si+1)+' cijfer '+(c-startCol+1),rowIdx);expectedAnswers.push(parseInt(valStr[c-startCol]));inputFields.push(inp);td.appendChild(inp);rijInputsPerKolom[c]=inp;}
         else{var dv=document.createElement('div');dv.className='cell-empty';td.appendChild(dv);}
       }
     } else {
@@ -1119,9 +1126,10 @@ function renderKolomVerm(p,area){
         var inp=mkInput('Deelsom '+(si+1)+' cijfer '+(c+1),rowIdx);
         if(c>=startCol){expectedAnswers.push(parseInt(valStr[c-startCol]));}
         else{expectedAnswers.push(-1);}
-        inputFields.push(inp);td.appendChild(inp);
+        inputFields.push(inp);td.appendChild(inp);rijInputsPerKolom[c]=inp;
       }
     }
+    keersom_inputs_per_rij.push({val:step.val,inputsPerKolom:rijInputsPerKolom});
     if(isNulRij){
       (function(rij,startKol){
         var rijInputs=Array.from(rij.querySelectorAll('input'));
@@ -1162,9 +1170,19 @@ function renderKolomVerm(p,area){
   addOpRow(t,'+',numCols);
   addHR(t,numCols+1);
 
-  colSums.forEach(function(cs){
+  colSums.forEach(function(cs,csIdx){
     var valStr=String(cs.val),startCol=numCols-valStr.length;
-    stepHighlightCells[rowIdx]=[];
+    // Zoek de keersom-inputs in de kolom die bij deze colSum hoort
+    var posVal=Math.pow(10,cs.pos);
+    var kolomIdx=numCols-1-cs.pos; // kolom van links
+    var hcInputs=[];
+    keersom_inputs_per_rij.forEach(function(kr){
+      var bijdrage=Math.floor(kr.val/posVal)%10;
+      if(bijdrage!==0&&kr.inputsPerKolom[kolomIdx]){
+        hcInputs.push(kr.inputsPerKolom[kolomIdx]);
+      }
+    });
+    stepHighlightCells[rowIdx]=hcInputs;
     var r=t.insertRow();r.insertCell().className='cell-label-col';
     if(cfg.veelHulp){
       for(var c=0;c<numCols;c++){
@@ -2204,7 +2222,7 @@ function showVeelHulpForRow(ri){
         if(bijdrage!==0)delen.push(bijdrage);
       });
       if(delen.length===1){
-        label=delen[0]+' =';
+        label=String(delen[0]);
       } else if(delen.length>1){
         label=delen.join(' + ')+' =';
       }
@@ -2634,13 +2652,11 @@ function verbeterSom(){
 function opnieuwSom(){
   if(!session.results[session.currentIdx])session.results[session.currentIdx]={};
   if(!session.results[session.currentIdx].verbeterPoging)session.results[session.currentIdx].verbeterPoging=true;
-  inputFields.forEach(function(el){
-    if(el){el.disabled=false;el.value='';el.classList.remove('correct','incorrect');el.style.outline='';}
-  });
-  rememberFields.forEach(function(el){if(el){el.disabled=false;el.value='';}});
   stepChecked=false;
   hideFeedback();
   clearEindHulp();
+  // Render de som volledig opnieuw zodat alle rijen (ook nulrijen) terugkomen
+  if(currentProblem)renderProblem(currentProblem);
   document.getElementById('btn-check').style.display='inline-flex';
   var isLast=session.currentIdx===session.problems.length-1;
   document.getElementById(isLast?'btn-finish':'btn-next').style.display='none';
