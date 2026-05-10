@@ -141,6 +141,7 @@ body.inverted .cell-static.hulp-active{outline:6px solid #7c3aed;outline-offset:
 .cell-input:focus{border-color:#3B82F6;box-shadow:0 0 0 3px rgba(59,130,246,0.4);}
 .cell-input.kolom-hulp-active{outline:3px solid #FCD34D!important;outline-offset:2px;}
 body.inverted .cell-input.kolom-hulp-active{outline:6px solid #7c3aed!important;outline-offset:-1px;background:#ede9fe!important;}
+body.inverted #tab-hint{color:var(--text-muted);background:rgba(0,0,0,0.15);border-color:var(--border);}
 .cell-input.correct{border-color:#10B981!important;background:#052e16!important;color:#6EE7B7!important;border-width:3px!important;}
 .cell-input.incorrect{border-color:#EF4444!important;background:#450a0a!important;color:#FCA5A5!important;border-width:4px!important;}
 .cell-sign{border:3px solid var(--cell-input-border);border-radius:var(--radius-sm);background:var(--cell-input-bg);font-family:var(--font);font-weight:800;color:var(--cell-input-color);text-align:center;vertical-align:middle;padding:2px;outline:none;width:var(--cell-size);height:var(--cell-size);font-size:var(--font-size);}
@@ -273,6 +274,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <button class="a11y-btn" id="btn-bigger">A+</button>
     <button class="a11y-btn" id="btn-smaller">A&#8722;</button>
     <button class="a11y-btn" id="btn-speak">&#128266; Voorlezen</button>
+    <span id="tab-hint" style="display:none;font-size:0.78em;color:#fff;background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:5px 10px;margin-left:6px;white-space:nowrap;pointer-events:none;user-select:none;font-weight:600;letter-spacing:0.01em;">SPATIE &#x2192; Waar ben ik?</span>
   </div>
   <div class="exercise-meta" aria-live="polite">
     <span id="ex-badge-method" class="badge badge-blue"></span>
@@ -534,6 +536,7 @@ function attachFormEvents(el){
     cfg.autoVoorlezen=!cfg.autoVoorlezen;avBtn.classList.toggle('selected',cfg.autoVoorlezen);avBtn.setAttribute('aria-pressed',cfg.autoVoorlezen);
     var exBtn=document.getElementById('btn-speak');if(exBtn){exBtn.classList.toggle('active',cfg.autoVoorlezen);}
     if(cfg.autoVoorlezen){var u=new SpeechSynthesisUtterance('Voorlezen ingeschakeld');u.lang='nl-NL';speechSynthesis.speak(u);}
+    var tabHint=document.getElementById('tab-hint');if(tabHint)tabHint.style.display=cfg.autoVoorlezen?'inline-block':'none';
   });}
   var invBtn=el.querySelector('[data-inv]');
   if(invBtn){addSpeakEvents(invBtn,function(){return invertedContrast?'Donker op licht':'Licht op donker';});invBtn.addEventListener('click',function(){
@@ -2485,8 +2488,67 @@ function toggleVoorlezen(){
   cfg.autoVoorlezen=!cfg.autoVoorlezen;
   var btn=document.getElementById('btn-speak');
   btn.classList.toggle('active',cfg.autoVoorlezen);
+  var tabHint=document.getElementById('tab-hint');
+  if(tabHint)tabHint.style.display=cfg.autoVoorlezen?'inline-block':'none';
   if(cfg.autoVoorlezen&&currentProblem)speakProblem();
 }
+function kolombNaam(numCols, colIdx){
+  // colIdx = kolomindex van links (0=meest links)
+  // fromRight = numCols-1-colIdx
+  var fromRight=numCols-1-colIdx;
+  var waarden=[1,10,100,1000,10000,100000];
+  var namen=['eenheden','10','100','1000','tienduizend','honderdduizend'];
+  return namen[fromRight]||String(Math.pow(10,fromRight));
+}
+
+var rijNamen=['eerste','tweede','derde','vierde','vijfde','zesde','zevende','achtste','negende','tiende'];
+
+function speakTabPositie(el){
+  if(!cfg.autoVoorlezen||!currentProblem)return;
+  // Zoek index van el in inputFields
+  var idx=inputFields.indexOf(el);
+  if(idx<0)return;
+  var ri=rowInfo[idx];
+  if(ri===undefined||ri<0)return;
+
+  // Bepaal kolomnaam
+  var numCols=0;
+  // Zoek het aantal kolommen via de tabel in calc-area
+  var tbl=document.querySelector('#calc-area table');
+  if(tbl&&tbl.rows[0])numCols=tbl.rows[0].cells.length-1; // -1 voor label-col
+  // Zoek kolompositie van el in zijn rij
+  var td=el.closest('td');
+  var tr=el.closest('tr');
+  var colIdx=0;
+  if(td&&tr){
+    for(var ci=0;ci<tr.cells.length;ci++){if(tr.cells[ci]===td){colIdx=ci-1;break;}} // -1 voor label-col
+  }
+  var kolNaam=numCols>0?kolombNaam(numCols,colIdx):'?';
+
+  // Bepaal rijnaam
+  // Zoek alle unieke rijen (rowInfo) van inputFields
+  var uniekeRijen=[];
+  rowInfo.forEach(function(r){if(r>=0&&uniekeRijen.indexOf(r)<0)uniekeRijen.push(r);});
+  uniekeRijen.sort(function(a,b){return a-b;});
+  var isEindRij=(ri===uniekeRijen[uniekeRijen.length-1]);
+  var rijNaamStr=isEindRij?'einduitkomst':(rijNamen[uniekeRijen.indexOf(ri)]+' rij')||('rij '+(uniekeRijen.indexOf(ri)+1));
+
+  // Getal in vakje
+  var waarde=el.value.trim();
+  var tekst=kolNaam+', '+rijNaamStr+(waarde?', '+waarde:'');
+  speakTekst(tekst);
+}
+
+document.addEventListener('keydown',function(e){
+  if(e.key===' '&&cfg.autoVoorlezen&&document.activeElement){
+    var el=document.activeElement;
+    if(inputFields.indexOf(el)>=0){
+      e.preventDefault();
+      speakTabPositie(el);
+    }
+  }
+});
+
 function speakProblem(){
   if(!currentProblem||!window.speechSynthesis)return;
   var p=currentProblem,opWord=p.op==='+'?'plus':p.op==='-'?'min':'keer';
