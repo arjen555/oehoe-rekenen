@@ -381,7 +381,7 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
   var sugBtn=document.querySelector('.suggesties-btn');
   if(sugBtn)sugBtn.style.display=(id==='screen-role')?'flex':'none';
-  var logoZichtbaar=(id==='screen-role'||id==='screen-setup')?'':'none';
+  var logoZichtbaar=(id==='screen-role'||id==='screen-setup');
   document.querySelectorAll('.logo-vast').forEach(function(el){el.style.display=logoZichtbaar?'block':'none';});
 }
 function goHome(){resetDisplaySize();showScreen('screen-role');}
