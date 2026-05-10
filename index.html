@@ -1167,6 +1167,7 @@ function renderKolomVerm(p,area){
     }
     rowIdx++;
   });
+  kolomVermMeta.keersomInputs=keersom_inputs_per_rij;
   addOpRow(t,'+',numCols);
   addHR(t,numCols+1);
 
@@ -2210,16 +2211,24 @@ function showVeelHulpForRow(ri){
     var numCols=meta.numCols;
 
     if(ri>=stepsLen&&ri<stepsLen+colSums.length){
-      // Kolom-som-rij: bereken welke kolom dit is
+      // Kolom-som-rij: lees ingevulde waarden van keersom-rijen in de juiste kolom
       var colSumIdx=ri-stepsLen;
       var cs=colSums[colSumIdx];
-      var posExp=cs.pos; // dit is de exponent (0=E, 1=T, 2=H, 3=D, etc.)
-      var posVal=Math.pow(10,posExp); // de werkelijke positiewaarde
-      // Verzamel per keersom het bijdragende deel op deze positie
+      var posExp=cs.pos;
+      var posVal=Math.pow(10,posExp);
+      var kolomIdx=meta.numCols-1-posExp;
       var delen=[];
-      meta.steps.forEach(function(step){
-        var bijdrage=Math.floor(step.val/posVal)%10*posVal;
-        if(bijdrage!==0)delen.push(bijdrage);
+      (meta.keersomInputs||[]).forEach(function(kr){
+        var verwacht=Math.floor(kr.val/posVal)%10*posVal;
+        if(verwacht===0)return; // nul-bijdrage overslaan
+        var el=kr.inputsPerKolom[kolomIdx];
+        if(el&&el.value.trim()!==''){
+          // Gebruik ingevulde waarde, maar op de juiste positiewaarde
+          var ingevuld=parseInt(el.value.trim())||0;
+          delen.push(ingevuld*posVal);
+        } else {
+          delen.push(verwacht);
+        }
       });
       if(delen.length===1){
         label=String(delen[0]);
@@ -2245,10 +2254,10 @@ function showVeelHulpForRow(ri){
         var numVal=parseInt(rijWaarde);
         if(!isNaN(numVal)&&numVal!==0)ingevuldDelenEind.push(numVal);
       });
-      // Gebruik ingevulde waarden als beschikbaar, anders de verwachte waarden
+      // Gebruik altijd ingevulde waarden (ook als fout), anders verwachte waarden
       var bronDelen=ingevuldDelenEind.length>0?ingevuldDelenEind:delenEind;
       if(bronDelen.length===1){
-        label=bronDelen[0]+' =';
+        label=String(bronDelen[0]);
       } else if(bronDelen.length>1){
         label=bronDelen.join(' + ')+' =';
       }
