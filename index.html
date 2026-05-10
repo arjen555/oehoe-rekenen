@@ -687,6 +687,8 @@ function loadProblem(){
     var isLast=session.currentIdx===session.problems.length-1;
     document.getElementById(isLast?'btn-finish':'btn-next').style.display='inline-flex';
   }
+  eindHulpSpeakBlockedUntil=Date.now()+2000;
+  eindHulpAlVoorgelezen=false;
   renderProblem(p);
   if(checked)restoreAnswers();
   renderTafelkaart();
@@ -957,7 +959,6 @@ function renderProblem(p){
               }
             } else {
               currentHulpRow=ri||0;updateHulpHighlight(ri||0);
-              if(cfg.veelHulp)showVeelHulpForRow(ri||0);
             }
           }
         }
@@ -1051,6 +1052,10 @@ function renderKolomOpAf(p,area){
         else{somTekst+=' '+(d.teken==='-'?'- ':'+ ')+d.val;}
       });
       eindhulpTd.innerHTML='<div class="cij-deelsom-wrap" style="min-width:80px;max-width:400px;white-space:nowrap;font-size:calc(var(--font-size)*0.85)"><div class="cij-deelsom-som">'+somTekst+' =</div></div>';
+      if(Date.now()>eindHulpSpeakBlockedUntil&&!eindHulpAlVoorgelezen){
+        eindHulpAlVoorgelezen=true;
+        speakDeelsom(somTekst.replace(/\+/g,'plus').replace(/-/g,'min')+' is');
+      }
     }
     // Koppel focus-handler aan alle uitkomst-invulvakjes
     var ansInputStart=inputFields.length-numDigitCols-1;
@@ -1064,7 +1069,9 @@ function renderKolomOpAf(p,area){
   area.innerHTML='';area.appendChild(t);
 }
 
-var kolomVermMeta=null; // globaal, wordt gevuld door renderKolomVerm
+var kolomVermMeta=null;
+var eindHulpSpeakBlockedUntil=0;
+var eindHulpAlVoorgelezen=false; // tijdstempel: geen spraak vóór dit moment
 
 function renderKolomVerm(p,area){
   var aStr=String(p.a),bStr=String(p.b),ansStr=String(p.answer);
@@ -2432,6 +2439,7 @@ function analyzeErrors(correctArr){
 }
 
 function showFeedback(msg,type,owlSrc){
+  eindHulpSpeakBlockedUntil=Date.now()+2000;
   var fb=document.getElementById('step-feedback');
   fb.className='step-feedback show '+type;
   fb.style.fontSize=cfg.fontSize+'px';
@@ -2483,10 +2491,6 @@ function speakProblem(){
   if(!currentProblem||!window.speechSynthesis)return;
   var p=currentProblem,opWord=p.op==='+'?'plus':p.op==='-'?'min':'keer';
   var tekst='Opgave '+(session.currentIdx+1)+' van '+session.problems.length+'. '+numToNL(p.a)+' '+opWord+' '+numToNL(p.b)+'.';
-  var eersteDeelsom=getDeelsomLabel(p,0);
-  if(eersteDeelsom&&cfg.hulp&&cfg.method==='kolomsgewijs'){
-    tekst+=' Eerst '+eersteDeelsom.replace(/×/g,'keer').replace(/\+/g,'plus').replace(/-/g,'min').replace(/=/g,'');
-  }
   var u=new SpeechSynthesisUtterance(tekst);u.lang='nl-NL';speechSynthesis.cancel();speechSynthesis.speak(u);
 }
 
