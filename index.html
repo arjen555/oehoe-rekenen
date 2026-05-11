@@ -274,6 +274,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <button class="a11y-btn" id="btn-bigger">A+</button>
     <button class="a11y-btn" id="btn-smaller">A&#8722;</button>
     <button class="a11y-btn" id="btn-speak">&#128266; Voorlezen</button>
+    <button id="btn-speed" style="display:none;font-size:0.78em;color:#fff;background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:5px 10px;margin-left:6px;white-space:nowrap;cursor:pointer;font-weight:700;font-family:var(--font);" aria-label="Spreeksnelheid">1&#xd7;</button>
     <span id="tab-hint" style="display:none;font-size:0.78em;color:#fff;background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:5px 10px;margin-left:6px;white-space:nowrap;pointer-events:none;user-select:none;font-weight:600;letter-spacing:0.01em;">SPATIE &#x2192; Waar ben ik?</span>
   </div>
   <div class="exercise-meta" aria-live="polite">
@@ -368,12 +369,32 @@ window.addEventListener('DOMContentLoaded',function(){
   bind('btn-terug-som',backToExercise);
   bind('btn-next',nextProblem);
   bind('btn-finish',showAnalysis);
+  // Voorlezen bij hover en focus op oefenscherm-knoppen
+  [['btn-prev','Vorige som'],['btn-check','Controleer'],['btn-verbeter','Verbeter'],
+   ['btn-opnieuw','Opnieuw'],['btn-uitleg','Uitleg'],['btn-next','Volgende som'],
+   ['btn-finish','Klaar']].forEach(function(pair){
+    var el=document.getElementById(pair[0]);
+    if(el)addSpeakEvents(el,pair[1]);
+  });
   bind('btn-restart',restartSame);
   bind('btn-home',goHome);
   bind('btn-inv',toggleInvert);
   bind('btn-bigger',function(){changeCellSize(1);});
   bind('btn-smaller',function(){changeCellSize(-1);});
   bind('btn-speak',toggleVoorlezen);
+  var speedBtnEl=document.getElementById('btn-speed');
+  if(speedBtnEl)speedBtnEl.addEventListener('click',wisselSnelheid);
+  // Voorlezen bij hover en focus op bovenste knoppen
+  var invEl=document.getElementById('btn-inv');
+  if(invEl)addSpeakEvents(invEl,function(){return document.body.classList.contains('inverted')?'Donker op licht':'Zwart op wit';});
+  var bigEl=document.getElementById('btn-bigger');
+  if(bigEl)addSpeakEvents(bigEl,'Groter');
+  var smallEl=document.getElementById('btn-smaller');
+  if(smallEl)addSpeakEvents(smallEl,'Kleiner');
+  var speakEl=document.getElementById('btn-speak');
+  if(speakEl)addSpeakEvents(speakEl,function(){return cfg.autoVoorlezen?'Voorlezen uit':'Voorlezen aan';});
+  var backEl=document.getElementById('back-exercise');
+  if(backEl)addSpeakEvents(backEl,'Startscherm');
   showScreen('screen-role');
 });
 
@@ -397,7 +418,10 @@ function showSetup(){
   resetDisplaySize();
   buildForm('setup-form');
   showScreen('screen-setup');
+  // Zet focus op eerste knop zodat TAB-navigatie direct werkt
   setTimeout(function(){
+    var eersteKnop=document.querySelector('#screen-setup .opt-btn');
+    if(eersteKnop)eersteKnop.focus();
     var startEx=document.getElementById('start-ex');
     if(startEx){
       startEx.addEventListener('mouseenter',function(){
@@ -444,6 +468,7 @@ function buildForm(tid){
   h+='<div style="margin-top:14px"><div class="option-row">';
   h+='<button class="opt-btn'+(invertedContrast?' selected':'')+'" data-inv="1" aria-pressed="'+invertedContrast+'">'+(invertedContrast?'Donker op licht':'Licht op donker')+'</button>';
   h+='<button class="opt-btn'+(cfg.autoVoorlezen?' selected':'')+'" data-autoVoorlezen="1" aria-pressed="'+cfg.autoVoorlezen+'">&#128266; Voorlezen</button>';
+  h+='<button id="setup-speed-btn" class="opt-btn" style="display:'+(cfg.autoVoorlezen?'inline-flex':'none')+';min-width:60px;" aria-label="Spreeksnelheid">'+({1:'1×',2:'2×',3:'3×',4:'4×'}[spreekSnelheid]||'1×')+'</button>';
   h+='</div></div><hr class="divider">';
   h+='<div><label class="form-label">Rekenmethode</label><div class="option-row">';
   h+=ob('method','kolomsgewijs','Kolomsgewijs')+ob('method','cijferend','Cijferend');
@@ -536,8 +561,10 @@ function attachFormEvents(el){
   if(avBtn){addSpeakEvents(avBtn,'Voorlezen');avBtn.addEventListener('click',function(){
     cfg.autoVoorlezen=!cfg.autoVoorlezen;avBtn.classList.toggle('selected',cfg.autoVoorlezen);avBtn.setAttribute('aria-pressed',cfg.autoVoorlezen);
     var exBtn=document.getElementById('btn-speak');if(exBtn){exBtn.classList.toggle('active',cfg.autoVoorlezen);}
-    if(cfg.autoVoorlezen){var u=new SpeechSynthesisUtterance('Voorlezen ingeschakeld');u.lang='nl-NL';speechSynthesis.speak(u);}
+    if(cfg.autoVoorlezen){var u=new SpeechSynthesisUtterance('Voorlezen ingeschakeld');u.lang='nl-NL';u.rate=spreekSnelheid;speechSynthesis.speak(u);}
     var tabHint=document.getElementById('tab-hint');if(tabHint)tabHint.style.display=cfg.autoVoorlezen?'inline-block':'none';
+    var speedBtnS=document.getElementById('btn-speed');if(speedBtnS){speedBtnS.style.display=cfg.autoVoorlezen?'inline-block':'none';updateSnelheidsKnop();}
+    var setupSB=el.querySelector('#setup-speed-btn');if(setupSB){setupSB.style.display=cfg.autoVoorlezen?'inline-flex':'none';}
   });}
   var invBtn=el.querySelector('[data-inv]');
   if(invBtn){addSpeakEvents(invBtn,function(){return invertedContrast?'Donker op licht':'Licht op donker';});invBtn.addEventListener('click',function(){
@@ -563,6 +590,8 @@ function attachFormEvents(el){
     var eBtn=el.querySelector('[data-eenBeetjeHulp]');if(eBtn){eBtn.classList.remove('selected');eBtn.setAttribute('aria-pressed','false');}
   });}
   // Tooltip hover voorlezen: spreek volledige uitleg na 600ms hoveren
+  var setupSpeedBtn=el.querySelector('#setup-speed-btn');
+  if(setupSpeedBtn){setupSpeedBtn.addEventListener('click',function(){wisselSnelheid();setupSpeedBtn.textContent={1:'1×',2:'2×',3:'3×',4:'4×'}[spreekSnelheid]||'1×';});addSpeakEvents(setupSpeedBtn,function(){return 'Snelheid '+setupSpeedBtn.textContent;});}
   el.querySelectorAll('.tooltip-wrap[data-speak]').forEach(function(wrap){
     var hoverTimer=null;
     wrap.addEventListener('mouseenter',function(){
@@ -706,6 +735,8 @@ function loadProblem(){
   }
   eindHulpSpeakBlockedUntil=Date.now()+2000;
   eindHulpAlVoorgelezen=false;
+  eersteDeelsomCijferendGesproken=false;
+  ansDeelsomLaatsteKol=-1;
   renderProblem(p);
   if(checked)restoreAnswers();
   renderTafelkaart();
@@ -960,20 +991,7 @@ function renderProblem(p){
             var ri=rowInfo[inputFields.indexOf(ft)];
             if(cfg.method==='cijferend'){
               if(cfg.op!=='*'){currentHulpRow=0;updateHulpHighlight(0);}
-              if(cfg.autoVoorlezen&&currentProblem&&cfg.op!=='*'){
-                var ftIdx=inputFields.indexOf(ft);
-                if(ftIdx>=0){
-                  var p0sp=currentProblem;
-                  var a0sp=String(Math.abs(p0sp.a)),b0sp=String(Math.abs(p0sp.b));
-                  var colsSp=Math.max(a0sp.length,b0sp.length,String(Math.abs(p0sp.answer)).length)+1;
-                  var colIdxSp=colsSp-1;
-                  var s1sp=colsSp-a0sp.length,s2sp=colsSp-b0sp.length;
-                  var aDigSp=colIdxSp>=s1sp?parseInt(a0sp[colIdxSp-s1sp]):0;
-                  var bDigSp=colIdxSp>=s2sp?parseInt(b0sp[colIdxSp-s2sp]):0;
-                  var opWordSp=p0sp.op==='+'?'plus':'min';
-                  speakDeelsom('Eenheden: '+aDigSp+' '+opWordSp+' '+bDigSp);
-                }
-              }
+              // eerste deelsom wordt al uitgesproken via focus-handler
             } else {
               currentHulpRow=ri||0;updateHulpHighlight(ri||0);
             }
@@ -1089,7 +1107,14 @@ function renderKolomOpAf(p,area){
 var kolomVermMeta=null;
 var eindHulpSpeakBlockedUntil=0;
 var eindHulpAlVoorgelezen=false;
-var spreekGeblokkerdTot=0; // tijdstempel: geen spraak vóór dit moment
+var spreekGeblokkerdTot=0;
+var spreekSnelheid=1;
+var ansDeelsomLaatsteKol=-1;
+var eersteDeelsomCijferendGesproken=false;
+var huidigLeenKlik=null;
+var huidigTussKlik=null;
+var leenToetsBuffer='';
+var leenToetsTimer=null; // tijdstempel: geen spraak vóór dit moment
 
 function renderKolomVerm(p,area){
   var aStr=String(p.a),bStr=String(p.b),ansStr=String(p.answer);
@@ -1290,6 +1315,7 @@ function updateAftrDeelsom(p,colIdx,cols){
   var kolNaam=colFullName(fromRight);
   var somTekst=aVal+' \u2212 '+bDigit;
   aftrDeelsomTd.innerHTML='<div class="cij-deelsom-wrap"><div class="cij-deelsom-kol">'+kolNaam+'</div><div class="cij-deelsom-som">'+somTekst+'</div></div>';
+  if(cfg.autoVoorlezen)speakDeelsom(kolNaam+': '+aVal+' min '+bDigit);
 }
 
 function renderCijferend(p,area){
@@ -1425,6 +1451,11 @@ function renderCijferend(p,area){
       }
       var somTekst=vals.join(' + ')+(onthoudVal?' (+ '+onthoudVal+')':'');
       dsTd.innerHTML='<div class="cij-deelsom-wrap"><div class="cij-deelsom-som">'+somTekst+'</div></div>';
+      if(cfg.autoVoorlezen&&absCol!==ansDeelsomLaatsteKol){
+        ansDeelsomLaatsteKol=absCol;
+        var spreekTekst2=vals.join(' plus ')+(onthoudVal?' plus '+onthoudVal+' onthouden':'');
+        speakDeelsom(spreekTekst2);
+      }
     }
 
     if(vermInputRows.length>0){
@@ -1464,8 +1495,8 @@ function renderCijferend(p,area){
             }
           } else if(nullenNog>0&&rowIdx2===0){
             // Rij 0: geen melding, maar wél de deelsom tonen
-            var echteColFromRight0=colFromRight-vr.numNullen;
-            if(echteColFromRight0<0)echteColFromRight0=0;
+            // colFromRight is hier al de echte kolom (geen nulaftrek nodig voor rij 0)
+            var echteColFromRight0=colFromRight;
             var absCol0=cols-1-echteColFromRight0;
             var bdIdx0=bStr.length-1-rowIdx2;
             var bColAbs0=cols-1-(bStr.length-1-bdIdx0);
@@ -1512,7 +1543,12 @@ function renderCijferend(p,area){
                     if(inputs[ni]&&inputs[ni].inp){inputs[ni].inp.value='';}
                   }
                   if(isLastRow){voegOptelfaseIn();}
-                  else{vermInputRows[rowIdx2+1].inputs[0].inp.focus();}
+                  else{
+                    // Wis highlighting van huidige rij
+                    g1VermCells.forEach(function(d){d.classList.remove('hulp-active');});
+                    g2VermCells.forEach(function(d){d.classList.remove('hulp-active');});
+                    vermInputRows[rowIdx2+1].inputs[0].inp.focus();
+                  }
                 } else {
                   var volgendeEcht=null;
                   for(var vi3=idx+1;vi3<inputs.length;vi3++){
@@ -1785,12 +1821,22 @@ function renderCijferend(p,area){
 
       var bronCel=gevonden.cel;var bronCol=gevonden.col;
       bronCel.wrap.style.cursor='pointer';
+      huidigLeenKlik=null;huidigTussKlik=null;
       bronCel.wrap.onclick=function(){
         var cur=parseInt(bronCel.span.dataset.cur);if(isNaN(cur)||cur<=0)return;
         var newVal=cur-1;bronCel.span.dataset.cur=String(newVal);
         bronCel.span.innerHTML='<span style="text-decoration:line-through;text-decoration-thickness:3px;text-decoration-color:#000;color:#FCA5A5;margin-right:2px;">'+cur+'</span><span style="color:#FCD34D;font-weight:800;">'+newVal+'</span>';
         bronCel.wrap.dataset.alGeleend='1';
-        bronCel.wrap.onclick=null;bronCel.wrap.style.cursor='';
+        bronCel.wrap.onclick=null;bronCel.wrap.style.cursor='';huidigLeenKlik=null;
+        spreekGeblokkerdTot=Date.now()+800;
+        setTimeout(function(){
+          var huidigInvulvak=ansInputs.find(function(item){return item.col===colIdx;});
+          if(huidigInvulvak&&huidigInvulvak.inp&&huidigInvulvak.inp.isConnected){
+            huidigInvulvak.inp.focus();
+            spreekGeblokkerdTot=0;
+            if(cfg.autoVoorlezen)updateAftrDeelsom(p,colIdx,cols);
+          }
+        },50);
 
         for(var tCol=bronCol+1;tCol<colIdx-1;tCol++){
           var tCel=aStaticCells.find(function(x){return x.col===tCol;});
@@ -1817,6 +1863,15 @@ function renderCijferend(p,area){
               doelCel.span.dataset.cur='1'+doelCur;
             }
             if(cfg.veelHulp){updateAftrDeelsom(p,colIdx,cols);}
+            spreekGeblokkerdTot=Date.now()+800;
+            setTimeout(function(){
+              var huidigInvulvak2=ansInputs.find(function(item){return item.col===colIdx;});
+              if(huidigInvulvak2&&huidigInvulvak2.inp&&huidigInvulvak2.inp.isConnected){
+                huidigInvulvak2.inp.focus();
+                spreekGeblokkerdTot=0;
+                if(cfg.autoVoorlezen)updateAftrDeelsom(p,colIdx,cols);
+              }
+            },50);
           };
         } else {
           var doelCel=aStaticCells.find(function(x){return x.col===colIdx;});
@@ -2433,7 +2488,7 @@ function renderTafelTabel(container,n){
       rij.textContent=k+' \xd7 '+n+' = '+(k*n);
       rij.setAttribute('tabindex','0');
       var spreekTekst=k+' keer '+n+' is '+(k*n);
-      rij.addEventListener('mouseenter',function(){if(cfg.autoVoorlezen)speekTekst(spreekTekst);});
+      rij.addEventListener('mouseenter',function(){if(cfg.autoVoorlezen)speakTekst(spreekTekst);});
       rij.addEventListener('focus',function(){if(cfg.autoVoorlezen)speakTekst(spreekTekst);});
       rij.addEventListener('keydown',function(e){
         var idx=rijEls.indexOf(rij);
@@ -2505,7 +2560,7 @@ function hideFeedback(){
 
 function speakTekst(tekst){
   if(!cfg.autoVoorlezen||!window.speechSynthesis||!tekst)return;
-  var u=new SpeechSynthesisUtterance(tekst);u.lang='nl-NL';speechSynthesis.cancel();speechSynthesis.speak(u);
+  var u=new SpeechSynthesisUtterance(tekst);u.lang='nl-NL';u.rate=spreekSnelheid;speechSynthesis.cancel();speechSynthesis.speak(u);
 }
 function speakDeelsom(tekst){
   if(!cfg.autoVoorlezen||!window.speechSynthesis)return;
@@ -2522,14 +2577,33 @@ function toggleVoorlezen(){
   btn.classList.toggle('active',cfg.autoVoorlezen);
   var tabHint=document.getElementById('tab-hint');
   if(tabHint)tabHint.style.display=cfg.autoVoorlezen?'inline-block':'none';
+  var speedBtn=document.getElementById('btn-speed');
+  if(speedBtn)speedBtn.style.display=cfg.autoVoorlezen?'inline-block':'none';
   if(cfg.autoVoorlezen&&currentProblem)speakProblem();
+}
+
+function updateSnelheidsKnop(){
+  var labels={1:'1×',2:'2×',3:'3×',4:'4×'};
+  var speedBtn=document.getElementById('btn-speed');
+  if(speedBtn)speedBtn.textContent=labels[spreekSnelheid]||'1×';
+  var setupSB=document.querySelector('#setup-speed-btn');
+  if(setupSB)setupSB.textContent=labels[spreekSnelheid]||'1×';
+}
+
+function wisselSnelheid(){
+  var stappen=[1,2,3,4];
+  var huidigIdx=stappen.indexOf(spreekSnelheid);
+  spreekSnelheid=stappen[(huidigIdx+1)%stappen.length];
+  updateSnelheidsKnop();
+  var snelLabel=spreekSnelheid===1.5?'anderhalve keer':spreekSnelheid+'keer';
+  speakTekst('Snelheid '+snelLabel);
 }
 function kolombNaam(numCols, colIdx){
   // colIdx = kolomindex van links (0=meest links)
   // fromRight = numCols-1-colIdx
   var fromRight=numCols-1-colIdx;
   var waarden=[1,10,100,1000,10000,100000];
-  var namen=['eenheden','10','100','1000','tienduizend','honderdduizend'];
+  var namen=['eenheden','tientallen','honderdtallen','duizendtallen','tienduizendtallen','honderdduizendtallen'];
   return namen[fromRight]||String(Math.pow(10,fromRight));
 }
 
@@ -2577,15 +2651,66 @@ document.addEventListener('keydown',function(e){
     if(inputFields.indexOf(el)>=0){
       e.preventDefault();
       speakTabPositie(el);
+    } else if(rememberFields.indexOf(el)>=0){
+      e.preventDefault();
+      // Onthoudvakje: bepaal kolomnaam via positie in de tabel
+      var tbl=document.querySelector('#calc-area table');
+      var numCols=tbl&&tbl.rows[0]?tbl.rows[0].cells.length-1:0;
+      var td=el.closest('td');var tr=el.closest('tr');
+      var colIdx=0;
+      if(td&&tr){for(var ci=0;ci<tr.cells.length;ci++){if(tr.cells[ci]===td){colIdx=ci-1;break;}}}
+      var kolNaam=numCols>0?kolombNaam(numCols,colIdx):'?';
+      var waarde=el.value.trim();
+      speakTekst('onthoudvakje '+kolNaam+(waarde?', '+waarde:''));
     }
   }
 });
+
+// Globale leen-toetsenbord handler voor cijferend aftrekken
+document.addEventListener('keydown',function(e){
+  if(cfg.method!=='cijferend'||cfg.op!=='aftrekken')return;
+  if(inputFields.indexOf(document.activeElement)<0)return;
+  var k=e.key.toLowerCase();
+  if(k!=='t'&&k!=='h'&&k!=='d')return;
+  e.preventDefault();
+  clearTimeout(leenToetsTimer);
+  leenToetsBuffer+=k;
+  var buffer=leenToetsBuffer;
+  // T en H: wacht 1 seconde op tweede letter
+  if(buffer.length===1&&(buffer==='t'||buffer==='h')){
+    leenToetsTimer=setTimeout(function(){
+      leenTrigger(leenToetsBuffer);
+      leenToetsBuffer='';
+    },1000);
+  } else {
+    // D alleen, of TD/HD combinatie
+    leenTrigger(buffer);
+    leenToetsBuffer='';
+  }
+});
+
+function leenTrigger(naam){
+  if(inputFields.indexOf(document.activeElement)<0)return;
+  // Zoek cel met onclick op basis van kolomnaam (van rechts)
+  var fromRightMap={e:0,t:1,h:2,d:3,td:4,hd:5};
+  var fromRight=fromRightMap[naam];
+  if(fromRight===undefined)return;
+  // Bereken kolomindex van links: totaal aantal kolommen - 1 - fromRight
+  // aStaticCells bevat de kolommen van getal A
+  if(aStaticCells.length===0)return;
+  var maxKol=Math.max.apply(null,aStaticCells.map(function(x){return x.col;}));
+  var doelKol=maxKol-fromRight;
+  var doel=aStaticCells.find(function(x){return x.col===doelKol&&x.wrap.onclick;});
+  if(doel)doel.wrap.onclick();
+}
 
 function speakProblem(){
   if(!currentProblem||!window.speechSynthesis)return;
   var p=currentProblem,opWord=p.op==='+'?'plus':p.op==='-'?'min':'keer';
   var tekst='Opgave '+(session.currentIdx+1)+' van '+session.problems.length+'. '+numToNL(p.a)+' '+opWord+' '+numToNL(p.b)+'.';
-  var u=new SpeechSynthesisUtterance(tekst);u.lang='nl-NL';speechSynthesis.cancel();speechSynthesis.speak(u);
+  var u=new SpeechSynthesisUtterance(tekst);u.lang='nl-NL';u.rate=spreekSnelheid;
+  u.onend=function(){spreekGeblokkerdTot=0;eersteDeelsomCijferendGesproken=false;};
+  speechSynthesis.cancel();speechSynthesis.speak(u);
 }
 
 /* ---- UITLEG ---- */
