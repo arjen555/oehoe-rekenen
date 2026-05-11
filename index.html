@@ -182,11 +182,11 @@ body.inverted .cell-remember:focus{border-color:#cc0000;box-shadow:0 0 0 2px rgb
 .tafelkaart-btn:focus{outline:3px solid #FCD34D;outline-offset:2px;}
 .tafelkaart-T{font-size:56px;font-weight:800;line-height:1;}
 .tafelkaart-label{font-size:16px;font-weight:700;letter-spacing:0.04em;opacity:0.9;}
-.tafelkaart-panel{position:fixed;top:80px;right:110px;background:var(--surface);border:3px solid var(--blue-mid);border-radius:var(--radius-lg);padding:14px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:fadeIn 0.2s ease;}
+.tafelkaart-panel{position:fixed;top:80px;right:160px;background:var(--surface);border:3px solid var(--blue-mid);border-radius:var(--radius-lg);padding:14px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:fadeIn 0.2s ease;}
 .tafelkaart-nums{display:flex;flex-direction:column;gap:5px;}
 .tafelkaart-num{background:var(--cell-static-bg);border:2px solid var(--border);border-radius:var(--radius-sm);padding:8px 18px;font-family:var(--font);font-size:var(--font-size);font-weight:800;color:var(--text);cursor:pointer;text-align:center;transition:background 0.15s,border-color 0.15s;}
 .tafelkaart-num:hover,.tafelkaart-num:focus,.tafelkaart-num.active{background:var(--opt-sel-bg);color:var(--opt-sel-text);border-color:var(--opt-sel-border);outline:none;}
-.tafelkaart-tafel{position:fixed;top:80px;right:calc(110px + 70px + 12px);background:var(--card);border:3px solid #FCD34D;border-radius:var(--radius-lg);padding:18px 22px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:fadeIn 0.2s ease;min-width:180px;}
+.tafelkaart-tafel{position:fixed;top:80px;right:calc(160px + 70px + 12px);background:var(--card);border:3px solid #FCD34D;border-radius:var(--radius-lg);padding:18px 22px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:fadeIn 0.2s ease;min-width:180px;}
 .tafelkaart-tafel-title{font-family:var(--font);font-size:18px;font-weight:800;color:#FCD34D;margin-bottom:10px;border-bottom:2px solid rgba(252,211,77,0.3);padding-bottom:6px;}
 .tafelkaart-rij{font-family:var(--font);font-size:var(--font-size);font-weight:700;color:var(--text);padding:3px 0;line-height:1.5;}
 /* Hulp badge */
@@ -453,23 +453,24 @@ function buildForm(tid){
   h+='</div></div><hr class="divider">';
   h+='<div class="form-section-header">Hulp tijdens de som</div>';
   h+='<div class="option-row">';
-  h+='<div class="tooltip-wrap">';
+  h+='<div class="tooltip-wrap" data-speak="Tafelkaart. Tijdens het maken van de som kun je de juiste tafel erbij krijgen als je het even niet meer weet.">';
   h+='<button class="opt-btn'+(cfg.tafelkaart?' selected':'')+'" data-tafelkaart="1" aria-pressed="'+cfg.tafelkaart+'">Tafelkaart</button>';
   h+='<div class="tooltip-box"><div class="tooltip-title">Tafelkaart</div>';
   h+='<div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>Tijdens het maken van de som kun je de juiste tafel erbij krijgen als je het even niet meer weet.</span></div>';
   h+='</div></div>';
-  h+='<div class="tooltip-wrap">';
+  h+='<div class="tooltip-wrap" data-speak="Een beetje hulp. De cursor start steeds op de plek waar je als eerste iets moet invullen. De getallen waar je op dat moment een berekening mee moet doen zijn geaccentueerd.">';
   h+='<button class="opt-btn'+(cfg.eenBeetjeHulp?' selected':'')+'" data-eenBeetjeHulp="1" aria-pressed="'+cfg.eenBeetjeHulp+'">Een beetje hulp</button>';
   h+='<div class="tooltip-box"><div class="tooltip-title">Hulp tijdens de som houdt in:</div>';
   h+='<div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>De cursor start steeds op de plek waar je als eerste iets moet invullen</span></div>';
   h+='<div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>De getallen waar je op dat moment een berekening mee moet doen zijn geaccentueerd</span></div>';
   h+='</div></div>';
-  h+='<div class="tooltip-wrap">';
+  h+='<div class="tooltip-wrap" data-speak="Veel hulp. De cursor start steeds op de plek waar je als eerste iets moet invullen. De getallen waar je op dat moment een berekening mee moet doen zijn geaccentueerd. Je ziet steeds welke som je moet maken. Als je de tafelkaart erbij kiest, kiest het programma de juiste tafel bij de som.">';
   h+='<button class="opt-btn'+(cfg.veelHulp?' selected':'')+'" data-veelHulp="1" aria-pressed="'+cfg.veelHulp+'">Veel hulp</button>';
   h+='<div class="tooltip-box"><div class="tooltip-title">Hulp tijdens de som houdt in:</div>';
   h+='<div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>De cursor start steeds op de plek waar je als eerste iets moet invullen</span></div>';
   h+='<div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>De getallen waar je op dat moment een berekening mee moet doen zijn geaccentueerd</span></div>';
   h+='<div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>Je ziet steeds welke som je moet maken</span></div>';
+  h+='<div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>Als je de tafelkaart erbij kiest, kiest het programma de juiste tafel bij de som</span></div>';
   h+='</div></div>';
   h+='</div><hr class="divider">';
   h+='<div><label class="form-label">Grootte van de getallen</label>';
@@ -561,6 +562,19 @@ function attachFormEvents(el){
     veelBtn.classList.toggle('selected',cfg.veelHulp);veelBtn.setAttribute('aria-pressed',cfg.veelHulp);
     var eBtn=el.querySelector('[data-eenBeetjeHulp]');if(eBtn){eBtn.classList.remove('selected');eBtn.setAttribute('aria-pressed','false');}
   });}
+  // Tooltip hover voorlezen: spreek volledige uitleg na 600ms hoveren
+  el.querySelectorAll('.tooltip-wrap[data-speak]').forEach(function(wrap){
+    var hoverTimer=null;
+    wrap.addEventListener('mouseenter',function(){
+      if(!cfg.autoVoorlezen)return;
+      hoverTimer=setTimeout(function(){
+        speakTekst(wrap.getAttribute('data-speak'));
+      },600);
+    });
+    wrap.addEventListener('mouseleave',function(){
+      clearTimeout(hoverTimer);
+    });
+  });
 }
 
 function applySize(){
@@ -1074,7 +1088,8 @@ function renderKolomOpAf(p,area){
 
 var kolomVermMeta=null;
 var eindHulpSpeakBlockedUntil=0;
-var eindHulpAlVoorgelezen=false; // tijdstempel: geen spraak vóór dit moment
+var eindHulpAlVoorgelezen=false;
+var spreekGeblokkerdTot=0; // tijdstempel: geen spraak vóór dit moment
 
 function renderKolomVerm(p,area){
   var aStr=String(p.a),bStr=String(p.b),ansStr=String(p.answer);
@@ -1930,6 +1945,21 @@ function renderCijferend(p,area){
         if(cfg.hulp){updateHulpHighlight(hri);if(cfg.veelHulp&&!optDeelsomTd)showVeelHulpForRow(hri);}
         if(cfg.veelHulp){
           updateOptDeelsom(colIdx);
+          if(cfg.autoVoorlezen){
+            var a2s=String(Math.abs(p.a)),s1s=cols-a2s.length;
+            var b2s=String(Math.abs(p.b)),s2s=cols-b2s.length;
+            var aDigS=colIdx>=s1s?parseInt(a2s[colIdx-s1s]):0;
+            var bDigS=colIdx>=s2s?parseInt(b2s[colIdx-s2s]):0;
+            var remValS=0;
+            rememberFields.forEach(function(rf){
+              var rp=rf.parentElement;if(!rp)return;
+              var cells=Array.from(rp.parentElement.cells);
+              var cidx=cells.indexOf(rp)-1;
+              if(cidx===colIdx&&rf.value)remValS=parseInt(rf.value)||0;
+            });
+            var partsS=[aDigS,bDigS];if(remValS)partsS.push(remValS);
+            speakDeelsom(colFullName(cols-1-colIdx)+': '+partsS.join(' plus '));
+          }
         } else if(cfg.autoVoorlezen){
           var a2o=String(Math.abs(p.a)),s1o=cols-a2o.length;
           var b2o=String(Math.abs(p.b)),s2o=cols-b2o.length;
@@ -2442,7 +2472,8 @@ function analyzeErrors(correctArr){
 }
 
 function showFeedback(msg,type,owlSrc){
-  eindHulpSpeakBlockedUntil=Date.now()+2000;
+  eindHulpSpeakBlockedUntil=Date.now()+3000;
+  spreekGeblokkerdTot=Date.now()+3000;
   var fb=document.getElementById('step-feedback');
   fb.className='step-feedback show '+type;
   fb.style.fontSize=cfg.fontSize+'px';
@@ -2478,6 +2509,7 @@ function speakTekst(tekst){
 }
 function speakDeelsom(tekst){
   if(!cfg.autoVoorlezen||!window.speechSynthesis)return;
+  if(Date.now()<spreekGeblokkerdTot)return;
   if(window.speechSynthesis.speaking){
     setTimeout(function(){speakDeelsom(tekst);},300);
     return;
