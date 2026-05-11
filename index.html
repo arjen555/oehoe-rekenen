@@ -1491,7 +1491,9 @@ function renderCijferend(p,area){
             g2VermCells.forEach(function(d){d.classList.remove('hulp-active');});
             if(cfg.veelHulp)showNulInstructie(vr.dsTd,vr.numNullen,rowIdx2);
             if(cfg.eenBeetjeHulp){
-              vr.dsTd.innerHTML='<div class="cij-deelsom-wrap"><div class="cij-deelsom-som" style="font-size:calc(var(--font-size)*0.85)">Denk aan de nul'+(vr.numNullen>1?'len':'')+'</div></div>';
+              var nulTekst='Denk aan de nul'+(vr.numNullen>1?'len':'');
+              vr.dsTd.innerHTML='<div class="cij-deelsom-wrap"><div class="cij-deelsom-som" style="font-size:calc(var(--font-size)*0.85)">'+nulTekst+'</div></div>';
+              if(cfg.autoVoorlezen)speakTekst(nulTekst);
             }
           } else if(nullenNog>0&&rowIdx2===0){
             // Rij 0: geen melding, maar wél de deelsom tonen
