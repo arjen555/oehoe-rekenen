@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Oehoe Rekenen – Leerkrachtomgeving</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+
 <style>
 /* ── CONFIGURATIE: vul hier jouw Supabase-gegevens in ── */
 /* Zie de JavaScript-sectie onderaan */
@@ -828,8 +828,123 @@ const SUPABASE_URL = 'https://gquzvtchazwzfqzmzxvf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxdXp2dGNoYXp3emZxem16eHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1ODg1NzUsImV4cCI6MjA5NDE2NDU3NX0.llkky1zk0pRby09buBe1syBfBkfb_-c6s_le3RASwUk';
 // ══════════════════════════════════════════════
 
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Eigen Supabase client via fetch
+let _session = null;
+
+const sb = {
+  auth: {
+    onAuthStateChange: (cb) => {
+      sb.auth._cb = cb;
+      // Herstel sessie uit localStorage
+      const stored = localStorage.getItem('sb_session');
+      if(stored) {
+        try {
+          _session = JSON.parse(stored);
+          // Controleer of sessie nog geldig is
+          if(_session && _session.expires_at && Date.now()/1000 < _session.expires_at) {
+            setTimeout(() => cb('SIGNED_IN', _session), 100);
+          } else {
+            localStorage.removeItem('sb_session');
+            _session = null;
+            setTimeout(() => cb('SIGNED_OUT', null), 100);
+          }
+        } catch(e) { setTimeout(() => cb('SIGNED_OUT', null), 100); }
+      } else {
+        setTimeout(() => cb('SIGNED_OUT', null), 100);
+      }
+    },
+    signInWithPassword: async ({email, password}) => {
+      try {
+        const r = await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
+          body:JSON.stringify({email,password})
+        });
+        const data = await r.json();
+        if(!r.ok) return {error:{message:data.error_description||data.msg||'Inloggen mislukt'}};
+        _session = data;
+        localStorage.setItem('sb_session', JSON.stringify(data));
+        if(sb.auth._cb) sb.auth._cb('SIGNED_IN', data);
+        return {data, error:null};
+      } catch(e) { return {error:{message:'Verbindingsfout: '+e.message}}; }
+    },
+    signOut: async () => {
+      _session = null;
+      localStorage.removeItem('sb_session');
+      if(sb.auth._cb) sb.auth._cb('SIGNED_OUT', null);
+    },
+    resetPasswordForEmail: async (email) => {
+      try {
+        const r = await fetch(SUPABASE_URL+'/auth/v1/recover', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
+          body:JSON.stringify({email})
+        });
+        return r.ok ? {error:null} : {error:{message:'Fout bij versturen'}};
+      } catch(e) { return {error:{message:e.message}}; }
+    }
+  },
+  from: (tabel) => {
+    const base = SUPABASE_URL+'/rest/v1/'+tabel;
+    const headers = () => {
+      const h = {'Content-Type':'application/json','apikey':SUPABASE_KEY,'Prefer':'return=representation'};
+      if(_session?.access_token) h['Authorization'] = 'Bearer '+_session.access_token;
+      return h;
+    };
+    let _select='*', _filters=[], _order=null, _single=false;
+    const q = {
+      select: (s) => { _select=s; return q; },
+      eq: (col,val) => { _filters.push(`${col}=eq.${val}`); return q; },
+      order: (col, opts={}) => { _order=`${col}.${opts.ascending===false?'desc':'asc'}`; return q; },
+      single: () => { _single=true; return q; },
+      insert: async (data) => {
+        try {
+          const r = await fetch(base, {method:'POST',headers:headers(),body:JSON.stringify(data)});
+          const d = await r.json();
+          if(!r.ok) return {data:null,error:{message:d.message||JSON.stringify(d)}};
+          return {data:Array.isArray(d)?d[0]:d, error:null};
+        } catch(e) { return {data:null,error:{message:e.message}}; }
+      },
+      update: async (data) => {
+        try {
+          let url = base+'?'+_filters.join('&');
+          const r = await fetch(url, {method:'PATCH',headers:headers(),body:JSON.stringify(data)});
+          const d = await r.json();
+          if(!r.ok) return {data:null,error:{message:d.message||JSON.stringify(d)}};
+          return {data:d, error:null};
+        } catch(e) { return {data:null,error:{message:e.message}}; }
+      },
+      delete: async () => {
+        try {
+          let url = base+'?'+_filters.join('&');
+          const r = await fetch(url, {method:'DELETE',headers:{...headers(),'Prefer':''}});
+          return {error: r.ok?null:{message:'Verwijderen mislukt'}};
+        } catch(e) { return {error:{message:e.message}}; }
+      },
+      then: async (resolve) => {
+        try {
+          let url = base+'?select='+encodeURIComponent(_select);
+          if(_filters.length) url += '&'+_filters.join('&');
+          if(_order) url += '&order='+_order;
+          const h = {...headers()};
+          if(_single) h['Accept'] = 'application/vnd.pgrst.object+json';
+          const r = await fetch(url, {headers:h});
+          if(r.status === 406 || r.status === 404) return resolve({data:null,error:null});
+          const d = await r.json();
+          if(!r.ok) return resolve({data:null,error:{message:d.message||JSON.stringify(d)}});
+          return resolve({data:d, error:null});
+        } catch(e) { return resolve({data:null,error:{message:e.message}}); }
+      }
+    };
+    // Maak het awaitable
+    return new Proxy(q, {
+      get(target, prop) {
+        if(prop === 'then') return target.then;
+        return target[prop];
+      }
+    });
+  }
+};
 
 // ── STATE ──
 let huidigeLK = null;
