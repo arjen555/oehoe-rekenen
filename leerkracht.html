@@ -590,10 +590,26 @@ body::before {
       </div>
       <div class="form-group">
         <label>Wachtwoord</label>
-        <input type="password" id="login-ww" placeholder="••••••••" autocomplete="current-password">
+        <div style="position:relative;">
+          <input type="password" id="login-ww" placeholder="••••••••" autocomplete="off" style="padding-right:2.5rem;">
+          <button type="button" id="btn-oogje" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:1.1rem;padding:0;" title="Wachtwoord tonen">👁</button>
+        </div>
       </div>
       <button class="btn btn-primary" id="btn-login">Inloggen</button>
+      <div class="login-switch" style="margin-top:0.75rem;"><a id="link-ww-vergeten">Wachtwoord vergeten?</a></div>
       <div class="login-switch">Nog geen account? <a id="link-naar-registreer">Registreer hier</a></div>
+    </div>
+
+    <div id="ww-vergeten-form" style="display:none;">
+      <div style="margin-bottom:1rem;color:var(--text2);font-size:0.9rem;">Vul je e-mailadres in. Je ontvangt een link om je wachtwoord opnieuw in te stellen.</div>
+      <div class="error-msg" id="ww-vergeten-error"></div>
+      <div id="ww-vergeten-success" style="display:none;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:var(--radius-sm);color:var(--green);padding:0.6rem 1rem;font-size:0.9rem;margin-bottom:1rem;">E-mail verzonden! Controleer je inbox.</div>
+      <div class="form-group">
+        <label>E-mailadres</label>
+        <input type="email" id="ww-vergeten-email" placeholder="naam@school.nl">
+      </div>
+      <button class="btn btn-primary" id="btn-ww-vergeten">Reset-link versturen</button>
+      <div class="login-switch"><a id="link-terug-login">← Terug naar inloggen</a></div>
     </div>
 
     <div id="register-form" style="display:none;">
@@ -861,18 +877,55 @@ function keuzeRijBind(groepId) {
 }
 
 // ── AUTH ──
+
+// Oogje
+document.getElementById('btn-oogje').addEventListener('click', () => {
+  const inp = document.getElementById('login-ww');
+  const btn = document.getElementById('btn-oogje');
+  if(inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+});
+
+// Scherm-wissels
 document.getElementById('link-naar-registreer').addEventListener('click', () => {
   document.getElementById('login-form').style.display = 'none';
   document.getElementById('register-form').style.display = 'block';
+  document.getElementById('ww-vergeten-form').style.display = 'none';
 });
 document.getElementById('link-naar-login').addEventListener('click', () => {
   document.getElementById('register-form').style.display = 'none';
   document.getElementById('login-form').style.display = 'block';
+  document.getElementById('ww-vergeten-form').style.display = 'none';
+});
+document.getElementById('link-ww-vergeten').addEventListener('click', () => {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('ww-vergeten-form').style.display = 'block';
+  document.getElementById('ww-vergeten-email').value = document.getElementById('login-email').value;
+});
+document.getElementById('link-terug-login').addEventListener('click', () => {
+  document.getElementById('ww-vergeten-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
+});
+
+// Wachtwoord vergeten
+document.getElementById('btn-ww-vergeten').addEventListener('click', async () => {
+  const email = document.getElementById('ww-vergeten-email').value.trim();
+  const err = document.getElementById('ww-vergeten-error');
+  const succ = document.getElementById('ww-vergeten-success');
+  err.classList.remove('show'); succ.style.display = 'none';
+  if(!email) { err.textContent = 'Vul je e-mailadres in.'; err.classList.add('show'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href
+  });
+  if(error) { err.textContent = 'Fout: ' + error.message; err.classList.add('show'); }
+  else { succ.style.display = 'block'; }
 });
 
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const ww = document.getElementById('login-ww').value;
+  const emailEl = document.getElementById('login-email');
+  const wwEl = document.getElementById('login-ww');
+  const email = emailEl.value.trim();
+  const ww = wwEl.value;
   const err = document.getElementById('login-error');
   err.classList.remove('show');
   if(!email || !ww) { err.textContent = 'Vul e-mail en wachtwoord in.'; err.classList.add('show'); return; }
