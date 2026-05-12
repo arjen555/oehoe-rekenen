@@ -360,6 +360,9 @@ body::before {
   transition: background 0.15s;
 }
 .tabel-rij:last-child { border-bottom: none; }
+.res-header { grid-template-columns: 1.8fr 1.2fr 1.2fr 1fr 1fr 0.8fr 0.8fr !important; }
+.res-rij { grid-template-columns: 1.8fr 1.2fr 1.2fr 1fr 1fr 0.8fr 0.8fr !important; }
+.res-rij:hover { background: var(--card2); cursor: pointer; }
 .tabel-rij:hover { background: var(--card2); }
 
 .leerling-naam { font-weight: 600; }
@@ -1262,34 +1265,47 @@ async function laadResultatenOverzicht() {
     klasDiv.innerHTML = `<div style="font-family:var(--font2);font-weight:800;font-size:1.1rem;margin-bottom:0.75rem;color:var(--text2);">${klas.naam}</div>`;
     const tabel = document.createElement('div');
     tabel.className = 'leerlingen-tabel';
-    tabel.innerHTML = `<div class="tabel-header">
-      <div>Naam</div><div>Bewerking</div><div>Direct goed</div><div>Na verbeter.</div><div>Fouten</div><div>Tijd</div><div></div>
+    tabel.style.cssText = 'border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);';
+    tabel.innerHTML = `<div class="tabel-header res-header">
+      <div>Naam</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Na verbeter.</div><div>Fouten</div><div>Tijd</div>
     </div>`;
     (klas.leerlingen||[]).forEach(ll => {
       const res = (ll.resultaten||[])[0];
       const oe = (ll.oefeningen||[])[0];
+      const methodeLabel = oe ? (oe.methode==='kolomsgewijs'?'Koloms.':'Cijferend') : '—';
+      const bewLabel = oe ? ({optellen:'Optellen',aftrekken:'Aftrekken',vermenigvuldigen:'Verm.'}[oe.bewerking]||oe.bewerking) : '—';
+      let hulpB = '';
+      if(oe) {
+        if(oe.hulp==='beetje') hulpB += '<span class="badge badge-blue">Beetje</span> ';
+        if(oe.hulp==='veel') hulpB += '<span class="badge badge-green">Veel</span> ';
+        if(oe.hulp==='geen') hulpB += '<span class="badge badge-gray">Geen</span> ';
+        if(oe.tafelkaart) hulpB += '<span class="badge badge-orange">Tafel</span>';
+      }
+      if(!hulpB) hulpB = '—';
       const rij = document.createElement('div');
-      rij.className = 'tabel-rij';
+      rij.className = 'tabel-rij res-rij';
+      rij.style.cursor = 'pointer';
+      rij.dataset.leerlingId = ll.id;
+      rij.dataset.leerlingNaam = ll.naam;
       rij.innerHTML = `
         <div class="leerling-naam">${ll.naam}</div>
-        <div>${oe ? `<span class="badge badge-blue">${oe.bewerking}</span>` : '—'}</div>
+        <div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '—'}</div>
+        <div>${hulpB}</div>
         <div class="resultaat-goed">${res ? res.direct_goed+'/'+res.aantal_gemaakt : '—'}</div>
         <div class="resultaat-verbeterd">${res ? res.na_verbetering_goed : '—'}</div>
         <div class="resultaat-fout">${res ? res.fout : '—'}</div>
-        <div>${res ? fmtTijd(res.tijdsduur_seconden) : '—'}</div>
-        <div>${res ? `<button class="btn btn-secondary btn-sm btn-detail" data-id="${ll.id}" data-naam="${ll.naam}">Details</button>` : ''}</div>`;
+        <div>${res ? fmtTijd(res.tijdsduur_seconden) : '—'}</div>`;
+      rij.addEventListener('click', () => laadResultatenDetail(ll.id, ll.naam));
       tabel.appendChild(rij);
     });
     klasDiv.appendChild(tabel);
     content.appendChild(klasDiv);
-    tabel.querySelectorAll('.btn-detail').forEach(btn => {
-      btn.addEventListener('click', () => laadResultatenDetail(btn.dataset.id, btn.dataset.naam));
-    });
+    // klikken op rij opent detail - al gebonden in forEach hierboven
   });
 }
 
 async function laadResultatenDetail(leerlingId, naam) {
-  document.getElementById('resultaat-leerling-naam').textContent = `Resultaten: ${naam}`;
+  document.getElementById('resultaat-leerling-naam').textContent = naam;
   toonPagina('page-resultaten-detail');
   const content = document.getElementById('resultaten-detail-content');
   content.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
@@ -1299,24 +1315,38 @@ async function laadResultatenDetail(leerlingId, naam) {
     return;
   }
   content.innerHTML = '';
-  const totaal = res[0];
-  const oe = totaal.oefeningen;
-  content.innerHTML = `
-    <div class="stats-grid">
-      <div class="stat-kaart"><div class="stat-num resultaat-goed">${totaal.direct_goed}</div><div class="stat-label">Direct goed</div></div>
-      <div class="stat-kaart"><div class="stat-num resultaat-verbeterd">${totaal.na_verbetering_goed}</div><div class="stat-label">Na verbetering</div></div>
-      <div class="stat-kaart"><div class="stat-num resultaat-fout">${totaal.fout}</div><div class="stat-label">Fouten</div></div>
-      <div class="stat-kaart"><div class="stat-num">${fmtTijd(totaal.tijdsduur_seconden)}</div><div class="stat-label">Tijd</div></div>
-    </div>
-    ${oe ? `<div class="resultaat-kaart">
-      <div style="font-weight:700;margin-bottom:0.75rem;color:var(--text2);">Instellingen</div>
-      <div class="resultaat-rij"><span class="resultaat-key">Methode</span><span class="resultaat-val">${oe.methode}</span></div>
-      <div class="resultaat-rij"><span class="resultaat-key">Bewerking</span><span class="resultaat-val">${oe.bewerking}</span></div>
-      <div class="resultaat-rij"><span class="resultaat-key">Hulp</span><span class="resultaat-val">${oe.hulp}</span></div>
-      <div class="resultaat-rij"><span class="resultaat-key">Getal 1</span><span class="resultaat-val">${oe.getal1_place}</span></div>
-      <div class="resultaat-rij"><span class="resultaat-key">Getal 2</span><span class="resultaat-val">${oe.getal2_place}</span></div>
-      <div class="resultaat-rij"><span class="resultaat-key">Aantal opgaven</span><span class="resultaat-val">${oe.aantal}</span></div>
-    </div>` : ''}`;
+  // Tabel met alle oefeningen, nieuwste bovenaan
+  const tabel = document.createElement('div');
+  tabel.className = 'leerlingen-tabel';
+  tabel.innerHTML = `<div class="tabel-header res-header">
+    <div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Na verbeter.</div><div>Fouten</div><div>Tijd</div>
+  </div>`;
+  res.forEach(r => {
+    const oe = r.oefeningen;
+    const datum = r.gestart_op ? new Date(r.gestart_op).toLocaleDateString('nl-NL', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+    const methodeLabel = oe ? (oe.methode==='kolomsgewijs'?'Koloms.':'Cijferend') : '—';
+    const bewLabel = oe ? ({optellen:'Optellen',aftrekken:'Aftrekken',vermenigvuldigen:'Verm.'}[oe.bewerking]||oe.bewerking) : '—';
+    let hulpB = '';
+    if(oe) {
+      if(oe.hulp==='beetje') hulpB += '<span class="badge badge-blue">Beetje</span> ';
+      if(oe.hulp==='veel') hulpB += '<span class="badge badge-green">Veel</span> ';
+      if(oe.hulp==='geen') hulpB += '<span class="badge badge-gray">Geen</span> ';
+      if(oe.tafelkaart) hulpB += '<span class="badge badge-orange">Tafel</span>';
+    }
+    if(!hulpB) hulpB = '—';
+    const rij = document.createElement('div');
+    rij.className = 'tabel-rij res-rij';
+    rij.innerHTML = `
+      <div style="font-size:0.85rem;color:var(--text2);">${datum}</div>
+      <div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '—'}</div>
+      <div>${hulpB}</div>
+      <div class="resultaat-goed">${r.direct_goed}/${r.aantal_gemaakt}</div>
+      <div class="resultaat-verbeterd">${r.na_verbetering_goed}</div>
+      <div class="resultaat-fout">${r.fout}</div>
+      <div>${fmtTijd(r.tijdsduur_seconden)}</div>`;
+    tabel.appendChild(rij);
+  });
+  content.appendChild(tabel);
 }
 
 document.getElementById('btn-terug-resultaten').addEventListener('click', () => {
