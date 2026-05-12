@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oehoe Rekenen – Leerkrachtomgeving</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ── CONFIGURATIE: vul hier jouw Supabase-gegevens in ── */
+/* Zie de JavaScript-sectie onderaan */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0f1623;
+  --bg2: #161f30;
+  --bg3: #1e2d45;
+  --card: #1a2638;
+  --card2: #223048;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --text: #e8f0fe;
+  --text2: #8fa8c8;
+  --text3: #5a7a9a;
+  --accent: #4f9cf9;
+  --accent2: #7eb8ff;
+  --green: #34d399;
+  --green2: #059669;
+  --orange: #fb923c;
+  --red: #f87171;
+  --purple: #a78bfa;
+  --yellow: #fbbf24;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 48px rgba(0,0,0,0.6);
+  --font: 'Outfit', sans-serif;
+  --font2: 'Nunito', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── ACHTERGROND ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(79,156,249,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(167,139,250,0.06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── SCHERMEN ── */
+.screen { display: none; min-height: 100vh; position: relative; z-index: 1; }
+.screen.active { display: flex; }
+
+/* ── INLOGSCHERM ── */
+#screen-login {
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 2rem;
+}
+
+.login-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 3rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp 0.5s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.login-logo .owl { font-size: 3.5rem; }
+.login-logo h1 {
+  font-family: var(--font2);
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--accent2);
+  margin-top: 0.5rem;
+}
+.login-logo p {
+  color: var(--text2);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.form-group { margin-bottom: 1.25rem; }
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.form-group input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-group input:focus { border-color: var(--accent); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  width: 100%;
+  font-size: 1.05rem;
+  padding: 0.9rem;
+}
+.btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+.btn-secondary:hover { background: var(--card2); }
+.btn-danger { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+.btn-danger:hover { background: rgba(248,113,113,0.25); }
+.btn-green { background: var(--green2); color: #fff; }
+.btn-green:hover { background: var(--green); }
+.btn-sm { padding: 0.4rem 0.9rem; font-size: 0.85rem; }
+
+.login-switch {
+  text-align: center;
+  margin-top: 1.25rem;
+  color: var(--text2);
+  font-size: 0.9rem;
+}
+.login-switch a { color: var(--accent); cursor: pointer; text-decoration: none; }
+.login-switch a:hover { text-decoration: underline; }
+
+.error-msg {
+  background: rgba(248,113,113,0.1);
+  border: 1px solid rgba(248,113,113,0.3);
+  border-radius: var(--radius-sm);
+  color: var(--red);
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  display: none;
+}
+.error-msg.show { display: block; }
+
+/* ── HOOFDSCHERM ── */
+#screen-main {
+  flex-direction: row;
+  align-items: stretch;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  padding: 0 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+.sidebar-logo .owl { font-size: 2rem; }
+.sidebar-logo h2 {
+  font-family: var(--font2);
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: var(--accent2);
+  margin-top: 0.25rem;
+}
+.sidebar-logo p { color: var(--text3); font-size: 0.8rem; }
+
+.sidebar-nav { flex: 1; padding: 0 0.75rem; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 0.2rem;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: rgba(79,156,249,0.15); color: var(--accent2); font-weight: 600; }
+.nav-item .icon { font-size: 1.1rem; width: 1.5rem; text-align: center; }
+
+.sidebar-footer {
+  padding: 1rem 1.5rem 0;
+  border-top: 1px solid var(--border);
+}
+.leerkracht-info { margin-bottom: 0.75rem; }
+.leerkracht-naam { font-weight: 600; font-size: 0.95rem; }
+.leerkracht-email { color: var(--text3); font-size: 0.8rem; }
+
+/* ── CONTENT ── */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.page { display: none; }
+.page.active { display: block; animation: fadeUp 0.3s ease; }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+.page-title {
+  font-family: var(--font2);
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+.page-title span { color: var(--accent2); }
+
+/* ── KLASSEN OVERZICHT ── */
+.klassen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.klas-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.klas-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+}
+.klas-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: var(--shadow); }
+.klas-naam { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.25rem; }
+.klas-code { color: var(--text3); font-size: 0.85rem; font-family: monospace; }
+.klas-meta { display: flex; gap: 1rem; margin-top: 1rem; }
+.klas-stat { text-align: center; }
+.klas-stat-num { font-size: 1.4rem; font-weight: 800; color: var(--accent2); }
+.klas-stat-label { font-size: 0.75rem; color: var(--text3); }
+
+.add-klas-card {
+  background: transparent;
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--text3);
+  min-height: 140px;
+}
+.add-klas-card:hover { border-color: var(--accent); color: var(--accent); }
+.add-klas-card .plus { font-size: 2rem; }
+
+/* ── LEERLINGENOVERZICHT ── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  transition: color 0.15s;
+}
+.back-btn:hover { color: var(--text); }
+
+.leerlingen-tabel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.tabel-header {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1fr 1.5fr;
+  padding: 0.85rem 1.25rem;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text3);
+}
+
+.tabel-rij {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1fr 1.5fr;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  transition: background 0.15s;
+}
+.tabel-rij:last-child { border-bottom: none; }
+.tabel-rij:hover { background: var(--card2); }
+
+.leerling-naam { font-weight: 600; }
+.leerling-code { font-family: monospace; font-size: 0.85rem; color: var(--text2); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-blue { background: rgba(79,156,249,0.15); color: var(--accent2); }
+.badge-green { background: rgba(52,211,153,0.15); color: var(--green); }
+.badge-orange { background: rgba(251,146,60,0.15); color: var(--orange); }
+.badge-gray { background: rgba(255,255,255,0.05); color: var(--text3); }
+
+.resultaat-cel { font-size: 0.9rem; }
+.resultaat-goed { color: var(--green); font-weight: 700; }
+.resultaat-fout { color: var(--red); }
+.resultaat-verbeterd { color: var(--orange); }
+
+.acties { display: flex; gap: 0.4rem; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp 0.25s ease;
+}
+.modal h3 {
+  font-family: var(--font2);
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+/* ── INSTELLINGEN FORMULIER ── */
+.instelling-sectie { margin-bottom: 1.5rem; }
+.instelling-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+  display: block;
+}
+.keuze-rij {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.keuze-knop {
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.keuze-knop:hover { border-color: var(--accent); color: var(--accent); }
+.keuze-knop.selected { background: rgba(79,156,249,0.2); border-color: var(--accent); color: var(--accent2); font-weight: 600; }
+
+.email-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 2px; top: 2px;
+  background: var(--text3);
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); background: #fff; }
+.toggle-label { font-size: 0.9rem; color: var(--text2); }
+
+/* ── LEGE STAAT ── */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text3);
+}
+.empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+.empty-state h3 { font-size: 1.1rem; color: var(--text2); margin-bottom: 0.5rem; }
+.empty-state p { font-size: 0.9rem; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  z-index: 200;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: var(--green2); color: var(--green); }
+.toast.error { border-color: var(--red); color: var(--red); }
+
+/* ── RESULTATEN DETAIL ── */
+.resultaat-kaart {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.resultaat-rij {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.resultaat-rij:last-child { border-bottom: none; }
+.resultaat-key { color: var(--text2); }
+.resultaat-val { font-weight: 600; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.stat-kaart {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  text-align: center;
+}
+.stat-num { font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem; }
+.stat-label { font-size: 0.8rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── SPINNER ── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading { display: flex; align-items: center; justify-content: center; padding: 3rem; gap: 0.75rem; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<!-- INLOGSCHERM -->
+<div class="screen active" id="screen-login">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="owl">🦉</div>
+      <h1>Oehoe Rekenen</h1>
+      <p>Leerkrachtomgeving</p>
+    </div>
+
+    <div id="login-form">
+      <div class="error-msg" id="login-error"></div>
+      <div class="form-group">
+        <label>E-mailadres</label>
+        <input type="email" id="login-email" placeholder="naam@school.nl" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Wachtwoord</label>
+        <input type="password" id="login-ww" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" id="btn-login">Inloggen</button>
+      <div class="login-switch">Nog geen account? <a id="link-naar-registreer">Registreer hier</a></div>
+    </div>
+
+    <div id="register-form" style="display:none;">
+      <div class="error-msg" id="reg-error"></div>
+      <div class="form-group">
+        <label>Volledige naam</label>
+        <input type="text" id="reg-naam" placeholder="Voor- en achternaam">
+      </div>
+      <div class="form-group">
+        <label>E-mailadres</label>
+        <input type="email" id="reg-email" placeholder="naam@school.nl">
+      </div>
+      <div class="form-group">
+        <label>Wachtwoord</label>
+        <input type="password" id="reg-ww" placeholder="Minimaal 8 tekens">
+      </div>
+      <button class="btn btn-primary" id="btn-registreer">Account aanmaken</button>
+      <div class="login-switch">Al een account? <a id="link-naar-login">Inloggen</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- HOOFDSCHERM -->
+<div class="screen" id="screen-main">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="owl">🦉</div>
+      <h2>Oehoe Rekenen</h2>
+      <p>Leerkrachtomgeving</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-page="klassen">
+        <span class="icon">🏫</span> Mijn klassen
+      </div>
+      <div class="nav-item" data-page="resultaten-overzicht">
+        <span class="icon">📊</span> Resultaten
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="leerkracht-info">
+        <div class="leerkracht-naam" id="sidebar-naam">—</div>
+        <div class="leerkracht-email" id="sidebar-email">—</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btn-uitloggen">↩ Uitloggen</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- PAGINA: KLASSEN -->
+    <div class="page active" id="page-klassen">
+      <div class="page-header">
+        <div class="page-title">Mijn <span>klassen</span></div>
+        <button class="btn btn-primary btn-sm" id="btn-nieuwe-klas">+ Nieuwe klas</button>
+      </div>
+      <div class="klassen-grid" id="klassen-grid">
+        <div class="loading"><div class="spinner"></div> Laden…</div>
+      </div>
+    </div>
+
+    <!-- PAGINA: LEERLINGEN VAN EEN KLAS -->
+    <div class="page" id="page-leerlingen">
+      <div class="back-btn" id="btn-terug-klassen">← Terug naar klassen</div>
+      <div class="page-header">
+        <div>
+          <div class="page-title" id="klas-titel">Klas</div>
+          <div style="color:var(--text3);font-size:0.85rem;margin-top:0.2rem;">Klascode: <span id="klas-code-display" style="font-family:monospace;color:var(--accent2);">—</span></div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-nieuwe-leerling">+ Leerling toevoegen</button>
+      </div>
+      <div class="leerlingen-tabel" id="leerlingen-container">
+        <div class="loading"><div class="spinner"></div> Laden…</div>
+      </div>
+    </div>
+
+    <!-- PAGINA: RESULTATEN OVERZICHT -->
+    <div class="page" id="page-resultaten-overzicht">
+      <div class="page-header">
+        <div class="page-title">Alle <span>resultaten</span></div>
+      </div>
+      <div id="resultaten-overzicht-content">
+        <div class="loading"><div class="spinner"></div> Laden…</div>
+      </div>
+    </div>
+
+    <!-- PAGINA: RESULTATEN DETAIL (1 leerling) -->
+    <div class="page" id="page-resultaten-detail">
+      <div class="back-btn" id="btn-terug-resultaten">← Terug naar resultaten</div>
+      <div class="page-title" id="resultaat-leerling-naam" style="margin-bottom:1.5rem;">Resultaten</div>
+      <div id="resultaten-detail-content">
+        <div class="loading"><div class="spinner"></div> Laden…</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL: NIEUWE KLAS -->
+<div class="modal-overlay" id="modal-nieuwe-klas">
+  <div class="modal">
+    <h3>Nieuwe klas aanmaken</h3>
+    <div class="form-group">
+      <label>Naam van de klas</label>
+      <input type="text" id="nieuwe-klas-naam" placeholder="Bijv. Groep 5 — Jansen">
+    </div>
+    <div class="form-group">
+      <label>Klascode (leerlingen gebruiken dit om in te loggen)</label>
+      <input type="text" id="nieuwe-klas-code" placeholder="Bijv. GROEP5JAN" style="font-family:monospace;text-transform:uppercase;">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-annuleer-klas">Annuleren</button>
+      <button class="btn btn-green" id="btn-opslaan-klas">Klas aanmaken</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NIEUWE LEERLING / INSTELLINGEN -->
+<div class="modal-overlay" id="modal-leerling">
+  <div class="modal">
+    <h3 id="modal-leerling-titel">Leerling toevoegen</h3>
+    <div class="form-group">
+      <label>Naam van de leerling</label>
+      <input type="text" id="leerling-naam-input" placeholder="Voornaam">
+    </div>
+    <div class="form-group">
+      <label>Leerlingcode (kind typt dit in om in te loggen)</label>
+      <input type="text" id="leerling-code-input" placeholder="Bijv. EMMA" style="font-family:monospace;text-transform:uppercase;">
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.25rem 0;">
+    <div style="font-size:0.9rem;font-weight:700;color:var(--text2);margin-bottom:1rem;">📋 Oefening instellen</div>
+
+    <div class="instelling-sectie">
+      <span class="instelling-label">Methode</span>
+      <div class="keuze-rij" id="k-methode">
+        <button class="keuze-knop selected" data-val="kolomsgewijs">Kolomsgewijs</button>
+        <button class="keuze-knop" data-val="cijferend">Cijferend</button>
+      </div>
+    </div>
+
+    <div class="instelling-sectie">
+      <span class="instelling-label">Bewerking</span>
+      <div class="keuze-rij" id="k-bewerking">
+        <button class="keuze-knop selected" data-val="optellen">Optellen</button>
+        <button class="keuze-knop" data-val="aftrekken">Aftrekken</button>
+        <button class="keuze-knop" data-val="vermenigvuldigen">Vermenigvuldigen</button>
+      </div>
+    </div>
+
+    <div class="instelling-sectie">
+      <span class="instelling-label">Hulp tijdens de som</span>
+      <div class="keuze-rij" id="k-hulp">
+        <button class="keuze-knop" data-val="geen">Geen hulp</button>
+        <button class="keuze-knop selected" data-val="beetje">Een beetje hulp</button>
+        <button class="keuze-knop" data-val="veel">Veel hulp</button>
+      </div>
+    </div>
+
+    <div class="instelling-sectie">
+      <span class="instelling-label">Grootte getal 1</span>
+      <div class="keuze-rij" id="k-getal1">
+        <button class="keuze-knop" data-val="10">Tientallen</button>
+        <button class="keuze-knop selected" data-val="100">Honderdtallen</button>
+        <button class="keuze-knop" data-val="1000">Duizendtallen</button>
+        <button class="keuze-knop" data-val="10000">Tienduizendtallen</button>
+      </div>
+    </div>
+
+    <div class="instelling-sectie">
+      <span class="instelling-label">Grootte getal 2</span>
+      <div class="keuze-rij" id="k-getal2">
+        <button class="keuze-knop" data-val="10">Tientallen</button>
+        <button class="keuze-knop selected" data-val="100">Honderdtallen</button>
+        <button class="keuze-knop" data-val="1000">Duizendtallen</button>
+        <button class="keuze-knop" data-val="10000">Tienduizendtallen</button>
+      </div>
+    </div>
+
+    <div class="instelling-sectie">
+      <span class="instelling-label">Aantal opgaven</span>
+      <div class="keuze-rij" id="k-aantal">
+        <button class="keuze-knop" data-val="3">3</button>
+        <button class="keuze-knop selected" data-val="5">5</button>
+        <button class="keuze-knop" data-val="10">10</button>
+        <button class="keuze-knop" data-val="15">15</button>
+        <button class="keuze-knop" data-val="20">20</button>
+      </div>
+    </div>
+
+    <div class="email-toggle">
+      <label class="toggle-switch">
+        <input type="checkbox" id="k-email">
+        <span class="toggle-slider"></span>
+      </label>
+      <span class="toggle-label">Stuur mij een e-mail als de leerling klaar is</span>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-annuleer-leerling">Annuleren</button>
+      <button class="btn btn-green" id="btn-opslaan-leerling">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  ⚙️  CONFIGURATIE — vul hier jouw gegevens in
+// ══════════════════════════════════════════════
+const SUPABASE_URL = 'https://gquzvtchazwzfqzmzxvf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_xhmP4wGnrcu9BKE7CWg1Sg_p2Uxyf_y'; // ← vervang dit
+// ══════════════════════════════════════════════
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── STATE ──
+let huidigeLK = null;
+let huidigeKlas = null;
+let bewerkLeerlingId = null;
+
+// ── HELPERS ──
+function toon(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function toonPagina(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === id.replace('page-',''));
+  });
+}
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function sluitModal(id) { document.getElementById(id).classList.remove('open'); }
+function toast(tekst, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = tekst;
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.className = 'toast', 3000);
+}
+function fmtTijd(sec) {
+  if(!sec) return '—';
+  const m = Math.floor(sec/60), s = sec%60;
+  return m>0 ? `${m}m ${s}s` : `${s}s`;
+}
+function getKeuze(groepId) {
+  const sel = document.querySelector(`#${groepId} .keuze-knop.selected`);
+  return sel ? sel.dataset.val : null;
+}
+function setKeuze(groepId, val) {
+  document.querySelectorAll(`#${groepId} .keuze-knop`).forEach(b => {
+    b.classList.toggle('selected', b.dataset.val === String(val));
+  });
+}
+function keuzeRijBind(groepId) {
+  document.querySelectorAll(`#${groepId} .keuze-knop`).forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll(`#${groepId} .keuze-knop`).forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+    });
+  });
+}
+
+// ── AUTH ──
+document.getElementById('link-naar-registreer').addEventListener('click', () => {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'block';
+});
+document.getElementById('link-naar-login').addEventListener('click', () => {
+  document.getElementById('register-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
+});
+
+document.getElementById('btn-login').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const ww = document.getElementById('login-ww').value;
+  const err = document.getElementById('login-error');
+  err.classList.remove('show');
+  const { error } = await sb.auth.signInWithPassword({ email, password: ww });
+  if(error) { err.textContent = 'Inloggen mislukt: ' + error.message; err.classList.add('show'); }
+});
+
+document.getElementById('btn-registreer').addEventListener('click', async () => {
+  const naam = document.getElementById('reg-naam').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const ww = document.getElementById('reg-ww').value;
+  const err = document.getElementById('reg-error');
+  err.classList.remove('show');
+  if(!naam || !email || !ww) { err.textContent = 'Vul alle velden in.'; err.classList.add('show'); return; }
+  const { data, error } = await sb.auth.signUp({ email, password: ww });
+  if(error) { err.textContent = 'Registreren mislukt: ' + error.message; err.classList.add('show'); return; }
+  // Sla naam op in leerkrachten-tabel
+  await sb.from('leerkrachten').insert({ email, naam, id: data.user.id });
+});
+
+document.getElementById('btn-uitloggen').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  toon('screen-login');
+});
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if(session) {
+    const user = session.user;
+    const { data: lk } = await sb.from('leerkrachten').select('*').eq('email', user.email).single();
+    huidigeLK = lk || { email: user.email, naam: user.email, id: user.id };
+    document.getElementById('sidebar-naam').textContent = huidigeLK.naam || user.email;
+    document.getElementById('sidebar-email').textContent = user.email;
+    toon('screen-main');
+    laadKlassen();
+  } else {
+    toon('screen-login');
+  }
+});
+
+// ── NAVIGATIE ──
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const page = item.dataset.page;
+    if(page === 'klassen') { toonPagina('page-klassen'); laadKlassen(); }
+    if(page === 'resultaten-overzicht') { toonPagina('page-resultaten-overzicht'); laadResultatenOverzicht(); }
+  });
+});
+
+// ── KLASSEN ──
+async function laadKlassen() {
+  const grid = document.getElementById('klassen-grid');
+  grid.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
+  const { data: klassen } = await sb.from('klassen').select('*, leerlingen(count)').eq('leerkracht_id', huidigeLK.id).order('aangemaakt_op');
+  grid.innerHTML = '';
+  if(klassen && klassen.length > 0) {
+    klassen.forEach(klas => {
+      const aantalLeerlingen = klas.leerlingen?.[0]?.count || 0;
+      const card = document.createElement('div');
+      card.className = 'klas-card';
+      card.innerHTML = `
+        <div class="klas-naam">${klas.naam}</div>
+        <div class="klas-code">Code: ${klas.klascode}</div>
+        <div class="klas-meta">
+          <div class="klas-stat">
+            <div class="klas-stat-num">${aantalLeerlingen}</div>
+            <div class="klas-stat-label">Leerlingen</div>
+          </div>
+        </div>`;
+      card.addEventListener('click', () => openKlas(klas));
+      grid.appendChild(card);
+    });
+  }
+  // Voeg "nieuwe klas" kaart toe
+  const addCard = document.createElement('div');
+  addCard.className = 'add-klas-card';
+  addCard.innerHTML = '<div class="plus">+</div><div>Nieuwe klas</div>';
+  addCard.addEventListener('click', () => openModal('modal-nieuwe-klas'));
+  grid.appendChild(addCard);
+}
+
+document.getElementById('btn-nieuwe-klas').addEventListener('click', () => openModal('modal-nieuwe-klas'));
+document.getElementById('btn-annuleer-klas').addEventListener('click', () => sluitModal('modal-nieuwe-klas'));
+
+document.getElementById('nieuwe-klas-code').addEventListener('input', e => {
+  e.target.value = e.target.value.toUpperCase();
+});
+
+document.getElementById('btn-opslaan-klas').addEventListener('click', async () => {
+  const naam = document.getElementById('nieuwe-klas-naam').value.trim();
+  const code = document.getElementById('nieuwe-klas-code').value.trim().toUpperCase();
+  if(!naam || !code) { toast('Vul naam en code in.', 'error'); return; }
+  const { error } = await sb.from('klassen').insert({ naam, klascode: code, leerkracht_id: huidigeLK.id });
+  if(error) { toast('Fout: ' + error.message, 'error'); return; }
+  sluitModal('modal-nieuwe-klas');
+  document.getElementById('nieuwe-klas-naam').value = '';
+  document.getElementById('nieuwe-klas-code').value = '';
+  toast('Klas aangemaakt! ✓', 'success');
+  laadKlassen();
+});
+
+// ── LEERLINGEN ──
+function openKlas(klas) {
+  huidigeKlas = klas;
+  document.getElementById('klas-titel').textContent = klas.naam;
+  document.getElementById('klas-code-display').textContent = klas.klascode;
+  toonPagina('page-leerlingen');
+  laadLeerlingen();
+}
+
+document.getElementById('btn-terug-klassen').addEventListener('click', () => {
+  toonPagina('page-klassen');
+  laadKlassen();
+});
+
+async function laadLeerlingen() {
+  const container = document.getElementById('leerlingen-container');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
+  const { data: leerlingen } = await sb.from('leerlingen')
+    .select('*, oefeningen(*), resultaten(*)')
+    .eq('klas_id', huidigeKlas.id)
+    .order('naam');
+
+  if(!leerlingen || leerlingen.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="icon">👦</div>
+      <h3>Nog geen leerlingen</h3>
+      <p>Voeg leerlingen toe via de knop hierboven.</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="tabel-header">
+      <div>Naam</div>
+      <div>Code</div>
+      <div>Methode</div>
+      <div>Direct goed</div>
+      <div>Na verbeter.</div>
+      <div>Tijd</div>
+      <div>Acties</div>
+    </div>`;
+
+  leerlingen.forEach(ll => {
+    const oe = ll.oefeningen?.[0];
+    const res = ll.resultaten?.find(r => r.leerling_id === ll.id);
+    const rij = document.createElement('div');
+    rij.className = 'tabel-rij';
+
+    const methodeLabel = oe ? (oe.methode === 'kolomsgewijs' ? 'Koloms.' : 'Cijferend') : '—';
+    const bewLabel = oe ? ({optellen:'Optellen',aftrekken:'Aftrekken',vermenigvuldigen:'Verm.'}[oe.bewerking]||oe.bewerking) : '—';
+
+    rij.innerHTML = `
+      <div class="leerling-naam">${ll.naam}</div>
+      <div class="leerling-code">${ll.leerlingcode}</div>
+      <div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '<span class="badge badge-gray">Niet ingesteld</span>'}</div>
+      <div class="resultaat-cel resultaat-goed">${res ? res.direct_goed+'/'+res.aantal_gemaakt : '—'}</div>
+      <div class="resultaat-cel resultaat-verbeterd">${res ? res.na_verbetering_goed : '—'}</div>
+      <div class="resultaat-cel">${res ? fmtTijd(res.tijdsduur_seconden) : '—'}</div>
+      <div class="acties">
+        <button class="btn btn-secondary btn-sm btn-instellingen" data-id="${ll.id}">⚙️ Instellen</button>
+        <button class="btn btn-danger btn-sm btn-verwijder" data-id="${ll.id}" data-naam="${ll.naam}">🗑</button>
+      </div>`;
+    container.appendChild(rij);
+  });
+
+  // Bind knoppen
+  container.querySelectorAll('.btn-instellingen').forEach(btn => {
+    btn.addEventListener('click', () => openLeerlingModal(btn.dataset.id, leerlingen));
+  });
+  container.querySelectorAll('.btn-verwijder').forEach(btn => {
+    btn.addEventListener('click', () => verwijderLeerling(btn.dataset.id, btn.dataset.naam));
+  });
+}
+
+document.getElementById('btn-nieuwe-leerling').addEventListener('click', () => {
+  bewerkLeerlingId = null;
+  document.getElementById('modal-leerling-titel').textContent = 'Leerling toevoegen';
+  document.getElementById('leerling-naam-input').value = '';
+  document.getElementById('leerling-code-input').value = '';
+  document.getElementById('leerling-naam-input').disabled = false;
+  document.getElementById('leerling-code-input').disabled = false;
+  setKeuze('k-methode','kolomsgewijs');
+  setKeuze('k-bewerking','optellen');
+  setKeuze('k-hulp','beetje');
+  setKeuze('k-getal1','100');
+  setKeuze('k-getal2','100');
+  setKeuze('k-aantal','5');
+  document.getElementById('k-email').checked = false;
+  openModal('modal-leerling');
+});
+
+function openLeerlingModal(id, leerlingen) {
+  const ll = leerlingen.find(l => l.id === id);
+  if(!ll) return;
+  bewerkLeerlingId = id;
+  const oe = ll.oefeningen?.[0];
+  document.getElementById('modal-leerling-titel').textContent = 'Instellingen: ' + ll.naam;
+  document.getElementById('leerling-naam-input').value = ll.naam;
+  document.getElementById('leerling-code-input').value = ll.leerlingcode;
+  document.getElementById('leerling-naam-input').disabled = true;
+  document.getElementById('leerling-code-input').disabled = true;
+  if(oe) {
+    setKeuze('k-methode', oe.methode);
+    setKeuze('k-bewerking', oe.bewerking);
+    setKeuze('k-hulp', oe.hulp);
+    setKeuze('k-getal1', String(oe.getal1_place));
+    setKeuze('k-getal2', String(oe.getal2_place));
+    setKeuze('k-aantal', String(oe.aantal));
+    document.getElementById('k-email').checked = oe.email_bij_klaar || false;
+  }
+  openModal('modal-leerling');
+}
+
+document.getElementById('btn-annuleer-leerling').addEventListener('click', () => sluitModal('modal-leerling'));
+
+document.getElementById('btn-opslaan-leerling').addEventListener('click', async () => {
+  const naam = document.getElementById('leerling-naam-input').value.trim();
+  const code = document.getElementById('leerling-code-input').value.trim().toUpperCase();
+  const methode = getKeuze('k-methode');
+  const bewerking = getKeuze('k-bewerking');
+  const hulp = getKeuze('k-hulp');
+  const getal1 = parseInt(getKeuze('k-getal1'));
+  const getal2 = parseInt(getKeuze('k-getal2'));
+  const aantal = parseInt(getKeuze('k-aantal'));
+  const emailBijKlaar = document.getElementById('k-email').checked;
+
+  if(!naam || !code) { toast('Vul naam en code in.', 'error'); return; }
+
+  let leerlingId = bewerkLeerlingId;
+
+  if(!bewerkLeerlingId) {
+    // Nieuwe leerling
+    const { data: nl, error: le } = await sb.from('leerlingen').insert({
+      klas_id: huidigeKlas.id, naam, leerlingcode: code
+    }).select().single();
+    if(le) { toast('Fout: ' + le.message, 'error'); return; }
+    leerlingId = nl.id;
+  }
+
+  // Oefening opslaan
+  const { data: bestaand } = await sb.from('oefeningen').select('id').eq('leerling_id', leerlingId).single();
+  const oeData = { leerling_id: leerlingId, methode, bewerking, hulp, getal1_place: getal1, getal2_place: getal2, aantal, email_bij_klaar: emailBijKlaar };
+  if(bestaand) {
+    await sb.from('oefeningen').update(oeData).eq('id', bestaand.id);
+  } else {
+    await sb.from('oefeningen').insert(oeData);
+  }
+
+  sluitModal('modal-leerling');
+  toast('Opgeslagen! ✓', 'success');
+  laadLeerlingen();
+});
+
+async function verwijderLeerling(id, naam) {
+  if(!confirm(`Weet je zeker dat je ${naam} wilt verwijderen? Dit verwijdert ook alle resultaten.`)) return;
+  await sb.from('leerlingen').delete().eq('id', id);
+  toast(`${naam} verwijderd.`);
+  laadLeerlingen();
+}
+
+// ── RESULTATEN OVERZICHT ──
+async function laadResultatenOverzicht() {
+  const content = document.getElementById('resultaten-overzicht-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
+  const { data: klassen } = await sb.from('klassen').select('*, leerlingen(*, resultaten(*), oefeningen(*))').eq('leerkracht_id', huidigeLK.id).order('naam');
+  content.innerHTML = '';
+  if(!klassen || klassen.length === 0) {
+    content.innerHTML = '<div class="empty-state"><div class="icon">📊</div><h3>Nog geen data</h3><p>Maak eerst een klas aan met leerlingen.</p></div>';
+    return;
+  }
+  klassen.forEach(klas => {
+    const klasDiv = document.createElement('div');
+    klasDiv.style.marginBottom = '2rem';
+    klasDiv.innerHTML = `<div style="font-family:var(--font2);font-weight:800;font-size:1.1rem;margin-bottom:0.75rem;color:var(--text2);">${klas.naam}</div>`;
+    const tabel = document.createElement('div');
+    tabel.className = 'leerlingen-tabel';
+    tabel.innerHTML = `<div class="tabel-header">
+      <div>Naam</div><div>Bewerking</div><div>Direct goed</div><div>Na verbeter.</div><div>Fouten</div><div>Tijd</div><div></div>
+    </div>`;
+    (klas.leerlingen||[]).forEach(ll => {
+      const res = (ll.resultaten||[])[0];
+      const oe = (ll.oefeningen||[])[0];
+      const rij = document.createElement('div');
+      rij.className = 'tabel-rij';
+      rij.innerHTML = `
+        <div class="leerling-naam">${ll.naam}</div>
+        <div>${oe ? `<span class="badge badge-blue">${oe.bewerking}</span>` : '—'}</div>
+        <div class="resultaat-goed">${res ? res.direct_goed+'/'+res.aantal_gemaakt : '—'}</div>
+        <div class="resultaat-verbeterd">${res ? res.na_verbetering_goed : '—'}</div>
+        <div class="resultaat-fout">${res ? res.fout : '—'}</div>
+        <div>${res ? fmtTijd(res.tijdsduur_seconden) : '—'}</div>
+        <div>${res ? `<button class="btn btn-secondary btn-sm btn-detail" data-id="${ll.id}" data-naam="${ll.naam}">Details</button>` : ''}</div>`;
+      tabel.appendChild(rij);
+    });
+    klasDiv.appendChild(tabel);
+    content.appendChild(klasDiv);
+    tabel.querySelectorAll('.btn-detail').forEach(btn => {
+      btn.addEventListener('click', () => laadResultatenDetail(btn.dataset.id, btn.dataset.naam));
+    });
+  });
+}
+
+async function laadResultatenDetail(leerlingId, naam) {
+  document.getElementById('resultaat-leerling-naam').textContent = `Resultaten: ${naam}`;
+  toonPagina('page-resultaten-detail');
+  const content = document.getElementById('resultaten-detail-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
+  const { data: res } = await sb.from('resultaten').select('*, oefeningen(*)').eq('leerling_id', leerlingId).order('gestart_op', {ascending:false});
+  if(!res || res.length === 0) {
+    content.innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>Nog geen resultaten</h3></div>';
+    return;
+  }
+  content.innerHTML = '';
+  const totaal = res[0];
+  const oe = totaal.oefeningen;
+  content.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-kaart"><div class="stat-num resultaat-goed">${totaal.direct_goed}</div><div class="stat-label">Direct goed</div></div>
+      <div class="stat-kaart"><div class="stat-num resultaat-verbeterd">${totaal.na_verbetering_goed}</div><div class="stat-label">Na verbetering</div></div>
+      <div class="stat-kaart"><div class="stat-num resultaat-fout">${totaal.fout}</div><div class="stat-label">Fouten</div></div>
+      <div class="stat-kaart"><div class="stat-num">${fmtTijd(totaal.tijdsduur_seconden)}</div><div class="stat-label">Tijd</div></div>
+    </div>
+    ${oe ? `<div class="resultaat-kaart">
+      <div style="font-weight:700;margin-bottom:0.75rem;color:var(--text2);">Instellingen</div>
+      <div class="resultaat-rij"><span class="resultaat-key">Methode</span><span class="resultaat-val">${oe.methode}</span></div>
+      <div class="resultaat-rij"><span class="resultaat-key">Bewerking</span><span class="resultaat-val">${oe.bewerking}</span></div>
+      <div class="resultaat-rij"><span class="resultaat-key">Hulp</span><span class="resultaat-val">${oe.hulp}</span></div>
+      <div class="resultaat-rij"><span class="resultaat-key">Getal 1</span><span class="resultaat-val">${oe.getal1_place}</span></div>
+      <div class="resultaat-rij"><span class="resultaat-key">Getal 2</span><span class="resultaat-val">${oe.getal2_place}</span></div>
+      <div class="resultaat-rij"><span class="resultaat-key">Aantal opgaven</span><span class="resultaat-val">${oe.aantal}</span></div>
+    </div>` : ''}`;
+}
+
+document.getElementById('btn-terug-resultaten').addEventListener('click', () => {
+  toonPagina('page-resultaten-overzicht');
+});
+
+// ── KEUZERIJEN BINDEN ──
+['k-methode','k-bewerking','k-hulp','k-getal1','k-getal2','k-aantal'].forEach(keuzeRijBind);
+
+// Leerlingcode automatisch hoofdletters
+document.getElementById('leerling-code-input').addEventListener('input', e => {
+  e.target.value = e.target.value.toUpperCase();
+});
+</script>
+</body>
+</html>
