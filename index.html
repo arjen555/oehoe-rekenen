@@ -90,6 +90,7 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;color:var(--t
 .option-row{display:flex;gap:12px;flex-wrap:wrap;}
 .opt-btn{border:3px solid var(--border);border-radius:var(--radius);padding:12px 22px;font-family:var(--font);font-size:var(--font-size);font-weight:700;background:var(--surface);cursor:pointer;color:var(--text);transition:border-color 0.15s,background 0.15s;}
 .opt-btn:hover{border-color:var(--blue-mid);} .opt-btn:focus{outline:3px solid var(--blue-mid);outline-offset:2px;}
+.opt-btn-disabled{opacity:0.3!important;cursor:not-allowed!important;pointer-events:none!important;}
 .opt-btn.selected{border-color:var(--opt-sel-border);background:var(--opt-sel-bg);color:var(--opt-sel-text);}
 .font-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 .font-swatch{border:3px solid var(--border);border-radius:var(--radius);width:calc(var(--font-size)*2.5);height:calc(var(--font-size)*2.5);min-width:48px;min-height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surface);color:var(--text);font-family:var(--font);font-weight:800;transition:border-color 0.15s,background 0.15s;}
@@ -251,13 +252,45 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   <img id="owl-welcome" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_start.png" alt="Uil" class="welcome-img">
   <p class="welcome-title">Rekenen met grote getallen</p>
   <p class="welcome-sub" style="font-size:1.15rem;color:#93C5FD;font-weight:600;letter-spacing:0.02em;">Kolomsgewijs en cijferend oefenen</p>
-  <button class="start-card" id="btn-start">
-    <span class="start-icon">&#9999;&#65039;</span>
-    <span class="start-title">Begin met oefenen!</span>
-    <span class="start-sub">Kies je opgaven en ga aan de slag</span>
-  </button>
+  <div style="display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;">
+    <button class="start-card" id="btn-start">
+      <span class="start-icon">&#9999;&#65039;</span>
+      <span class="start-title">Vrij oefenen</span>
+      <span class="start-sub">Kies je opgaven en ga aan de slag</span>
+    </button>
+    <button class="start-card" id="btn-leerling-login" style="border-color:rgba(147,197,253,0.4);">
+      <span class="start-icon">&#128100;</span>
+      <span class="start-title">Inloggen</span>
+      <span class="start-sub">Als je leerkracht iets klaar heeft gezet</span>
+    </button>
+  </div>
+  <a href="https://arjen555.github.io/oehoe-rekenen/leerkracht.html" target="_blank" class="suggesties-btn" style="left:20px;right:auto;">&#128203; Leerkracht</a>
 </div>
 <a href="mailto:arjenvandewetering@visio.org" class="suggesties-btn">&#128172; Suggesties ter verbetering?</a>
+<div class="screen" id="screen-leerling-login" role="main" style="min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+  <div style="background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:20px;padding:2.5rem;width:100%;max-width:420px;box-shadow:0 8px 48px rgba(0,0,0,0.5);">
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div style="font-size:3rem;">🦉</div>
+      <div style="font-family:var(--font);font-size:1.4rem;font-weight:800;color:#93C5FD;margin-top:0.5rem;">Inloggen</div>
+      <div style="color:rgba(255,255,255,0.5);font-size:0.9rem;margin-top:0.25rem;">Vul je codes in om te beginnen</div>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:0.8rem;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Klascode</label>
+      <input id="ll-klascode" type="text" placeholder="Bijv. GROEP5" autocomplete="off"
+        style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:#fff;font-family:var(--font);font-size:1.1rem;padding:0.7rem 1rem;outline:none;text-transform:uppercase;letter-spacing:0.05em;">
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <label style="display:block;font-size:0.8rem;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Jouw code</label>
+      <input id="ll-leerlingcode" type="text" placeholder="Bijv. EMMA" autocomplete="off"
+        style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:#fff;font-family:var(--font);font-size:1.1rem;padding:0.7rem 1rem;outline:none;text-transform:uppercase;letter-spacing:0.05em;">
+    </div>
+    <div id="ll-fout" style="display:none;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:8px;color:#f87171;padding:0.6rem 1rem;font-size:0.9rem;margin-bottom:1rem;"></div>
+    <button id="btn-ll-inloggen" onclick="leerlingInloggen()" style="width:100%;background:#3B82F6;color:#fff;border:none;border-radius:10px;font-family:var(--font);font-size:1.05rem;font-weight:700;padding:0.85rem;cursor:pointer;transition:background 0.2s;">Inloggen →</button>
+    <div style="text-align:center;margin-top:1rem;">
+      <span onclick="showScreen('screen-role')" style="color:rgba(255,255,255,0.4);font-size:0.85rem;cursor:pointer;">← Terug</span>
+    </div>
+  </div>
+</div>
 <div class="screen" id="screen-setup" role="main">
   <div class="setup-owl-above">
     <img id="owl-vraagt" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_vraagt.png" alt="Uil die vraagt wat je wilt oefenen" class="setup-owl-img">
@@ -360,6 +393,13 @@ window.addEventListener('DOMContentLoaded',function(){
   bind('back-setup',goHome);
   bind('back-exercise',backFromExercise);
   bind('start-ex',startExercise);
+  document.getElementById('btn-leerling-login').addEventListener('click', function(){
+    showScreen('screen-leerling-login');
+    setTimeout(function(){document.getElementById('ll-klascode').focus();},100);
+  });
+  document.getElementById('ll-klascode').addEventListener('input', function(e){e.target.value=e.target.value.toUpperCase();});
+  document.getElementById('ll-leerlingcode').addEventListener('input', function(e){e.target.value=e.target.value.toUpperCase();});
+  document.getElementById('ll-leerlingcode').addEventListener('keydown', function(e){if(e.key==='Enter')leerlingInloggen();});
   bind('btn-prev',prevProblem);
   bind('btn-check',checkStep);
   bind('btn-verbeter',verbeterSom);
@@ -399,9 +439,64 @@ window.addEventListener('DOMContentLoaded',function(){
 });
 
 function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
+// ── LEERLING LOGIN ──
+const SB_URL = 'https://gquzvtchazwzfqzmzxvf.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxdXp2dGNoYXp3emZxem16eHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1ODg1NzUsImV4cCI6MjA5NDE2NDU3NX0.llkky1zk0pRby09buBe1syBfBkfb_-c6s_le3RASwUk';
+
+window.leerlingInloggen = async function() {
+  const klascode = document.getElementById('ll-klascode').value.trim().toUpperCase();
+  const leerlingcode = document.getElementById('ll-leerlingcode').value.trim().toUpperCase();
+  const fout = document.getElementById('ll-fout');
+  const btn = document.getElementById('btn-ll-inloggen');
+  fout.style.display = 'none';
+  if(!klascode || !leerlingcode) { fout.textContent = 'Vul beide codes in.'; fout.style.display='block'; return; }
+  btn.textContent = 'Bezig…'; btn.disabled = true;
+  try {
+    // Zoek klas op basis van klascode
+    const klasRes = await fetch(SB_URL+'/rest/v1/klassen?klascode=eq.'+klascode+'&select=id,naam', {
+      headers: {'apikey': SB_KEY, 'Content-Type': 'application/json'}
+    });
+    const klassen = await klasRes.json();
+    if(!klassen || klassen.length === 0) { fout.textContent = 'Klascode niet gevonden.'; fout.style.display='block'; btn.textContent='Inloggen →'; btn.disabled=false; return; }
+    const klas = klassen[0];
+    // Zoek leerling in die klas
+    const llRes = await fetch(SB_URL+'/rest/v1/leerlingen?klas_id=eq.'+klas.id+'&leerlingcode=eq.'+leerlingcode+'&select=id,naam,klas_id', {
+      headers: {'apikey': SB_KEY, 'Content-Type': 'application/json'}
+    });
+    const leerlingen = await llRes.json();
+    if(!leerlingen || leerlingen.length === 0) { fout.textContent = 'Leerlingcode niet gevonden in deze klas.'; fout.style.display='block'; btn.textContent='Inloggen →'; btn.disabled=false; return; }
+    const leerling = leerlingen[0];
+    // Haal oefening op
+    const oeRes = await fetch(SB_URL+'/rest/v1/oefeningen?leerling_id=eq.'+leerling.id+'&select=*', {
+      headers: {'apikey': SB_KEY, 'Content-Type': 'application/json'}
+    });
+    const oefeningen = await oeRes.json();
+    if(!oefeningen || oefeningen.length === 0) { fout.textContent = 'Je leerkracht heeft nog geen oefening voor je klaargezet.'; fout.style.display='block'; btn.textContent='Inloggen →'; btn.disabled=false; return; }
+    const oefening = oefeningen[0];
+    // Sla leerlingdata op
+    window._huidigeLeerling = {leerling, oefening, klas};
+    // Pas instellingen aan op basis van oefening
+    cfg.method = oefening.methode;
+    cfg.op = oefening.bewerking;
+    cfg.eenBeetjeHulp = oefening.hulp === 'beetje';
+    cfg.veelHulp = oefening.hulp === 'veel';
+    cfg.tafelkaart = oefening.tafelkaart || false;
+    cfg.getal1Place = oefening.getal1_place;
+    cfg.getal2Place = oefening.getal2_place;
+    cfg.count = oefening.aantal;
+    // Start direct de oefening
+    btn.textContent = 'Inloggen →'; btn.disabled = false;
+    startExercise();
+  } catch(e) {
+    fout.textContent = 'Verbindingsfout: ' + e.message;
+    fout.style.display = 'block';
+    btn.textContent = 'Inloggen →'; btn.disabled = false;
+  }
+};
+
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');s.style.display='none';});
+  var el=document.getElementById(id);el.classList.add('active');el.style.display='flex';
   var sugBtn=document.querySelector('.suggesties-btn');
   if(sugBtn)sugBtn.style.display=(id==='screen-role')?'flex':'none';
   var logoZichtbaar=(id==='screen-role'||id==='screen-setup');
@@ -527,18 +622,56 @@ function attachFormEvents(el){
       var g=btn.getAttribute('data-group'),v=btn.getAttribute('data-val');cfg[g]=v;
       el.querySelectorAll('[data-group="'+g+'"]').forEach(function(b){b.classList.remove('selected');b.setAttribute('aria-pressed','false');});
       btn.classList.add('selected');btn.setAttribute('aria-pressed','true');
+      // Bij wisselen van operatie: update de blokkering van getal2
+      if(g==='op')updateGetal2Blokkering(el);
     });
   });
+  function updateGetal2Blokkering(el){
+    if(cfg.op!=='aftrekken'){
+      el.querySelectorAll('[data-place="getal2"]').forEach(function(b){
+        b.classList.remove('opt-btn-disabled');
+        b.setAttribute('tabindex','0');
+        b.setAttribute('aria-disabled','false');
+      });
+      return;
+    }
+    var maxIdx=PLACE_VALS.indexOf(cfg.getal1Place);
+    el.querySelectorAll('[data-place="getal2"]').forEach(function(b){
+      var bi=parseInt(b.getAttribute('data-idx'));
+      if(bi>maxIdx){
+        b.classList.add('opt-btn-disabled');
+        b.setAttribute('tabindex','-1');
+        b.setAttribute('aria-disabled','true');
+      } else {
+        b.classList.remove('opt-btn-disabled');
+        b.setAttribute('tabindex','0');
+        b.setAttribute('aria-disabled','false');
+      }
+    });
+    // Als getal2Place te hoog is: reset naar getal1Place
+    if(cfg.getal2Place>cfg.getal1Place){
+      cfg.getal2Place=cfg.getal1Place;
+      el.querySelectorAll('[data-place="getal2"]').forEach(function(b){
+        b.classList.remove('selected');b.setAttribute('aria-pressed','false');
+      });
+      var correctBtn=el.querySelector('[data-place="getal2"][data-idx="'+maxIdx+'"]');
+      if(correctBtn){correctBtn.classList.add('selected');correctBtn.setAttribute('aria-pressed','true');}
+    }
+  }
+
   el.querySelectorAll('[data-place]').forEach(function(btn){
     var g=btn.getAttribute('data-place'),i=parseInt(btn.getAttribute('data-idx'));
     if(PLACE_VALS[i]===cfg[g+'Place']){btn.classList.add('selected');btn.setAttribute('aria-pressed','true');}
     addSpeakEvents(btn,function(){return (g==='getal1'?'Getal 1: ':'Getal 2: ')+btn.textContent.trim();});
     btn.addEventListener('click',function(){
+      if(cfg.op==='aftrekken'&&g==='getal2'&&PLACE_VALS[i]>cfg.getal1Place)return;
       cfg[g+'Place']=PLACE_VALS[i];
       el.querySelectorAll('[data-place="'+g+'"]').forEach(function(b){b.classList.remove('selected');b.setAttribute('aria-pressed','false');});
       btn.classList.add('selected');btn.setAttribute('aria-pressed','true');
+      if(g==='getal1')updateGetal2Blokkering(el);
     });
   });
+  updateGetal2Blokkering(el);
   el.querySelectorAll('[data-count]').forEach(function(btn){
     if(parseInt(btn.getAttribute('data-count'))===cfg.count){btn.classList.add('selected');btn.setAttribute('aria-pressed','true');}
     addSpeakEvents(btn,function(){return btn.textContent.trim()+' opgaven';});
