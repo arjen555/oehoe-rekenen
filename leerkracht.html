@@ -931,9 +931,19 @@ async function doLogin() {
   if(!email || !ww) { err.textContent = 'Vul e-mail en wachtwoord in.'; err.classList.add('show'); return; }
   const btn = document.getElementById('btn-login');
   btn.textContent = 'Bezig…'; btn.disabled = true;
-  const { error } = await sb.auth.signInWithPassword({ email, password: ww });
-  btn.textContent = 'Inloggen'; btn.disabled = false;
-  if(error) { err.textContent = 'Inloggen mislukt: ' + error.message; err.classList.add('show'); }
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: ww });
+    if(error) {
+      err.textContent = 'Inloggen mislukt: ' + error.message;
+      err.classList.add('show');
+      btn.textContent = 'Inloggen'; btn.disabled = false;
+    }
+    // Bij succes handelt onAuthStateChange de rest af
+  } catch(e) {
+    err.textContent = 'Verbindingsfout. Probeer het opnieuw.';
+    err.classList.add('show');
+    btn.textContent = 'Inloggen'; btn.disabled = false;
+  }
 }
 document.getElementById('btn-login').addEventListener('click', doLogin);
 document.getElementById('login-ww').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
