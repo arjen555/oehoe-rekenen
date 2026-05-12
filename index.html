@@ -90,6 +90,7 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;color:var(--t
 .option-row{display:flex;gap:12px;flex-wrap:wrap;}
 .opt-btn{border:3px solid var(--border);border-radius:var(--radius);padding:12px 22px;font-family:var(--font);font-size:var(--font-size);font-weight:700;background:var(--surface);cursor:pointer;color:var(--text);transition:border-color 0.15s,background 0.15s;}
 .opt-btn:hover{border-color:var(--blue-mid);} .opt-btn:focus{outline:3px solid var(--blue-mid);outline-offset:2px;}
+.opt-btn-disabled{opacity:0.3!important;cursor:not-allowed!important;pointer-events:none!important;}
 .opt-btn.selected{border-color:var(--opt-sel-border);background:var(--opt-sel-bg);color:var(--opt-sel-text);}
 .font-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 .font-swatch{border:3px solid var(--border);border-radius:var(--radius);width:calc(var(--font-size)*2.5);height:calc(var(--font-size)*2.5);min-width:48px;min-height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surface);color:var(--text);font-family:var(--font);font-weight:800;transition:border-color 0.15s,background 0.15s;}
@@ -527,18 +528,56 @@ function attachFormEvents(el){
       var g=btn.getAttribute('data-group'),v=btn.getAttribute('data-val');cfg[g]=v;
       el.querySelectorAll('[data-group="'+g+'"]').forEach(function(b){b.classList.remove('selected');b.setAttribute('aria-pressed','false');});
       btn.classList.add('selected');btn.setAttribute('aria-pressed','true');
+      // Bij wisselen van operatie: update de blokkering van getal2
+      if(g==='op')updateGetal2Blokkering(el);
     });
   });
+  function updateGetal2Blokkering(el){
+    if(cfg.op!=='aftrekken'){
+      el.querySelectorAll('[data-place="getal2"]').forEach(function(b){
+        b.classList.remove('opt-btn-disabled');
+        b.setAttribute('tabindex','0');
+        b.setAttribute('aria-disabled','false');
+      });
+      return;
+    }
+    var maxIdx=PLACE_VALS.indexOf(cfg.getal1Place);
+    el.querySelectorAll('[data-place="getal2"]').forEach(function(b){
+      var bi=parseInt(b.getAttribute('data-idx'));
+      if(bi>maxIdx){
+        b.classList.add('opt-btn-disabled');
+        b.setAttribute('tabindex','-1');
+        b.setAttribute('aria-disabled','true');
+      } else {
+        b.classList.remove('opt-btn-disabled');
+        b.setAttribute('tabindex','0');
+        b.setAttribute('aria-disabled','false');
+      }
+    });
+    // Als getal2Place te hoog is: reset naar getal1Place
+    if(cfg.getal2Place>cfg.getal1Place){
+      cfg.getal2Place=cfg.getal1Place;
+      el.querySelectorAll('[data-place="getal2"]').forEach(function(b){
+        b.classList.remove('selected');b.setAttribute('aria-pressed','false');
+      });
+      var correctBtn=el.querySelector('[data-place="getal2"][data-idx="'+maxIdx+'"]');
+      if(correctBtn){correctBtn.classList.add('selected');correctBtn.setAttribute('aria-pressed','true');}
+    }
+  }
+
   el.querySelectorAll('[data-place]').forEach(function(btn){
     var g=btn.getAttribute('data-place'),i=parseInt(btn.getAttribute('data-idx'));
     if(PLACE_VALS[i]===cfg[g+'Place']){btn.classList.add('selected');btn.setAttribute('aria-pressed','true');}
     addSpeakEvents(btn,function(){return (g==='getal1'?'Getal 1: ':'Getal 2: ')+btn.textContent.trim();});
     btn.addEventListener('click',function(){
+      if(cfg.op==='aftrekken'&&g==='getal2'&&PLACE_VALS[i]>cfg.getal1Place)return;
       cfg[g+'Place']=PLACE_VALS[i];
       el.querySelectorAll('[data-place="'+g+'"]').forEach(function(b){b.classList.remove('selected');b.setAttribute('aria-pressed','false');});
       btn.classList.add('selected');btn.setAttribute('aria-pressed','true');
+      if(g==='getal1')updateGetal2Blokkering(el);
     });
   });
+  updateGetal2Blokkering(el);
   el.querySelectorAll('[data-count]').forEach(function(btn){
     if(parseInt(btn.getAttribute('data-count'))===cfg.count){btn.classList.add('selected');btn.setAttribute('aria-pressed','true');}
     addSpeakEvents(btn,function(){return btn.textContent.trim()+' opgaven';});
