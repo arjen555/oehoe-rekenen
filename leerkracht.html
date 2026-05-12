@@ -822,7 +822,7 @@ body::before {
 //  ⚙️  CONFIGURATIE — vul hier jouw gegevens in
 // ══════════════════════════════════════════════
 const SUPABASE_URL = 'https://gquzvtchazwzfqzmzxvf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_xhmP4wGnrcu9BKE7CWg1Sg_p2Uxyf_y'; // ← vervang dit
+const SUPABASE_KEY = 'JOUW_PUBLISHABLE_KEY_HIER'; // ← vervang dit
 // ══════════════════════════════════════════════
 
 const { createClient } = supabase;
@@ -958,10 +958,18 @@ document.getElementById('btn-uitloggen').addEventListener('click', async () => {
 });
 
 sb.auth.onAuthStateChange(async (event, session) => {
+  // Reset inlogknop altijd
+  const loginBtn = document.getElementById('btn-login');
+  if(loginBtn) { loginBtn.textContent = 'Inloggen'; loginBtn.disabled = false; }
+
   if(session) {
     const user = session.user;
-    const { data: lk } = await sb.from('leerkrachten').select('*').eq('email', user.email).single();
-    huidigeLK = lk || { email: user.email, naam: user.email, id: user.id };
+    try {
+      const { data: lk } = await sb.from('leerkrachten').select('*').eq('email', user.email).single();
+      huidigeLK = lk || { email: user.email, naam: user.email, id: user.id };
+    } catch(e) {
+      huidigeLK = { email: user.email, naam: user.email, id: user.id };
+    }
     document.getElementById('sidebar-naam').textContent = huidigeLK.naam || user.email;
     document.getElementById('sidebar-email').textContent = user.email;
     toon('screen-main');
@@ -985,7 +993,17 @@ async function laadKlassen() {
   if(!huidigeLK) return;
   const grid = document.getElementById('klassen-grid');
   grid.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
-  const { data: klassen, error } = await sb.from('klassen').select('*, leerlingen(count)').eq('leerkracht_id', huidigeLK.id).order('aangemaakt_op');
+  let klassen, error;
+  try {
+    const result = await Promise.race([
+      sb.from('klassen').select('*, leerlingen(count)').eq('leerkracht_id', huidigeLK.id).order('aangemaakt_op'),
+      new Promise((_,r) => setTimeout(() => r(new Error('Timeout')), 8000))
+    ]);
+    klassen = result.data; error = result.error;
+  } catch(e) {
+    grid.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Verbindingsfout</h3><p>Probeer de pagina te vernieuwen.</p></div>';
+    return;
+  }
   if(error) { grid.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Laad fout</h3><p>'+error.message+'</p></div>'; return; }
   grid.innerHTML = '';
   if(klassen && klassen.length > 0) {
@@ -1211,7 +1229,17 @@ async function laadResultatenOverzicht() {
   if(!huidigeLK) return;
   const content = document.getElementById('resultaten-overzicht-content');
   content.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
-  const { data: klassen, error } = await sb.from('klassen').select('*, leerlingen(*, resultaten(*), oefeningen(*))').eq('leerkracht_id', huidigeLK.id).order('naam');
+  let klassen, error;
+  try {
+    const result = await Promise.race([
+      sb.from('klassen').select('*, leerlingen(*, resultaten(*), oefeningen(*))').eq('leerkracht_id', huidigeLK.id).order('naam'),
+      new Promise((_,r) => setTimeout(() => r(new Error('Timeout')), 8000))
+    ]);
+    klassen = result.data; error = result.error;
+  } catch(e) {
+    content.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Verbindingsfout</h3><p>Probeer de pagina te vernieuwen.</p></div>';
+    return;
+  }
   if(error) { content.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Laad fout</h3><p>'+error.message+'</p></div>'; return; }
   content.innerHTML = '';
   if(!klassen || klassen.length === 0) {
