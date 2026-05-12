@@ -340,7 +340,7 @@ body::before {
 
 .tabel-header {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1fr 1.5fr;
+  grid-template-columns: 1.6fr 0.9fr 1fr 1.2fr 1fr 0.9fr 0.9fr 1.4fr;
   padding: 0.85rem 1.25rem;
   background: var(--bg3);
   border-bottom: 1px solid var(--border);
@@ -353,7 +353,7 @@ body::before {
 
 .tabel-rij {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 1fr 1.5fr;
+  grid-template-columns: 1.6fr 0.9fr 1fr 1.2fr 1fr 0.9fr 0.9fr 1.4fr;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
   align-items: center;
@@ -806,7 +806,7 @@ body::before {
 //  ⚙️  CONFIGURATIE — vul hier jouw gegevens in
 // ══════════════════════════════════════════════
 const SUPABASE_URL = 'https://gquzvtchazwzfqzmzxvf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_xhmP4wGnrcu9BKE7CWg1Sg_p2Uxyf_y'; // ← vervang dit
+const SUPABASE_KEY = 'JOUW_PUBLISHABLE_KEY_HIER'; // ← vervang dit
 // ══════════════════════════════════════════════
 
 const { createClient } = supabase;
@@ -870,14 +870,21 @@ document.getElementById('link-naar-login').addEventListener('click', () => {
   document.getElementById('login-form').style.display = 'block';
 });
 
-document.getElementById('btn-login').addEventListener('click', async () => {
+async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const ww = document.getElementById('login-ww').value;
   const err = document.getElementById('login-error');
   err.classList.remove('show');
+  if(!email || !ww) { err.textContent = 'Vul e-mail en wachtwoord in.'; err.classList.add('show'); return; }
+  const btn = document.getElementById('btn-login');
+  btn.textContent = 'Bezig…'; btn.disabled = true;
   const { error } = await sb.auth.signInWithPassword({ email, password: ww });
+  btn.textContent = 'Inloggen'; btn.disabled = false;
   if(error) { err.textContent = 'Inloggen mislukt: ' + error.message; err.classList.add('show'); }
-});
+}
+document.getElementById('btn-login').addEventListener('click', doLogin);
+document.getElementById('login-ww').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('login-email').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
 document.getElementById('btn-registreer').addEventListener('click', async () => {
   const naam = document.getElementById('reg-naam').value.trim();
@@ -922,9 +929,11 @@ document.querySelectorAll('.nav-item').forEach(item => {
 
 // ── KLASSEN ──
 async function laadKlassen() {
+  if(!huidigeLK) return;
   const grid = document.getElementById('klassen-grid');
   grid.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
-  const { data: klassen } = await sb.from('klassen').select('*, leerlingen(count)').eq('leerkracht_id', huidigeLK.id).order('aangemaakt_op');
+  const { data: klassen, error } = await sb.from('klassen').select('*, leerlingen(count)').eq('leerkracht_id', huidigeLK.id).order('aangemaakt_op');
+  if(error) { grid.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Laad fout</h3><p>'+error.message+'</p></div>'; return; }
   grid.innerHTML = '';
   if(klassen && klassen.length > 0) {
     klassen.forEach(klas => {
@@ -1008,7 +1017,8 @@ async function laadLeerlingen() {
       <div>Naam</div>
       <div>Code</div>
       <div>Methode</div>
-      <div>Direct goed</div>
+      <div>Hulp</div>
+      <div>Goed / Totaal</div>
       <div>Na verbeter.</div>
       <div>Tijd</div>
       <div>Acties</div>
@@ -1020,6 +1030,16 @@ async function laadLeerlingen() {
     const rij = document.createElement('div');
     rij.className = 'tabel-rij';
 
+    // Hulp badges
+    let hulpBadges = '';
+    if(oe) {
+      if(oe.hulp === 'beetje') hulpBadges += '<span class="badge badge-blue">Beetje hulp</span> ';
+      if(oe.hulp === 'veel') hulpBadges += '<span class="badge badge-green">Veel hulp</span> ';
+      if(oe.hulp === 'geen') hulpBadges += '<span class="badge badge-gray">Geen hulp</span> ';
+      if(oe.tafelkaart) hulpBadges += '<span class="badge badge-orange">Tafelkaart</span>';
+    }
+    if(!hulpBadges) hulpBadges = '<span class="badge badge-gray">—</span>';
+
     const methodeLabel = oe ? (oe.methode === 'kolomsgewijs' ? 'Koloms.' : 'Cijferend') : '—';
     const bewLabel = oe ? ({optellen:'Optellen',aftrekken:'Aftrekken',vermenigvuldigen:'Verm.'}[oe.bewerking]||oe.bewerking) : '—';
 
@@ -1027,6 +1047,7 @@ async function laadLeerlingen() {
       <div class="leerling-naam">${ll.naam}</div>
       <div class="leerling-code">${ll.leerlingcode}</div>
       <div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '<span class="badge badge-gray">Niet ingesteld</span>'}</div>
+      <div>${hulpBadges}</div>
       <div class="resultaat-cel resultaat-goed">${res ? res.direct_goed+'/'+res.aantal_gemaakt : '—'}</div>
       <div class="resultaat-cel resultaat-verbeterd">${res ? res.na_verbetering_goed : '—'}</div>
       <div class="resultaat-cel">${res ? fmtTijd(res.tijdsduur_seconden) : '—'}</div>
@@ -1134,9 +1155,11 @@ async function verwijderLeerling(id, naam) {
 
 // ── RESULTATEN OVERZICHT ──
 async function laadResultatenOverzicht() {
+  if(!huidigeLK) return;
   const content = document.getElementById('resultaten-overzicht-content');
   content.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
-  const { data: klassen } = await sb.from('klassen').select('*, leerlingen(*, resultaten(*), oefeningen(*))').eq('leerkracht_id', huidigeLK.id).order('naam');
+  const { data: klassen, error } = await sb.from('klassen').select('*, leerlingen(*, resultaten(*), oefeningen(*))').eq('leerkracht_id', huidigeLK.id).order('naam');
+  if(error) { content.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Laad fout</h3><p>'+error.message+'</p></div>'; return; }
   content.innerHTML = '';
   if(!klassen || klassen.length === 0) {
     content.innerHTML = '<div class="empty-state"><div class="icon">📊</div><h3>Nog geen data</h3><p>Maak eerst een klas aan met leerlingen.</p></div>';
