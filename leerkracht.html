@@ -595,7 +595,7 @@ body::before {
           <button type="button" id="btn-oogje" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:1.1rem;padding:0;" title="Wachtwoord tonen">👁</button>
         </div>
       </div>
-      <button class="btn btn-primary" id="btn-login">Inloggen</button>
+      <button class="btn btn-primary" id="btn-login" onclick="doLogin()">Inloggen</button>
       <div class="login-switch" style="margin-top:0.75rem;"><a id="link-ww-vergeten">Wachtwoord vergeten?</a></div>
       <div class="login-switch">Nog geen account? <a id="link-naar-registreer">Registreer hier</a></div>
     </div>
@@ -921,7 +921,7 @@ document.getElementById('btn-ww-vergeten').addEventListener('click', async () =>
   else { succ.style.display = 'block'; }
 });
 
-async function doLogin() {
+window.doLogin = async function doLogin() {
   const emailEl = document.getElementById('login-email');
   const wwEl = document.getElementById('login-ww');
   const email = emailEl.value.trim();
