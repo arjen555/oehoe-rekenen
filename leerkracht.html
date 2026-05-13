@@ -1230,8 +1230,7 @@ document.getElementById('btn-opslaan-groep').addEventListener('click', async () 
       headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=minimal'},
       body: JSON.stringify({naam, klascode: code, leerkracht_id: huidigeLK.id})
     });
-    const d = await r.json();
-    if(!r.ok){ toast('Fout: '+(d.message||JSON.stringify(d)), 'error'); return; }
+    if(!r.ok){ const d=await r.text(); toast('Fout: '+d, 'error'); return; }
   } catch(e){ toast('Verbindingsfout: '+e.message, 'error'); return; }
   sluitModal('modal-nieuwe-groep');
   document.getElementById('nieuwe-groep-naam').value = '';
