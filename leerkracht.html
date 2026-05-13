@@ -1579,14 +1579,17 @@ function updateGetal2BlokkeringLK(){
   });
   if(bew==='aftrekken'){
     var g2=parseInt(getKeuze('k-getal2'));
-    if(g2>g1)setKeuze('k-getal2',String(g1));
+    if(!g2||g2>g1){setKeuze('k-getal2',String(g1));}
   }
 }
-// Roep aan na elke klik op bewerking of getal1
-document.addEventListener('click',function(e){
-  if(e.target.closest('#k-bewerking')||e.target.closest('#k-getal1')){
-    setTimeout(updateGetal2BlokkeringLK,10);
-  }
+// Bind direct aan de knoppen van bewerking en getal1
+document.querySelectorAll('#k-bewerking .keuze-knop, #k-getal1 .keuze-knop').forEach(function(b){
+  b.addEventListener('click', function(){
+    // Wacht tot selected klasse bijgewerkt is door keuzeRijBind
+    requestAnimationFrame(function(){
+      requestAnimationFrame(updateGetal2BlokkeringLK);
+    });
+  });
 });
 
 // Leerlingcode automatisch hoofdletters
