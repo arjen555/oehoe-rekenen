@@ -69,7 +69,7 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;color:var(--t
 #screen-role{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.25rem;text-align:center;}
 #screen-role.active{display:flex;}
 .welcome-img{width:min(420px,90vw);height:auto;border-radius:var(--radius-lg);margin-bottom:2rem;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
-.eduvip-logo{position:fixed;top:40px;left:80px;width:200px;height:auto;transform:rotate(-6deg);z-index:50;animation:none!important;zoom:reset;}
+.eduvip-logo{position:fixed;top:40px;left:80px;width:200px;height:auto;transform:rotate(-6deg);z-index:50;animation:none!important;}
 .welcome-title{font-size:42px;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.2;}
 .welcome-sub{font-size:22px;color:#93C5FD;margin-bottom:3rem;font-weight:700;}
 .start-card{background:rgba(255,255,255,0.09);border:3px solid rgba(255,255,255,0.25);border-radius:var(--radius-lg);padding:2.5rem 4rem;cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;gap:16px;transition:border-color 0.2s,background 0.2s,transform 0.15s;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:btnPulse 2.5s ease-in-out infinite;}
@@ -248,19 +248,19 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 <a href="https://www.eduvip.nl" target="_blank" rel="noopener" class="logo-vast" style="position:fixed;top:40px;left:80px;z-index:50;display:block;">
   <img id="eduvip-logo" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/eduvip.png" alt="eduVIP logo" class="eduvip-logo" style="position:static;top:auto;left:auto;">
 </a>
-<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/Oehoe_rekenen.png" alt="Oehoe Rekenen logo" class="logo-vast" style="position:fixed;top:40px;right:80px;width:300px;height:auto;z-index:50;zoom:reset;">
+<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/Oehoe_rekenen.png" alt="Oehoe Rekenen logo" class="logo-vast" style="position:fixed;top:40px;right:80px;width:300px;height:auto;z-index:50;">
 <div class="screen" id="screen-role" role="main">
   <img id="owl-welcome" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_start.png" alt="Uil" class="welcome-img">
   <p class="welcome-title">Rekenen met grote getallen</p>
   <p class="welcome-sub" style="font-size:1.15rem;color:#93C5FD;font-weight:600;letter-spacing:0.02em;">Kolomsgewijs en cijferend oefenen</p>
   <div style="display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;">
     <button class="start-card" id="btn-start">
-      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/vrij_oefenen_transparant.png" style="width:80px;height:80px;object-fit:contain;" alt="Vrij oefenen">
+      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/vrij_oefenen_transparant.png" style="width:240px;height:240px;object-fit:contain;" alt="Vrij oefenen">
       <span class="start-title">Vrij oefenen</span>
       <span class="start-sub">Kies je opgaven en ga aan de slag</span>
     </button>
     <button class="start-card" id="btn-leerling-login" style="border-color:rgba(147,197,253,0.4);">
-      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/inloggen_transparant.png" style="width:80px;height:80px;object-fit:contain;" alt="Inloggen">
+      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/inloggen_transparant.png" style="width:240px;height:240px;object-fit:contain;" alt="Inloggen">
       <span class="start-title">Inloggen</span>
       <span class="start-sub">Als je leerkracht iets klaar heeft gezet</span>
     </button>
@@ -439,6 +439,27 @@ window.addEventListener('DOMContentLoaded',function(){
 });
 
 function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
+// ── LOGO ZOOM VERGRENDELING ──
+(function(){
+  function fixLogoZoom(){
+    var scale=1/window.devicePixelRatio*window.devicePixelRatio;
+    // Gebruik visual viewport als die beschikbaar is
+    var vvScale=window.visualViewport?window.visualViewport.scale:1;
+    var logos=document.querySelectorAll('.eduvip-logo,.logo-vast');
+    logos.forEach(function(el){
+      el.style.transform=el.classList.contains('eduvip-logo')?
+        'rotate(-6deg) scale('+1/vvScale+')':
+        'scale('+1/vvScale+')';
+      el.style.transformOrigin='top '+(el.classList.contains('eduvip-logo')?'left':'right');
+    });
+  }
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',fixLogoZoom);
+    window.visualViewport.addEventListener('scroll',fixLogoZoom);
+  }
+  window.addEventListener('resize',fixLogoZoom);
+})();
+
 // ── LEERLING LOGIN ──
 const SB_URL='https://gquzvtchazwzfqzmzxvf.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxdXp2dGNoYXp3emZxem16eHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1ODg1NzUsImV4cCI6MjA5NDE2NDU3NX0.llkky1zk0pRby09buBe1syBfBkfb_-c6s_le3RASwUk';
@@ -648,15 +669,33 @@ function attachFormEvents(el){
     }
   }
 
+  // Initialiseer multi-select arrays als die nog niet bestaan
+  if(!Array.isArray(cfg.getal1Places))cfg.getal1Places=[cfg.getal1Place];
+  if(!Array.isArray(cfg.getal2Places))cfg.getal2Places=[cfg.getal2Place];
+
   el.querySelectorAll('[data-place]').forEach(function(btn){
     var g=btn.getAttribute('data-place'),i=parseInt(btn.getAttribute('data-idx'));
-    if(PLACE_VALS[i]===cfg[g+'Place']){btn.classList.add('selected');btn.setAttribute('aria-pressed','true');}
+    var places=g==='getal1'?cfg.getal1Places:cfg.getal2Places;
+    if(places.indexOf(PLACE_VALS[i])>=0){btn.classList.add('selected');btn.setAttribute('aria-pressed','true');}
     addSpeakEvents(btn,function(){return (g==='getal1'?'Getal 1: ':'Getal 2: ')+btn.textContent.trim();});
     btn.addEventListener('click',function(){
-      if(cfg.op==='aftrekken'&&g==='getal2'&&PLACE_VALS[i]>cfg.getal1Place)return;
-      cfg[g+'Place']=PLACE_VALS[i];
-      el.querySelectorAll('[data-place="'+g+'"]').forEach(function(b){b.classList.remove('selected');b.setAttribute('aria-pressed','false');});
-      btn.classList.add('selected');btn.setAttribute('aria-pressed','true');
+      var places=g==='getal1'?cfg.getal1Places:cfg.getal2Places;
+      var val=PLACE_VALS[i];
+      // Aftrekken: getal2 mag niet hoger dan hoogste getal1
+      if(cfg.op==='aftrekken'&&g==='getal2'&&val>Math.max.apply(null,cfg.getal1Places))return;
+      var idx=places.indexOf(val);
+      if(idx>=0){
+        if(places.length>1)places.splice(idx,1); // minimaal 1 geselecteerd
+      } else {
+        places.push(val);
+      }
+      if(g==='getal1'){cfg.getal1Place=Math.max.apply(null,cfg.getal1Places);}
+      else{cfg.getal2Place=Math.max.apply(null,cfg.getal2Places);}
+      el.querySelectorAll('[data-place="'+g+'"]').forEach(function(b){
+        var bv=PLACE_VALS[parseInt(b.getAttribute('data-idx'))];
+        b.classList.toggle('selected',places.indexOf(bv)>=0);
+        b.setAttribute('aria-pressed',places.indexOf(bv)>=0?'true':'false');
+      });
       if(g==='getal1')updateGetal2Blokkering(el);
     });
   });
@@ -811,8 +850,16 @@ function numToNL(n){
 
 function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
 function generateProblem(){
-  var p1max=cfg.getal1Place*10-1,p1min=Math.max(1,cfg.getal1Place);
-  var p2max=cfg.getal2Place*10-1,p2min=Math.max(1,cfg.getal2Place);
+  // Kies random uit geselecteerde plaatsen
+  var g1places=Array.isArray(cfg.getal1Places)&&cfg.getal1Places.length>0?cfg.getal1Places:[cfg.getal1Place];
+  var g2places=Array.isArray(cfg.getal2Places)&&cfg.getal2Places.length>0?cfg.getal2Places:[cfg.getal2Place];
+  // Bij aftrekken: getal2 mag niet groter dan getal1
+  var gekozenG1=g1places[Math.floor(Math.random()*g1places.length)];
+  var g2opties=cfg.op==='aftrekken'?g2places.filter(function(p){return p<=gekozenG1;}):g2places;
+  if(g2opties.length===0)g2opties=[gekozenG1];
+  var gekozenG2=g2opties[Math.floor(Math.random()*g2opties.length)];
+  var p1max=gekozenG1*10-1,p1min=Math.max(1,gekozenG1);
+  var p2max=gekozenG2*10-1,p2min=Math.max(1,gekozenG2);
   if(cfg.op==='optellen'){var a=rand(p1min,p1max),b=rand(p2min,p2max);return{a:a,b:b,op:'+',answer:a+b};}
   else if(cfg.op==='aftrekken'){
     var a=rand(p1min,p1max),b=rand(p2min,Math.min(p2max,a-1));
@@ -2306,7 +2353,7 @@ function checkStep(){
   if(allCorrect){
     if(!wasVerbeterPoging)session.correct++;
     else session.verbeterd++;
-    var posMsg=['Super! Helemaal goed! Geweldig gedaan!','Wat ben jij goed bezig!','Rekenkanjer!','Jij komt er wel!','Toppie topper!','Hatsjikidee, die is goed!','Nou en of, zo moet het dus!','Oehoe oehoe, hier wordt uil blij van!','Alle staartveren, wat knap!','Daar gaan mijn veertjes van wiebelen, zo goed!','Sapperdeflapper dit is top!','Holy moly ja zo moet het!','Je bent een wandelende rekenmachine!','Als ik het niet meer snap, vraag ik het aan jou','Ik wiebel bijna van mijn tak af, zo goed!','Jij hebt een lekker muisje verdiend hoor!','Top, hier ga ik salto\'s van vliegen!','Ga zo door en je krijgt een eigen standbeeld!','Oehoe oe oe oeioeioei wat goe oe oed!','Jij kunt super rekenen, maar kun je ook vliegen?','Mmm, dat heerlijke gevoel van een som die goed is','Top topper de topper die je bent!'];
+    var posMsg=['Super! Helemaal goed! Geweldig gedaan!','Wat ben jij goed bezig!','Rekenkanjer!','Jij komt er wel!','Toppie topper!','Hatsjikidee, die is goed!','Nou en of, zo moet het dus!','Oehoe oehoe, hier wordt uil blij van!','Alle staartveren, wat knap!','Daar gaan mijn veertjes van wiebelen, zo goed!','Sapperdeflapper dit is top!','Holy moly ja zo moet het!','Je bent een wandelende rekenmachine!','Als ik het niet meer snap, vraag ik het aan jou','Ik wiebel bijna van mijn tak af, zo goed!','Jij hebt een lekker muisje verdiend hoor!','Top, hier ga ik salto\'s van vliegen!','Ga zo door en je krijgt een eigen standbeeld!','Oehoe oe oe oeioeioei wat goe oe oed!','Jij kunt super rekenen, maar kun je ook vliegen?','Mmm, dat heerlijke gevoel van een som die goed is','Top topper de topper die je bent!','Skibbedie goed!','6-7... 6-7... go go goed!'];
     var posMsgVerbeterd=['Oehoe de aanhouder wint!','Jij geeft niet op dus naar de top!','Wist je dat bloemkoolkwallen bestaan? Dat rijmt op goed gedaan!','Oogjes dicht en snaveltjes toe!','Niet de eerste keer, maar nu lekkrrrr wel!','En nu heb je wel een veertje verdiend!','Alle potten pindakaas, zo moet het!','Hupjes en hopjes en huppakee!','Parallelle piepedummedingetje yes!','Hier is je prijs, een voetreis naar Rome!'];
     var gekozenMsg=wasVerbeterPoging?posMsgVerbeterd[Math.floor(Math.random()*posMsgVerbeterd.length)]:posMsg[Math.floor(Math.random()*posMsg.length)];
     showFeedback(gekozenMsg,'ok',OWL_OK);
@@ -2963,15 +3010,12 @@ async function stuurResultatenNaarSupabase(){
 
 function showAnalysis(){
   showScreen('screen-analysis');
-  // Enter -> volgende som of startpagina
-  function enterNaEval(e){
-    if(e.key!=='Enter')return;
-    document.removeEventListener('keydown',enterNaEval);
+  // Focus op volgende som knop zodat Enter werkt
+  setTimeout(function(){
     var isLast=session.currentIdx===session.problems.length-1;
-    if(!isLast){nextProblem();}
-    else{if(window._huidigeLeerling){window._huidigeLeerling=null;window._startTijd=null;}goHome();}
-  }
-  setTimeout(function(){document.addEventListener('keydown',enterNaEval);},400);
+    var focusKnop=document.getElementById(isLast?'btn-finish':'btn-next');
+    if(focusKnop)focusKnop.focus();
+  },300);
   // Pas knoppen aan voor ingelogde leerlingen
   var isIngelogd=!!window._huidigeLeerling;
   document.getElementById('btn-restart').style.display=isIngelogd?'none':'inline-flex';
