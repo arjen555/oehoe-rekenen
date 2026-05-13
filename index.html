@@ -266,7 +266,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     </button>
   </div>
 </div>
-<a href="https://arjen555.github.io/oehoe-rekenen/leerkracht.html" target="_blank" class="suggesties-btn" style="right:auto;left:20px;">&#128203; Leerkracht</a>
+<a href="https://arjen555.github.io/oehoe-rekenen/leerkracht.html" target="_blank" class="suggesties-btn" style="right:auto;left:20px;background:rgba(147,197,253,0.15);border-color:rgba(147,197,253,0.4);color:#93C5FD;font-size:16px;padding:11px 20px;">&#128203; Leerkracht</a>
 <a href="mailto:arjenvandewetering@visio.org" class="suggesties-btn">&#128172; Suggesties ter verbetering?</a>
 <div class="screen" id="screen-leerling-login" role="main">
   <div style="background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:20px;padding:2.5rem;width:100%;max-width:420px;box-shadow:0 8px 48px rgba(0,0,0,0.5);">
@@ -467,8 +467,18 @@ async function leerlingInloggen(){
     cfg.tafelkaart=o.tafelkaart||false;
     cfg.getal1Place=o.getal1_place;cfg.getal2Place=o.getal2_place;cfg.count=o.aantal;
     btn.textContent='Inloggen →';btn.disabled=false;
+    // Check of oefening al afgerond is
+    var resCheck=await fetch(SB_URL+'/rest/v1/resultaten?leerling_id=eq.'+ll[0].id+'&afgerond=eq.true&select=id',{headers:{'apikey':SB_KEY}});
+    var resData=await resCheck.json();
+    if(resData&&resData.length>0){
+      fout.textContent='Je hebt er zin in, zie ik! Maar eerst moet je leerkracht een nieuwe opdracht klaarzetten. Al kun je natuurlijk altijd vrij oefenen ;)';
+      fout.style.display='block';
+      btn.textContent='Inloggen →';btn.disabled=false;
+      return;
+    }
     window._huidigeLeerling={leerling:ll[0],oefening:o,klas:kl[0]};
     window._startTijd=Date.now();
+    window._resultatenOpgeslagen=false;
     startExercise();
   }catch(e){fout.textContent='Verbindingsfout: '+e.message;fout.style.display='block';btn.textContent='Inloggen →';btn.disabled=false;}
 }
@@ -2934,7 +2944,8 @@ function showUitleg(){
 
 /* ---- ANALYSIS ---- */
 async function stuurResultatenNaarSupabase(){
-  if(!window._huidigeLeerling)return;
+  if(!window._huidigeLeerling||window._resultatenOpgeslagen)return;
+  window._resultatenOpgeslagen=true;
   try{
     var ll=window._huidigeLeerling;
     var directGoed=0,naVerbetering=0,fout=0,totaal=session.problems.length;
@@ -2945,15 +2956,8 @@ async function stuurResultatenNaarSupabase(){
       else fout++;
     });
     var tijdsduur=Math.round((Date.now()-window._startTijd)/1000);
-    // Zoek bestaand resultaat
-    var bestaandRes=await fetch(SB_URL+'/rest/v1/resultaten?leerling_id=eq.'+ll.leerling.id+'&select=id',{headers:{'apikey':SB_KEY}});
-    var bestaand=await bestaandRes.json();
     var data={leerling_id:ll.leerling.id,oefening_id:ll.oefening.id,direct_goed:directGoed,na_verbetering_goed:naVerbetering,fout:fout,aantal_gemaakt:totaal,tijdsduur_seconden:tijdsduur,afgerond:true,afgerond_op:new Date().toISOString()};
-    if(bestaand&&bestaand.length>0){
-      await fetch(SB_URL+'/rest/v1/resultaten?id=eq.'+bestaand[0].id,{method:'PATCH',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(data)});
-    } else {
-      await fetch(SB_URL+'/rest/v1/resultaten',{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(data)});
-    }
+    await fetch(SB_URL+'/rest/v1/resultaten',{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(data)});
   }catch(e){console.log('Resultaten opslaan mislukt:',e);}
 }
 
