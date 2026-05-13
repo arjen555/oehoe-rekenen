@@ -1323,22 +1323,41 @@ document.getElementById('btn-opslaan-leerling').addEventListener('click', async 
   let leerlingId = bewerkLeerlingId;
 
   if(!bewerkLeerlingId) {
-    // Nieuwe leerling
-    const { data: nl, error: le } = await sb.from('leerlingen').insert({
-      klas_id: huidigeKlas.id, naam, leerlingcode: code
-    }).select().single();
-    if(le) { toast('Fout: ' + le.message, 'error'); return; }
-    leerlingId = nl.id;
+    // Nieuwe leerling via directe fetch
+    try {
+      const r = await fetch(SUPABASE_URL+'/rest/v1/leerlingen', {
+        method: 'POST',
+        headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=representation'},
+        body: JSON.stringify({klas_id: huidigeKlas.id, naam, leerlingcode: code})
+      });
+      const d = await r.json();
+      if(!r.ok) { toast('Fout: '+(d.message||JSON.stringify(d)), 'error'); return; }
+      leerlingId = Array.isArray(d) ? d[0].id : d.id;
+    } catch(e) { toast('Verbindingsfout: '+e.message, 'error'); return; }
   }
 
-  // Oefening opslaan
-  const { data: bestaand } = await sb.from('oefeningen').select('id').eq('leerling_id', leerlingId).single();
+  // Oefening opslaan - eerst bestaande zoeken
   const oeData = { leerling_id: leerlingId, methode, bewerking, hulp, getal1_place: getal1, getal2_place: getal2, aantal, email_bij_klaar: emailBijKlaar };
-  if(bestaand) {
-    await sb.from('oefeningen').update(oeData).eq('id', bestaand.id);
-  } else {
-    await sb.from('oefeningen').insert(oeData);
-  }
+  try {
+    const bestaandRes = await fetch(SUPABASE_URL+'/rest/v1/oefeningen?leerling_id=eq.'+leerlingId+'&select=id', {
+      headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Accept':'application/json'}
+    });
+    const bestaandData = await bestaandRes.json();
+    const bestaand = bestaandData && bestaandData.length > 0 ? bestaandData[0] : null;
+    if(bestaand) {
+      await fetch(SUPABASE_URL+'/rest/v1/oefeningen?id=eq.'+bestaand.id, {
+        method:'PATCH',
+        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json'},
+        body: JSON.stringify(oeData)
+      });
+    } else {
+      await fetch(SUPABASE_URL+'/rest/v1/oefeningen', {
+        method:'POST',
+        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=representation'},
+        body: JSON.stringify(oeData)
+      });
+    }
+  } catch(e) { toast('Fout bij opslaan oefening: '+e.message, 'error'); return; }
 
   sluitModal('modal-leerling');
   toast('Opgeslagen! ✓', 'success');
