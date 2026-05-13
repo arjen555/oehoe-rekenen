@@ -665,8 +665,8 @@ body::before {
     <!-- PAGINA: KLASSEN -->
     <div class="page active" id="page-klassen">
       <div class="page-header">
-        <div class="page-title">Mijn <span>klassen</span></div>
-        <button class="btn btn-primary btn-sm" id="btn-nieuwe-klas" style="width:auto;">+ Nieuwe klas</button>
+        <div class="page-title">Mijn <span>groepen</span></div>
+        <button class="btn btn-primary btn-sm" id="btn-nieuwe-groep" style="width:auto;">+ Nieuwe groep</button>
       </div>
       <div class="klassen-grid" id="klassen-grid">
         <div class="loading"><div class="spinner"></div> Laden…</div>
@@ -711,20 +711,20 @@ body::before {
 </div>
 
 <!-- MODAL: NIEUWE KLAS -->
-<div class="modal-overlay" id="modal-nieuwe-klas">
+<div class="modal-overlay" id="modal-nieuwe-groep">
   <div class="modal">
-    <h3>Nieuwe klas aanmaken</h3>
+    <h3>Nieuwe groep aanmaken</h3>
     <div class="form-group">
-      <label>Naam van de klas</label>
-      <input type="text" id="nieuwe-klas-naam" placeholder="Bijv. Groep 5 — Jansen">
+      <label>Naam van de groep</label>
+      <input type="text" id="nieuwe-groep-naam" placeholder="Bijv. Groep 5 — Jansen">
     </div>
     <div class="form-group">
-      <label>Klascode (leerlingen gebruiken dit om in te loggen)</label>
-      <input type="text" id="nieuwe-klas-code" placeholder="Bijv. GROEP5JAN" style="font-family:monospace;text-transform:uppercase;">
+      <label>Groepscode (leerlingen gebruiken dit om in te loggen)</label>
+      <input type="text" id="nieuwe-groep-code" placeholder="Bijv. GROEP5JAN" style="font-family:monospace;text-transform:uppercase;">
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" id="btn-annuleer-klas">Annuleren</button>
-      <button class="btn btn-green" id="btn-opslaan-klas">Klas aanmaken</button>
+      <button class="btn btn-secondary" id="btn-annuleer-groep">Annuleren</button>
+      <button class="btn btn-green" id="btn-opslaan-groep">Groep aanmaken</button>
     </div>
   </div>
 </div>
@@ -768,6 +768,9 @@ body::before {
         <button class="keuze-knop" data-val="geen">Geen hulp</button>
         <button class="keuze-knop selected" data-val="beetje">Een beetje hulp</button>
         <button class="keuze-knop" data-val="veel">Veel hulp</button>
+      </div>
+      <div style="margin-top:0.5rem;">
+        <button class="keuze-knop" id="k-tafelkaart" data-val="tafelkaart">📖 Tafelkaart</button>
       </div>
     </div>
 
@@ -1147,8 +1150,24 @@ async function laadKlassen() {
             <div class="klas-stat-num">${aantalLeerlingen}</div>
             <div class="klas-stat-label">Leerlingen</div>
           </div>
+        </div>
+        <div style="margin-top:0.75rem;text-align:right;">
+          <button class="btn btn-danger btn-sm btn-verwijder-groep" data-id="${klas.id}" data-naam="${klas.naam}" style="font-size:0.75rem;">🗑 Verwijder groep</button>
         </div>`;
-      card.addEventListener('click', () => openKlas(klas));
+      card.addEventListener('click', (e) => {
+        if(e.target.closest('.btn-verwijder-groep')) return;
+        openKlas(klas);
+      });
+      card.querySelector('.btn-verwijder-groep').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if(!confirm('Weet je zeker dat je groep "'+klas.naam+'" wilt verwijderen? Alle leerlingen en resultaten worden ook verwijderd.')) return;
+        await fetch(SUPABASE_URL+'/rest/v1/klassen?id=eq.'+klas.id, {
+          method:'DELETE',
+          headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY)}
+        });
+        toast('Groep verwijderd.');
+        laadKlassen();
+      });
       grid.appendChild(card);
     });
   }
@@ -1156,26 +1175,26 @@ async function laadKlassen() {
   const addCard = document.createElement('div');
   addCard.className = 'add-klas-card';
   addCard.innerHTML = '<div class="plus">+</div><div>Nieuwe klas</div>';
-  addCard.addEventListener('click', () => openModal('modal-nieuwe-klas'));
+  addCard.addEventListener('click', () => openModal('modal-nieuwe-groep'));
   grid.appendChild(addCard);
 }
 
-document.getElementById('btn-nieuwe-klas').addEventListener('click', () => openModal('modal-nieuwe-klas'));
-document.getElementById('btn-annuleer-klas').addEventListener('click', () => sluitModal('modal-nieuwe-klas'));
+document.getElementById('btn-nieuwe-groep').addEventListener('click', () => openModal('modal-nieuwe-groep'));
+document.getElementById('btn-annuleer-groep').addEventListener('click', () => sluitModal('modal-nieuwe-groep'));
 
-document.getElementById('nieuwe-klas-code').addEventListener('input', e => {
+document.getElementById('nieuwe-groep-code').addEventListener('input', e => {
   e.target.value = e.target.value.toUpperCase();
 });
 
-document.getElementById('btn-opslaan-klas').addEventListener('click', async () => {
-  const naam = document.getElementById('nieuwe-klas-naam').value.trim();
-  const code = document.getElementById('nieuwe-klas-code').value.trim().toUpperCase();
+document.getElementById('btn-opslaan-groep').addEventListener('click', async () => {
+  const naam = document.getElementById('nieuwe-groep-naam').value.trim();
+  const code = document.getElementById('nieuwe-groep-code').value.trim().toUpperCase();
   if(!naam || !code) { toast('Vul naam en code in.', 'error'); return; }
   const { error } = await sb.from('klassen').insert({ naam, klascode: code, leerkracht_id: huidigeLK.id });
   if(error) { toast('Fout: ' + error.message, 'error'); return; }
-  sluitModal('modal-nieuwe-klas');
-  document.getElementById('nieuwe-klas-naam').value = '';
-  document.getElementById('nieuwe-klas-code').value = '';
+  sluitModal('modal-nieuwe-groep');
+  document.getElementById('nieuwe-groep-naam').value = '';
+  document.getElementById('nieuwe-groep-code').value = '';
   toast('Klas aangemaakt! ✓', 'success');
   laadKlassen();
 });
@@ -1297,6 +1316,8 @@ function openLeerlingModal(id, leerlingen) {
     setKeuze('k-getal2', String(oe.getal2_place));
     setKeuze('k-aantal', String(oe.aantal));
     document.getElementById('k-email').checked = oe.email_bij_klaar || false;
+    var tk=document.getElementById('k-tafelkaart');
+    if(tk)tk.classList.toggle('selected', oe.tafelkaart||false);
   }
   openModal('modal-leerling');
 }
@@ -1333,7 +1354,8 @@ document.getElementById('btn-opslaan-leerling').addEventListener('click', async 
   }
 
   // Oefening opslaan - eerst bestaande zoeken
-  const oeData = { leerling_id: leerlingId, methode, bewerking, hulp, getal1_place: getal1, getal2_place: getal2, aantal, email_bij_klaar: emailBijKlaar };
+  const tafelkaart = document.getElementById('k-tafelkaart').classList.contains('selected');
+  const oeData = { leerling_id: leerlingId, methode, bewerking, hulp, tafelkaart, getal1_place: getal1, getal2_place: getal2, aantal, email_bij_klaar: emailBijKlaar };
   try {
     const bestaandRes = await fetch(SUPABASE_URL+'/rest/v1/oefeningen?leerling_id=eq.'+leerlingId+'&select=id', {
       headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Accept':'application/json'}
@@ -1485,32 +1507,41 @@ document.getElementById('btn-terug-resultaten').addEventListener('click', () => 
 
 // ── KEUZERIJEN BINDEN ──
 ['k-methode','k-bewerking','k-hulp','k-getal1','k-getal2','k-aantal'].forEach(keuzeRijBind);
+// Tafelkaart toggle
+document.getElementById('k-tafelkaart').addEventListener('click', function(){
+  this.classList.toggle('selected');
+});
 
 // Getal2 blokkering bij aftrekken
-const PLACE_VALS_LK=[10,100,1000,10000];
 function updateGetal2BlokkeringLK(){
-  const bew=getKeuze('k-bewerking');
-  const g1=parseInt(getKeuze('k-getal1'));
+  var bew=getKeuze('k-bewerking');
+  var g1=parseInt(getKeuze('k-getal1'));
   document.querySelectorAll('#k-getal2 .keuze-knop').forEach(function(b){
-    const v=parseInt(b.dataset.val);
+    var v=parseInt(b.dataset.val);
     if(bew==='aftrekken'&&v>g1){
       b.style.opacity='0.3';b.style.pointerEvents='none';b.style.cursor='not-allowed';
+      b.classList.remove('selected');
     } else {
       b.style.opacity='';b.style.pointerEvents='';b.style.cursor='';
     }
   });
-  // Reset getal2 als te hoog
   if(bew==='aftrekken'){
-    const g2=parseInt(getKeuze('k-getal2'));
-    if(g2>g1){setKeuze('k-getal2',String(g1));}
+    var g2=parseInt(getKeuze('k-getal2'));
+    if(g2>g1)setKeuze('k-getal2',String(g1));
   }
 }
-document.querySelectorAll('#k-bewerking .keuze-knop').forEach(function(b){
-  b.addEventListener('click',function(){setTimeout(updateGetal2BlokkeringLK,0);});
+// Roep aan na elke klik op bewerking of getal1
+document.addEventListener('click',function(e){
+  if(e.target.closest('#k-bewerking')||e.target.closest('#k-getal1')){
+    setTimeout(updateGetal2BlokkeringLK,10);
+  }
 });
-document.querySelectorAll('#k-getal1 .keuze-knop').forEach(function(b){
-  b.addEventListener('click',function(){setTimeout(updateGetal2BlokkeringLK,0);});
-});
+// Roep ook aan als modal opent
+var origOpenModal=openModal;
+openModal=function(id){
+  origOpenModal(id);
+  if(id==='modal-leerling')setTimeout(updateGetal2BlokkeringLK,50);
+};
 
 // Leerlingcode automatisch hoofdletters
 document.getElementById('leerling-code-input').addEventListener('input', e => {
