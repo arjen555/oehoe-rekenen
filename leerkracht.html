@@ -360,8 +360,8 @@ body::before {
   transition: background 0.15s;
 }
 .tabel-rij:last-child { border-bottom: none; }
-.res-header { grid-template-columns: 1.8fr 1.2fr 1.2fr 1fr 1fr 0.8fr 0.8fr !important; }
-.res-rij { grid-template-columns: 1.8fr 1.2fr 1.2fr 1fr 1fr 0.8fr 0.8fr !important; }
+.res-header { grid-template-columns: 1.4fr 0.8fr 1.1fr 1fr 0.9fr 0.9fr 0.7fr 0.7fr !important; }
+.res-rij { grid-template-columns: 1.4fr 0.8fr 1.1fr 1fr 0.9fr 0.9fr 0.7fr 0.7fr !important; }
 .res-rij:hover { background: var(--card2); cursor: pointer; }
 .tabel-rij:hover { background: var(--card2); }
 
@@ -638,10 +638,10 @@ body::before {
 <!-- HOOFDSCHERM -->
 <div class="screen" id="screen-main">
   <aside class="sidebar">
-    <div class="sidebar-logo" style="cursor:pointer;" onclick="window.open('https://arjen555.github.io/oehoe-rekenen/rekenen_v43.html','_blank')" title="Naar het rekenprogramma">
+    <div class="sidebar-logo" style="cursor:pointer;" onclick="window.open('https://arjen555.github.io/oehoe-rekenen/','_blank')" title="Naar het rekenprogramma">
       <div class="owl">🦉</div>
       <h2>Oehoe Rekenen</h2>
-      <p style="color:var(--accent);font-size:0.75rem;">→ Naar rekenprogramma</p>
+      <p style="color:var(--accent);font-size:0.75rem;">→ Naar startpagina</p>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-item active" data-page="klassen">
@@ -1184,7 +1184,7 @@ async function laadKlassen() {
           </div>
         </div>
         <div style="margin-top:0.75rem;text-align:right;">
-          <button class="btn btn-danger btn-sm btn-verwijder-groep" data-id="${klas.id}" data-naam="${klas.naam}" style="font-size:0.75rem;">🗑 Verwijder groep</button>
+          <button class="btn btn-danger btn-sm btn-verwijder-groep" data-id="${klas.id}" data-naam="${klas.naam}" style="font-size:1rem;padding:0.3rem 0.6rem;" title="Verwijder groep">🗑</button>
         </div>`;
       card.addEventListener('click', (e) => {
         if(e.target.closest('.btn-verwijder-groep')) return;
@@ -1485,7 +1485,7 @@ async function laadResultatenOverzicht() {
     tabel.className = 'leerlingen-tabel';
     tabel.style.cssText = 'border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);';
     tabel.innerHTML = `<div class="tabel-header res-header">
-      <div>Naam</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Na verbeteren</div><div>Fouten</div><div>Tijd</div>
+      <div>Naam</div><div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Na verbeteren</div><div>Fouten</div><div>Tijd</div>
     </div>`;
     (klas.leerlingen||[]).forEach(ll => {
       const res = (ll.resultaten||[])[0];
@@ -1507,6 +1507,7 @@ async function laadResultatenOverzicht() {
       rij.dataset.leerlingNaam = ll.naam;
       rij.innerHTML = `
         <div class="leerling-naam">${ll.naam}</div>
+        <div style="font-size:0.82rem;color:var(--text2);">${res && res.gestart_op ? new Date(res.gestart_op).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'}</div>
         <div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '—'}</div>
         <div>${hulpB}</div>
         <div class="resultaat-goed">${res ? res.direct_goed+'/'+res.aantal_gemaakt : '—'}</div>
