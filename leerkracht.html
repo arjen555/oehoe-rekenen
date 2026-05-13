@@ -1224,12 +1224,19 @@ document.getElementById('btn-opslaan-groep').addEventListener('click', async () 
   const naam = document.getElementById('nieuwe-groep-naam').value.trim();
   const code = document.getElementById('nieuwe-groep-code').value.trim().toUpperCase();
   if(!naam || !code) { toast('Vul naam en code in.', 'error'); return; }
-  const { error } = await sb.from('klassen').insert({ naam, klascode: code, leerkracht_id: huidigeLK.id });
-  if(error) { toast('Fout: ' + error.message, 'error'); return; }
+  try {
+    const r = await fetch(SUPABASE_URL+'/rest/v1/klassen', {
+      method:'POST',
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=representation'},
+      body: JSON.stringify({naam, klascode: code, leerkracht_id: huidigeLK.id})
+    });
+    const d = await r.json();
+    if(!r.ok){ toast('Fout: '+(d.message||JSON.stringify(d)), 'error'); return; }
+  } catch(e){ toast('Verbindingsfout: '+e.message, 'error'); return; }
   sluitModal('modal-nieuwe-groep');
   document.getElementById('nieuwe-groep-naam').value = '';
   document.getElementById('nieuwe-groep-code').value = '';
-  toast('Klas aangemaakt! ✓', 'success');
+  toast('Groep aangemaakt! ✓', 'success');
   laadKlassen();
 });
 
