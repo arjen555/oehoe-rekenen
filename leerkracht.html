@@ -340,7 +340,7 @@ body::before {
 
 .tabel-header {
   display: grid;
-  grid-template-columns: 1.6fr 0.9fr 1fr 1.2fr 1fr 0.9fr 0.9fr 1.4fr;
+  grid-template-columns: 1.8fr 1fr 1fr 1.2fr 0.8fr 1.2fr;
   padding: 0.85rem 1.25rem;
   background: var(--bg3);
   border-bottom: 1px solid var(--border);
@@ -353,7 +353,7 @@ body::before {
 
 .tabel-rij {
   display: grid;
-  grid-template-columns: 1.6fr 0.9fr 1fr 1.2fr 1fr 0.9fr 0.9fr 1.4fr;
+  grid-template-columns: 1.8fr 1fr 1fr 1.2fr 0.8fr 1.2fr;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
   align-items: center;
@@ -645,7 +645,7 @@ body::before {
     </div>
     <nav class="sidebar-nav">
       <div class="nav-item active" data-page="klassen">
-        <span class="icon">🏫</span> Mijn klassen
+        <span class="icon">🏫</span> Klaarzetten
       </div>
       <div class="nav-item" data-page="resultaten-overzicht">
         <span class="icon">📊</span> Resultaten
@@ -666,7 +666,7 @@ body::before {
     <div class="page active" id="page-klassen">
       <div class="page-header">
         <div class="page-title">Mijn <span>klassen</span></div>
-        <button class="btn btn-primary btn-sm" id="btn-nieuwe-klas">+ Nieuwe klas</button>
+        <button class="btn btn-primary btn-sm" id="btn-nieuwe-klas" style="width:auto;">+ Nieuwe klas</button>
       </div>
       <div class="klassen-grid" id="klassen-grid">
         <div class="loading"><div class="spinner"></div> Laden…</div>
@@ -681,7 +681,7 @@ body::before {
           <div class="page-title" id="klas-titel">Klas</div>
           <div style="color:var(--text3);font-size:0.85rem;margin-top:0.2rem;">Klascode: <span id="klas-code-display" style="font-family:monospace;color:var(--accent2);">—</span></div>
         </div>
-        <button class="btn btn-primary btn-sm" id="btn-nieuwe-leerling">+ Leerling toevoegen</button>
+        <button class="btn btn-primary btn-sm" id="btn-nieuwe-leerling" style="width:auto;">+ Leerling toevoegen</button>
       </div>
       <div class="leerlingen-tabel" id="leerlingen-container">
         <div class="loading"><div class="spinner"></div> Laden…</div>
@@ -1217,9 +1217,7 @@ async function laadLeerlingen() {
       <div>Code</div>
       <div>Methode</div>
       <div>Hulp</div>
-      <div>Goed / Totaal</div>
-      <div>Na verbeter.</div>
-      <div>Tijd</div>
+      <div>Aantal sommen</div>
       <div>Acties</div>
     </div>`;
 
@@ -1247,9 +1245,7 @@ async function laadLeerlingen() {
       <div class="leerling-code">${ll.leerlingcode}</div>
       <div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '<span class="badge badge-gray">Niet ingesteld</span>'}</div>
       <div>${hulpBadges}</div>
-      <div class="resultaat-cel resultaat-goed">${res ? res.direct_goed+'/'+res.aantal_gemaakt : '—'}</div>
-      <div class="resultaat-cel resultaat-verbeterd">${res ? res.na_verbetering_goed : '—'}</div>
-      <div class="resultaat-cel">${res ? fmtTijd(res.tijdsduur_seconden) : '—'}</div>
+      <div class="resultaat-cel">${oe ? (res && res.afgerond ? '<span style="color:var(--text3)">0</span>' : oe.aantal) : '—'}</div>
       <div class="acties">
         <button class="btn btn-secondary btn-sm btn-instellingen" data-id="${ll.id}">⚙️ Instellen</button>
         <button class="btn btn-danger btn-sm btn-verwijder" data-id="${ll.id}" data-naam="${ll.naam}">🗑</button>
@@ -1489,6 +1485,32 @@ document.getElementById('btn-terug-resultaten').addEventListener('click', () => 
 
 // ── KEUZERIJEN BINDEN ──
 ['k-methode','k-bewerking','k-hulp','k-getal1','k-getal2','k-aantal'].forEach(keuzeRijBind);
+
+// Getal2 blokkering bij aftrekken
+const PLACE_VALS_LK=[10,100,1000,10000];
+function updateGetal2BlokkeringLK(){
+  const bew=getKeuze('k-bewerking');
+  const g1=parseInt(getKeuze('k-getal1'));
+  document.querySelectorAll('#k-getal2 .keuze-knop').forEach(function(b){
+    const v=parseInt(b.dataset.val);
+    if(bew==='aftrekken'&&v>g1){
+      b.style.opacity='0.3';b.style.pointerEvents='none';b.style.cursor='not-allowed';
+    } else {
+      b.style.opacity='';b.style.pointerEvents='';b.style.cursor='';
+    }
+  });
+  // Reset getal2 als te hoog
+  if(bew==='aftrekken'){
+    const g2=parseInt(getKeuze('k-getal2'));
+    if(g2>g1){setKeuze('k-getal2',String(g1));}
+  }
+}
+document.querySelectorAll('#k-bewerking .keuze-knop').forEach(function(b){
+  b.addEventListener('click',function(){setTimeout(updateGetal2BlokkeringLK,0);});
+});
+document.querySelectorAll('#k-getal1 .keuze-knop').forEach(function(b){
+  b.addEventListener('click',function(){setTimeout(updateGetal2BlokkeringLK,0);});
+});
 
 // Leerlingcode automatisch hoofdletters
 document.getElementById('leerling-code-input').addEventListener('input', e => {
