@@ -63,6 +63,7 @@ html,body{height:100%;}
 body{font-family:var(--font);background:var(--bg);min-height:100vh;color:var(--text);line-height:1.6;transition:background 0.2s,color 0.2s;}
 .app{max-width:860px;margin:0 auto;padding:2rem 1.25rem 4rem;}
 .screen{display:none;animation:fadeIn 0.25s ease;}
+#screen-leerling-login.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;}
 .screen.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 #screen-role{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.25rem;text-align:center;}
@@ -264,10 +265,10 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
       <span class="start-sub">Als je leerkracht iets klaar heeft gezet</span>
     </button>
   </div>
-  <a href="https://arjen555.github.io/oehoe-rekenen/leerkracht.html" target="_blank" class="suggesties-btn" style="left:20px;right:auto;">&#128203; Leerkracht</a>
 </div>
+<a href="https://arjen555.github.io/oehoe-rekenen/leerkracht.html" target="_blank" class="suggesties-btn" style="right:auto;left:20px;">&#128203; Leerkracht</a>
 <a href="mailto:arjenvandewetering@visio.org" class="suggesties-btn">&#128172; Suggesties ter verbetering?</a>
-<div class="screen" id="screen-leerling-login" role="main" style="min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+<div class="screen" id="screen-leerling-login" role="main">
   <div style="background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:20px;padding:2.5rem;width:100%;max-width:420px;box-shadow:0 8px 48px rgba(0,0,0,0.5);">
     <div style="text-align:center;margin-bottom:2rem;">
       <div style="font-size:3rem;">🦉</div>
@@ -285,9 +286,9 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
         style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:#fff;font-family:var(--font);font-size:1.1rem;padding:0.7rem 1rem;outline:none;text-transform:uppercase;letter-spacing:0.05em;">
     </div>
     <div id="ll-fout" style="display:none;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:8px;color:#f87171;padding:0.6rem 1rem;font-size:0.9rem;margin-bottom:1rem;"></div>
-    <button id="btn-ll-inloggen" onclick="leerlingInloggen()" style="width:100%;background:#3B82F6;color:#fff;border:none;border-radius:10px;font-family:var(--font);font-size:1.05rem;font-weight:700;padding:0.85rem;cursor:pointer;transition:background 0.2s;">Inloggen →</button>
+    <button id="btn-ll-inloggen" style="width:100%;background:#3B82F6;color:#fff;border:none;border-radius:10px;font-family:var(--font);font-size:1.05rem;font-weight:700;padding:0.85rem;cursor:pointer;">Inloggen →</button>
     <div style="text-align:center;margin-top:1rem;">
-      <span onclick="showScreen('screen-role')" style="color:rgba(255,255,255,0.4);font-size:0.85rem;cursor:pointer;">← Terug</span>
+      <span id="btn-ll-terug" style="color:rgba(255,255,255,0.4);font-size:0.85rem;cursor:pointer;">← Terug</span>
     </div>
   </div>
 </div>
@@ -393,13 +394,12 @@ window.addEventListener('DOMContentLoaded',function(){
   bind('back-setup',goHome);
   bind('back-exercise',backFromExercise);
   bind('start-ex',startExercise);
-  document.getElementById('btn-leerling-login').addEventListener('click', function(){
-    showScreen('screen-leerling-login');
-    setTimeout(function(){document.getElementById('ll-klascode').focus();},100);
-  });
-  document.getElementById('ll-klascode').addEventListener('input', function(e){e.target.value=e.target.value.toUpperCase();});
-  document.getElementById('ll-leerlingcode').addEventListener('input', function(e){e.target.value=e.target.value.toUpperCase();});
-  document.getElementById('ll-leerlingcode').addEventListener('keydown', function(e){if(e.key==='Enter')leerlingInloggen();});
+  document.getElementById('btn-leerling-login').addEventListener('click',function(){showScreen('screen-leerling-login');setTimeout(function(){document.getElementById('ll-klascode').focus();},100);});
+  document.getElementById('btn-ll-inloggen').addEventListener('click',leerlingInloggen);
+  document.getElementById('btn-ll-terug').addEventListener('click',function(){showScreen('screen-role');});
+  document.getElementById('ll-klascode').addEventListener('input',function(e){e.target.value=e.target.value.toUpperCase();});
+  document.getElementById('ll-leerlingcode').addEventListener('input',function(e){e.target.value=e.target.value.toUpperCase();});
+  document.getElementById('ll-leerlingcode').addEventListener('keydown',function(e){if(e.key==='Enter')leerlingInloggen();});
   bind('btn-prev',prevProblem);
   bind('btn-check',checkStep);
   bind('btn-verbeter',verbeterSom);
@@ -440,59 +440,36 @@ window.addEventListener('DOMContentLoaded',function(){
 
 function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
 // ── LEERLING LOGIN ──
-const SB_URL = 'https://gquzvtchazwzfqzmzxvf.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxdXp2dGNoYXp3emZxem16eHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1ODg1NzUsImV4cCI6MjA5NDE2NDU3NX0.llkky1zk0pRby09buBe1syBfBkfb_-c6s_le3RASwUk';
+const SB_URL='https://gquzvtchazwzfqzmzxvf.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxdXp2dGNoYXp3emZxem16eHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1ODg1NzUsImV4cCI6MjA5NDE2NDU3NX0.llkky1zk0pRby09buBe1syBfBkfb_-c6s_le3RASwUk';
 
-window.leerlingInloggen = async function() {
-  const klascode = document.getElementById('ll-klascode').value.trim().toUpperCase();
-  const leerlingcode = document.getElementById('ll-leerlingcode').value.trim().toUpperCase();
-  const fout = document.getElementById('ll-fout');
-  const btn = document.getElementById('btn-ll-inloggen');
-  fout.style.display = 'none';
-  if(!klascode || !leerlingcode) { fout.textContent = 'Vul beide codes in.'; fout.style.display='block'; return; }
-  btn.textContent = 'Bezig…'; btn.disabled = true;
-  try {
-    // Zoek klas op basis van klascode
-    const klasRes = await fetch(SB_URL+'/rest/v1/klassen?klascode=eq.'+klascode+'&select=id,naam', {
-      headers: {'apikey': SB_KEY, 'Content-Type': 'application/json'}
-    });
-    const klassen = await klasRes.json();
-    if(!klassen || klassen.length === 0) { fout.textContent = 'Klascode niet gevonden.'; fout.style.display='block'; btn.textContent='Inloggen →'; btn.disabled=false; return; }
-    const klas = klassen[0];
-    // Zoek leerling in die klas
-    const llRes = await fetch(SB_URL+'/rest/v1/leerlingen?klas_id=eq.'+klas.id+'&leerlingcode=eq.'+leerlingcode+'&select=id,naam,klas_id', {
-      headers: {'apikey': SB_KEY, 'Content-Type': 'application/json'}
-    });
-    const leerlingen = await llRes.json();
-    if(!leerlingen || leerlingen.length === 0) { fout.textContent = 'Leerlingcode niet gevonden in deze klas.'; fout.style.display='block'; btn.textContent='Inloggen →'; btn.disabled=false; return; }
-    const leerling = leerlingen[0];
-    // Haal oefening op
-    const oeRes = await fetch(SB_URL+'/rest/v1/oefeningen?leerling_id=eq.'+leerling.id+'&select=*', {
-      headers: {'apikey': SB_KEY, 'Content-Type': 'application/json'}
-    });
-    const oefeningen = await oeRes.json();
-    if(!oefeningen || oefeningen.length === 0) { fout.textContent = 'Je leerkracht heeft nog geen oefening voor je klaargezet.'; fout.style.display='block'; btn.textContent='Inloggen →'; btn.disabled=false; return; }
-    const oefening = oefeningen[0];
-    // Sla leerlingdata op
-    window._huidigeLeerling = {leerling, oefening, klas};
-    // Pas instellingen aan op basis van oefening
-    cfg.method = oefening.methode;
-    cfg.op = oefening.bewerking;
-    cfg.eenBeetjeHulp = oefening.hulp === 'beetje';
-    cfg.veelHulp = oefening.hulp === 'veel';
-    cfg.tafelkaart = oefening.tafelkaart || false;
-    cfg.getal1Place = oefening.getal1_place;
-    cfg.getal2Place = oefening.getal2_place;
-    cfg.count = oefening.aantal;
-    // Start direct de oefening
-    btn.textContent = 'Inloggen →'; btn.disabled = false;
+async function leerlingInloggen(){
+  var klascode=document.getElementById('ll-klascode').value.trim().toUpperCase();
+  var leerlingcode=document.getElementById('ll-leerlingcode').value.trim().toUpperCase();
+  var fout=document.getElementById('ll-fout');
+  var btn=document.getElementById('btn-ll-inloggen');
+  fout.style.display='none';
+  if(!klascode||!leerlingcode){fout.textContent='Vul beide codes in.';fout.style.display='block';return;}
+  btn.textContent='Bezig…';btn.disabled=true;
+  try{
+    var kr=await fetch(SB_URL+'/rest/v1/klassen?klascode=eq.'+klascode+'&select=id,naam',{headers:{'apikey':SB_KEY}});
+    var kl=await kr.json();
+    if(!kl||kl.length===0){fout.textContent='Klascode niet gevonden.';fout.style.display='block';btn.textContent='Inloggen →';btn.disabled=false;return;}
+    var lr=await fetch(SB_URL+'/rest/v1/leerlingen?klas_id=eq.'+kl[0].id+'&leerlingcode=eq.'+leerlingcode+'&select=id,naam',{headers:{'apikey':SB_KEY}});
+    var ll=await lr.json();
+    if(!ll||ll.length===0){fout.textContent='Leerlingcode niet gevonden.';fout.style.display='block';btn.textContent='Inloggen →';btn.disabled=false;return;}
+    var or=await fetch(SB_URL+'/rest/v1/oefeningen?leerling_id=eq.'+ll[0].id+'&select=*',{headers:{'apikey':SB_KEY}});
+    var oe=await or.json();
+    if(!oe||oe.length===0){fout.textContent='Je leerkracht heeft nog geen oefening klaargezet.';fout.style.display='block';btn.textContent='Inloggen →';btn.disabled=false;return;}
+    var o=oe[0];
+    cfg.method=o.methode;cfg.op=o.bewerking;
+    cfg.eenBeetjeHulp=o.hulp==='beetje';cfg.veelHulp=o.hulp==='veel';
+    cfg.tafelkaart=o.tafelkaart||false;
+    cfg.getal1Place=o.getal1_place;cfg.getal2Place=o.getal2_place;cfg.count=o.aantal;
+    btn.textContent='Inloggen →';btn.disabled=false;
     startExercise();
-  } catch(e) {
-    fout.textContent = 'Verbindingsfout: ' + e.message;
-    fout.style.display = 'block';
-    btn.textContent = 'Inloggen →'; btn.disabled = false;
-  }
-};
+  }catch(e){fout.textContent='Verbindingsfout: '+e.message;fout.style.display='block';btn.textContent='Inloggen →';btn.disabled=false;}
+}
 
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
