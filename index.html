@@ -2309,6 +2309,10 @@ function checkStep(){
   document.getElementById('btn-check').style.display='none';
   var isLast=session.currentIdx===session.problems.length-1;
   document.getElementById(isLast?'btn-finish':'btn-next').style.display='inline-flex';
+  // Sla resultaten op zodra de laatste som klaar is
+  if(isLast&&window._huidigeLeerling){
+    stuurResultatenNaarSupabase();
+  }
 }
 
 function showHulpAfterCheck(correctArr){
@@ -2935,9 +2939,9 @@ async function stuurResultatenNaarSupabase(){
     var directGoed=0,naVerbetering=0,fout=0,totaal=session.problems.length;
     session.results.forEach(function(r){
       if(!r)return;
-      if(r.correct&&!r.verbeterPoging)directGoed++;
-      else if(r.correct&&r.verbeterPoging)naVerbetering++;
-      else if(!r.correct)fout++;
+      if(r.allCorrect&&!r.verbeterPoging)directGoed++;
+      else if(r.allCorrect&&r.verbeterPoging)naVerbetering++;
+      else fout++;
     });
     var tijdsduur=Math.round((Date.now()-window._startTijd)/1000);
     // Zoek bestaand resultaat
@@ -2953,8 +2957,31 @@ async function stuurResultatenNaarSupabase(){
 }
 
 function showAnalysis(){
-  stuurResultatenNaarSupabase();
   showScreen('screen-analysis');
+  // Pas knoppen aan voor ingelogde leerlingen
+  var isIngelogd=!!window._huidigeLeerling;
+  document.getElementById('btn-restart').style.display=isIngelogd?'none':'inline-flex';
+  document.getElementById('btn-home').style.display=isIngelogd?'none':'inline-flex';
+  // Voeg 'Klaar!' knop toe of pas aan
+  var btnKlaar=document.getElementById('btn-klaar-ingelogd');
+  if(isIngelogd){
+    if(!btnKlaar){
+      btnKlaar=document.createElement('button');
+      btnKlaar.id='btn-klaar-ingelogd';
+      btnKlaar.className='btn-primary nav-btn';
+      btnKlaar.textContent='Klaar! ✓';
+      btnKlaar.style.cssText='background:#3B82F6;color:#fff;border:none;border-radius:var(--radius);padding:12px 28px;font-family:var(--font);font-size:var(--font-size);font-weight:800;cursor:pointer;';
+      btnKlaar.addEventListener('click',function(){
+        window._huidigeLeerling=null;
+        window._startTijd=null;
+        goHome();
+      });
+      document.getElementById('btn-restart').parentNode.appendChild(btnKlaar);
+    }
+    btnKlaar.style.display='inline-flex';
+  } else if(btnKlaar){
+    btnKlaar.style.display='none';
+  }
   var owlAn=document.getElementById('owl-analysis');
   if(owlAn)owlAn.src=OWL_EINDE;
   var total=session.problems.length,pct=Math.round(session.correct/total*100);
