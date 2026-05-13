@@ -288,7 +288,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <div id="ll-fout" style="display:none;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:8px;color:#f87171;padding:0.6rem 1rem;font-size:0.9rem;margin-bottom:1rem;"></div>
     <button id="btn-ll-inloggen" style="width:100%;background:#3B82F6;color:#fff;border:none;border-radius:10px;font-family:var(--font);font-size:1.05rem;font-weight:700;padding:0.85rem;cursor:pointer;">Inloggen →</button>
     <div style="text-align:center;margin-top:1rem;">
-      <span id="btn-ll-terug" style="color:rgba(255,255,255,0.4);font-size:0.85rem;cursor:pointer;">← Terug</span>
+      <button id="btn-ll-terug" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:#fff;font-family:var(--font);font-size:1rem;font-weight:600;padding:0.6rem 1.5rem;cursor:pointer;width:100%;">← Terug naar beginscherm</button>
     </div>
   </div>
 </div>
@@ -467,6 +467,7 @@ async function leerlingInloggen(){
     cfg.tafelkaart=o.tafelkaart||false;
     cfg.getal1Place=o.getal1_place;cfg.getal2Place=o.getal2_place;cfg.count=o.aantal;
     btn.textContent='Inloggen →';btn.disabled=false;
+    window._startTijd=Date.now();
     startExercise();
   }catch(e){fout.textContent='Verbindingsfout: '+e.message;fout.style.display='block';btn.textContent='Inloggen →';btn.disabled=false;}
 }
@@ -2927,7 +2928,32 @@ function showUitleg(){
 }
 
 /* ---- ANALYSIS ---- */
+async function stuurResultatenNaarSupabase(){
+  if(!window._huidigeLeerling)return;
+  try{
+    var ll=window._huidigeLeerling;
+    var directGoed=0,naVerbetering=0,fout=0,totaal=session.problems.length;
+    session.results.forEach(function(r){
+      if(!r)return;
+      if(r.correct&&!r.verbeterPoging)directGoed++;
+      else if(r.correct&&r.verbeterPoging)naVerbetering++;
+      else if(!r.correct)fout++;
+    });
+    var tijdsduur=Math.round((Date.now()-window._startTijd)/1000);
+    // Zoek bestaand resultaat
+    var bestaandRes=await fetch(SB_URL+'/rest/v1/resultaten?leerling_id=eq.'+ll.leerling.id+'&select=id',{headers:{'apikey':SB_KEY}});
+    var bestaand=await bestaandRes.json();
+    var data={leerling_id:ll.leerling.id,oefening_id:ll.oefening.id,direct_goed:directGoed,na_verbetering_goed:naVerbetering,fout:fout,aantal_gemaakt:totaal,tijdsduur_seconden:tijdsduur,afgerond:true,afgerond_op:new Date().toISOString()};
+    if(bestaand&&bestaand.length>0){
+      await fetch(SB_URL+'/rest/v1/resultaten?id=eq.'+bestaand[0].id,{method:'PATCH',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(data)});
+    } else {
+      await fetch(SB_URL+'/rest/v1/resultaten',{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(data)});
+    }
+  }catch(e){console.log('Resultaten opslaan mislukt:',e);}
+}
+
 function showAnalysis(){
+  stuurResultatenNaarSupabase();
   showScreen('screen-analysis');
   var owlAn=document.getElementById('owl-analysis');
   if(owlAn)owlAn.src=OWL_EINDE;
