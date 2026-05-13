@@ -69,7 +69,7 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;color:var(--t
 #screen-role{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.25rem;text-align:center;}
 #screen-role.active{display:flex;}
 .welcome-img{width:min(420px,90vw);height:auto;border-radius:var(--radius-lg);margin-bottom:2rem;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
-.eduvip-logo{position:fixed;top:40px;left:80px;width:200px;height:auto;transform:rotate(-6deg);z-index:50;animation:none!important;}
+.eduvip-logo{position:fixed;top:40px;left:80px;width:200px;height:auto;transform:rotate(-6deg);z-index:50;animation:none!important;zoom:reset;}
 .welcome-title{font-size:42px;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.2;}
 .welcome-sub{font-size:22px;color:#93C5FD;margin-bottom:3rem;font-weight:700;}
 .start-card{background:rgba(255,255,255,0.09);border:3px solid rgba(255,255,255,0.25);border-radius:var(--radius-lg);padding:2.5rem 4rem;cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;gap:16px;transition:border-color 0.2s,background 0.2s,transform 0.15s;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:btnPulse 2.5s ease-in-out infinite;}
@@ -248,19 +248,19 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 <a href="https://www.eduvip.nl" target="_blank" rel="noopener" class="logo-vast" style="position:fixed;top:40px;left:80px;z-index:50;display:block;">
   <img id="eduvip-logo" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/eduvip.png" alt="eduVIP logo" class="eduvip-logo" style="position:static;top:auto;left:auto;">
 </a>
-<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/Oehoe_rekenen.png" alt="Oehoe Rekenen logo" class="logo-vast" style="position:fixed;top:40px;right:80px;width:300px;height:auto;z-index:50;">
+<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/Oehoe_rekenen.png" alt="Oehoe Rekenen logo" class="logo-vast" style="position:fixed;top:40px;right:80px;width:300px;height:auto;z-index:50;zoom:reset;">
 <div class="screen" id="screen-role" role="main">
   <img id="owl-welcome" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_start.png" alt="Uil" class="welcome-img">
   <p class="welcome-title">Rekenen met grote getallen</p>
   <p class="welcome-sub" style="font-size:1.15rem;color:#93C5FD;font-weight:600;letter-spacing:0.02em;">Kolomsgewijs en cijferend oefenen</p>
   <div style="display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;">
     <button class="start-card" id="btn-start">
-      <span class="start-icon">&#9999;&#65039;</span>
+      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/vrij_oefenen_transparant.png" style="width:80px;height:80px;object-fit:contain;" alt="Vrij oefenen">
       <span class="start-title">Vrij oefenen</span>
       <span class="start-sub">Kies je opgaven en ga aan de slag</span>
     </button>
     <button class="start-card" id="btn-leerling-login" style="border-color:rgba(147,197,253,0.4);">
-      <span class="start-icon">&#128100;</span>
+      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/inloggen_transparant.png" style="width:80px;height:80px;object-fit:contain;" alt="Inloggen">
       <span class="start-title">Inloggen</span>
       <span class="start-sub">Als je leerkracht iets klaar heeft gezet</span>
     </button>
@@ -2963,6 +2963,15 @@ async function stuurResultatenNaarSupabase(){
 
 function showAnalysis(){
   showScreen('screen-analysis');
+  // Enter -> volgende som of startpagina
+  function enterNaEval(e){
+    if(e.key!=='Enter')return;
+    document.removeEventListener('keydown',enterNaEval);
+    var isLast=session.currentIdx===session.problems.length-1;
+    if(!isLast){nextProblem();}
+    else{if(window._huidigeLeerling){window._huidigeLeerling=null;window._startTijd=null;}goHome();}
+  }
+  setTimeout(function(){document.addEventListener('keydown',enterNaEval);},400);
   // Pas knoppen aan voor ingelogde leerlingen
   var isIngelogd=!!window._huidigeLeerling;
   document.getElementById('btn-restart').style.display=isIngelogd?'none':'inline-flex';
