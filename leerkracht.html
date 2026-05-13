@@ -820,6 +820,19 @@ body::before {
   </div>
 </div>
 
+<!-- MODAL: BEVESTIGEN VERWIJDEREN -->
+<div class="modal-overlay" id="modal-bevestig">
+  <div class="modal" style="max-width:420px;text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:1rem;">⚠️</div>
+    <h3 id="bevestig-titel" style="margin-bottom:0.75rem;">Weet je het zeker?</h3>
+    <p id="bevestig-tekst" style="color:var(--text2);font-size:0.95rem;margin-bottom:1.5rem;line-height:1.5;"></p>
+    <div class="modal-footer" style="justify-content:center;">
+      <button class="btn btn-secondary" id="btn-bevestig-nee">Annuleren</button>
+      <button class="btn btn-danger" id="btn-bevestig-ja">Verwijderen</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -955,6 +968,22 @@ let huidigeKlas = null;
 let bewerkLeerlingId = null;
 
 // ── HELPERS ──
+// Bevestigingsvenster
+let _bevestigCallback = null;
+function bevestig(titel, tekst, callback) {
+  document.getElementById('bevestig-titel').textContent = titel;
+  document.getElementById('bevestig-tekst').textContent = tekst;
+  _bevestigCallback = callback;
+  openModal('modal-bevestig');
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('btn-bevestig-nee').addEventListener('click', () => sluitModal('modal-bevestig'));
+  document.getElementById('btn-bevestig-ja').addEventListener('click', () => {
+    sluitModal('modal-bevestig');
+    if(_bevestigCallback) _bevestigCallback();
+  });
+});
+
 function toon(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1160,13 +1189,18 @@ async function laadKlassen() {
       });
       card.querySelector('.btn-verwijder-groep').addEventListener('click', async (e) => {
         e.stopPropagation();
-        if(!confirm('Weet je zeker dat je groep "'+klas.naam+'" wilt verwijderen? Alle leerlingen en resultaten worden ook verwijderd.')) return;
-        await fetch(SUPABASE_URL+'/rest/v1/klassen?id=eq.'+klas.id, {
-          method:'DELETE',
-          headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY)}
-        });
-        toast('Groep verwijderd.');
-        laadKlassen();
+        bevestig(
+          '"'+klas.naam+'" verwijderen?',
+          'Weet je zeker dat je "'+klas.naam+'" wilt verwijderen? Alle leerlingen en resultaten worden ook verwijderd.',
+          async function() {
+            await fetch(SUPABASE_URL+'/rest/v1/klassen?id=eq.'+klas.id, {
+              method:'DELETE',
+              headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY)}
+            });
+            toast('Groep verwijderd.');
+            laadKlassen();
+          }
+        );
       });
       grid.appendChild(card);
     });
@@ -1288,6 +1322,7 @@ document.getElementById('btn-nieuwe-leerling').addEventListener('click', () => {
   document.getElementById('leerling-code-input').value = '';
   document.getElementById('leerling-naam-input').disabled = false;
   document.getElementById('leerling-code-input').disabled = false;
+  setTimeout(updateGetal2BlokkeringLK, 50);
   setKeuze('k-methode','kolomsgewijs');
   setKeuze('k-bewerking','optellen');
   setKeuze('k-hulp','beetje');
@@ -1308,6 +1343,7 @@ function openLeerlingModal(id, leerlingen) {
   document.getElementById('leerling-code-input').value = ll.leerlingcode;
   document.getElementById('leerling-naam-input').disabled = true;
   document.getElementById('leerling-code-input').disabled = true;
+  setTimeout(updateGetal2BlokkeringLK, 50);
   if(oe) {
     setKeuze('k-methode', oe.methode);
     setKeuze('k-bewerking', oe.bewerking);
@@ -1368,6 +1404,12 @@ document.getElementById('btn-opslaan-leerling').addEventListener('click', async 
         headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json'},
         body: JSON.stringify(oeData)
       });
+      // Reset afgerond status zodat aantal sommen weer zichtbaar is
+      await fetch(SUPABASE_URL+'/rest/v1/resultaten?leerling_id=eq.'+leerlingId, {
+        method:'PATCH',
+        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json'},
+        body: JSON.stringify({afgerond: false})
+      });
     } else {
       await fetch(SUPABASE_URL+'/rest/v1/oefeningen', {
         method:'POST',
@@ -1383,10 +1425,18 @@ document.getElementById('btn-opslaan-leerling').addEventListener('click', async 
 });
 
 async function verwijderLeerling(id, naam) {
-  if(!confirm(`Weet je zeker dat je ${naam} wilt verwijderen? Dit verwijdert ook alle resultaten.`)) return;
-  await sb.from('leerlingen').delete().eq('id', id);
-  toast(`${naam} verwijderd.`);
-  laadLeerlingen();
+  bevestig(
+    '"'+naam+'" verwijderen?',
+    'Weet je zeker dat je "'+naam+'" wilt verwijderen? Dit verwijdert ook alle resultaten.',
+    async function() {
+      await fetch(SUPABASE_URL+'/rest/v1/leerlingen?id=eq.'+id, {
+        method:'DELETE',
+        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY)}
+      });
+      toast(naam+' verwijderd.');
+      laadLeerlingen();
+    }
+  );
 }
 
 // ── RESULTATEN OVERZICHT ──
@@ -1419,7 +1469,7 @@ async function laadResultatenOverzicht() {
     tabel.className = 'leerlingen-tabel';
     tabel.style.cssText = 'border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);';
     tabel.innerHTML = `<div class="tabel-header res-header">
-      <div>Naam</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Na verbeter.</div><div>Fouten</div><div>Tijd</div>
+      <div>Naam</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Na verbeteren</div><div>Fouten</div><div>Tijd</div>
     </div>`;
     (klas.leerlingen||[]).forEach(ll => {
       const res = (ll.resultaten||[])[0];
@@ -1471,7 +1521,7 @@ async function laadResultatenDetail(leerlingId, naam) {
   const tabel = document.createElement('div');
   tabel.className = 'leerlingen-tabel';
   tabel.innerHTML = `<div class="tabel-header res-header">
-    <div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Na verbeter.</div><div>Fouten</div><div>Tijd</div>
+    <div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Na verbeteren</div><div>Fouten</div><div>Tijd</div>
   </div>`;
   res.forEach(r => {
     const oe = r.oefeningen;
@@ -1536,12 +1586,6 @@ document.addEventListener('click',function(e){
     setTimeout(updateGetal2BlokkeringLK,10);
   }
 });
-// Roep ook aan als modal opent
-var origOpenModal=openModal;
-openModal=function(id){
-  origOpenModal(id);
-  if(id==='modal-leerling')setTimeout(updateGetal2BlokkeringLK,50);
-};
 
 // Leerlingcode automatisch hoofdletters
 document.getElementById('leerling-code-input').addEventListener('input', e => {
