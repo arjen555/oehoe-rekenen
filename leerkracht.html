@@ -638,10 +638,10 @@ body::before {
 <!-- HOOFDSCHERM -->
 <div class="screen" id="screen-main">
   <aside class="sidebar">
-    <div class="sidebar-logo">
+    <div class="sidebar-logo" style="cursor:pointer;" onclick="window.open('https://arjen555.github.io/oehoe-rekenen/rekenen_v43.html','_blank')" title="Naar het rekenprogramma">
       <div class="owl">🦉</div>
       <h2>Oehoe Rekenen</h2>
-      <p>Leerkrachtomgeving</p>
+      <p style="color:var(--accent);font-size:0.75rem;">→ Naar rekenprogramma</p>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-item active" data-page="klassen">
@@ -1022,6 +1022,9 @@ function keuzeRijBind(groepId) {
     b.addEventListener('click', () => {
       document.querySelectorAll(`#${groepId} .keuze-knop`).forEach(x => x.classList.remove('selected'));
       b.classList.add('selected');
+      if(groepId==='k-bewerking'||groepId==='k-getal1'){
+        updateGetal2BlokkeringLK();
+      }
     });
   });
 }
@@ -1593,15 +1596,7 @@ function updateGetal2BlokkeringLK(){
     if(!g2||g2>g1){setKeuze('k-getal2',String(g1));}
   }
 }
-// Bind direct aan de knoppen van bewerking en getal1
-document.querySelectorAll('#k-bewerking .keuze-knop, #k-getal1 .keuze-knop').forEach(function(b){
-  b.addEventListener('click', function(){
-    // Wacht tot selected klasse bijgewerkt is door keuzeRijBind
-    requestAnimationFrame(function(){
-      requestAnimationFrame(updateGetal2BlokkeringLK);
-    });
-  });
-});
+// Blokkering wordt nu direct in keuzeRijBind afgehandeld
 
 // Leerlingcode automatisch hoofdletters
 document.getElementById('leerling-code-input').addEventListener('input', e => {
