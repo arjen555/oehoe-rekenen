@@ -467,6 +467,7 @@ async function leerlingInloggen(){
     cfg.tafelkaart=o.tafelkaart||false;
     cfg.getal1Place=o.getal1_place;cfg.getal2Place=o.getal2_place;cfg.count=o.aantal;
     btn.textContent='Inloggen →';btn.disabled=false;
+    window._huidigeLeerling={leerling:ll[0],oefening:o,klas:kl[0]};
     window._startTijd=Date.now();
     startExercise();
   }catch(e){fout.textContent='Verbindingsfout: '+e.message;fout.style.display='block';btn.textContent='Inloggen →';btn.disabled=false;}
