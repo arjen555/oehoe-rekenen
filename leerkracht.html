@@ -1392,6 +1392,7 @@ document.getElementById('btn-opslaan-leerling').addEventListener('click', async 
   // Oefening opslaan - eerst bestaande zoeken
   const tafelkaart = document.getElementById('k-tafelkaart').classList.contains('selected');
   const oeData = { leerling_id: leerlingId, methode, bewerking, hulp, tafelkaart, getal1_place: getal1, getal2_place: getal2, aantal, email_bij_klaar: emailBijKlaar };
+  const oeDataPatch = { methode, bewerking, hulp, tafelkaart, getal1_place: getal1, getal2_place: getal2, aantal, email_bij_klaar: emailBijKlaar };
   try {
     const bestaandRes = await fetch(SUPABASE_URL+'/rest/v1/oefeningen?leerling_id=eq.'+leerlingId+'&select=id', {
       headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Accept':'application/json'}
@@ -1399,11 +1400,12 @@ document.getElementById('btn-opslaan-leerling').addEventListener('click', async 
     const bestaandData = await bestaandRes.json();
     const bestaand = bestaandData && bestaandData.length > 0 ? bestaandData[0] : null;
     if(bestaand) {
-      await fetch(SUPABASE_URL+'/rest/v1/oefeningen?id=eq.'+bestaand.id, {
+      const patchRes = await fetch(SUPABASE_URL+'/rest/v1/oefeningen?id=eq.'+bestaand.id, {
         method:'PATCH',
-        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json'},
-        body: JSON.stringify(oeData)
+        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=representation'},
+        body: JSON.stringify(oeDataPatch)
       });
+      if(!patchRes.ok){ const err=await patchRes.json(); toast('Fout opslaan: '+(err.message||JSON.stringify(err)),'error'); return; }
       // Reset afgerond status zodat aantal sommen weer zichtbaar is
       await fetch(SUPABASE_URL+'/rest/v1/resultaten?leerling_id=eq.'+leerlingId, {
         method:'PATCH',
