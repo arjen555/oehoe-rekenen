@@ -267,7 +267,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   <a href="https://arjen555.github.io/oehoe-rekenen/leerkracht.html" target="_blank" class="suggesties-btn" style="left:20px;right:auto;">&#128203; Leerkracht</a>
 </div>
 <a href="mailto:arjenvandewetering@visio.org" class="suggesties-btn">&#128172; Suggesties ter verbetering?</a>
-<div class="screen" id="screen-leerling-login" role="main" style="min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+<div class="screen" id="screen-leerling-login" role="main" style="min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
   <div style="background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:20px;padding:2.5rem;width:100%;max-width:420px;box-shadow:0 8px 48px rgba(0,0,0,0.5);">
     <div style="text-align:center;margin-bottom:2rem;">
       <div style="font-size:3rem;">🦉</div>
@@ -495,8 +495,8 @@ window.leerlingInloggen = async function() {
 };
 
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');s.style.display='none';});
-  var el=document.getElementById(id);el.classList.add('active');el.style.display='flex';
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
   var sugBtn=document.querySelector('.suggesties-btn');
   if(sugBtn)sugBtn.style.display=(id==='screen-role')?'flex':'none';
   var logoZichtbaar=(id==='screen-role'||id==='screen-setup');
