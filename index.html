@@ -311,6 +311,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <button class="a11y-btn" id="btn-speak">&#128266; Voorlezen</button>
     <button id="btn-speed" style="display:none;font-size:0.78em;color:#fff;background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:5px 10px;margin-left:6px;white-space:nowrap;cursor:pointer;font-weight:700;font-family:var(--font);" aria-label="Spreeksnelheid">1&#xd7;</button>
     <span id="tab-hint" style="display:none;font-size:0.78em;color:#fff;background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:5px 10px;margin-left:6px;white-space:nowrap;pointer-events:none;user-select:none;font-weight:600;letter-spacing:0.01em;">SPATIE &#x2192; Waar ben ik?</span>
+    <span id="tafel-hint" style="display:none;font-size:0.78em;color:#fff;background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:5px 10px;margin-left:6px;white-space:nowrap;pointer-events:none;user-select:none;font-weight:600;letter-spacing:0.01em;">t &#x3d; Tafelkaart</span>
   </div>
   <div class="exercise-meta" aria-live="polite">
     <span id="ex-badge-method" class="badge badge-blue"></span>
@@ -1937,6 +1938,20 @@ function renderCijferend(p,area){
         vermDeelsomTds.forEach(function(dt){dt.innerHTML='';});
         g1VermCells.forEach(function(d){d.classList.remove('hulp-active');});
         g2VermCells.forEach(function(d){d.classList.remove('hulp-active');});
+        // Wis ook highlights van vermenigvuldigingsrijen
+        document.querySelectorAll('.cell-static.hulp-active,.cell-input.kolom-hulp-active').forEach(function(c){
+          c.classList.remove('hulp-active','kolom-hulp-active');
+        });
+        // Highlight alleen de waarden in de tussenresultaatrijen (vermInputRows) voor deze kolom
+        if(cfg.eenBeetjeHulp||cfg.veelHulp){
+          vermInputRows.forEach(function(vr){
+            vr.inputs.forEach(function(it){
+              if(it.col===item.col&&it.inp.value!==''){
+                it.inp.classList.add('kolom-hulp-active');
+              }
+            });
+          });
+        }
         showAnsDeelsom(ansDsTd,colFromRight);
         if(cfg.autoVoorlezen){
           var absColA=item.col;
@@ -2396,8 +2411,9 @@ function checkStep(){
   if(isLast&&window._huidigeLeerling){
     stuurResultatenNaarSupabase();
   }
-  // Zet focus op de knop zodat Enter werkt
-  setTimeout(function(){volgendKnop.focus();},200);
+  // Zet focus op de knop zodat Enter werkt - wacht eerst op voorlezen
+  var focusDelay=cfg.autoVoorlezen?2500:400;
+  setTimeout(function(){volgendKnop.focus();},focusDelay);
 }
 
 function showHulpAfterCheck(correctArr){
@@ -2590,6 +2606,8 @@ function renderTafelkaart(){
   if(!container)return;
   container.innerHTML='';tafelkaartOpen=false;
   if(tafelkaartKeyHandler){document.removeEventListener('keydown',tafelkaartKeyHandler);tafelkaartKeyHandler=null;}
+  var tafelHintEl=document.getElementById('tafel-hint');
+  if(tafelHintEl)tafelHintEl.style.display='none';
   if(!cfg.tafelkaart||cfg.op!=='vermenigvuldigen')return;
   var btn=document.createElement('button');
   btn.className='tafelkaart-btn';btn.setAttribute('aria-label','Tafelkaart');
@@ -2600,8 +2618,6 @@ function renderTafelkaart(){
   container.appendChild(btn);
   tafelkaartKeyHandler=function(e){
     if(e.key==='t'||e.key==='T'){
-      var tag=document.activeElement?document.activeElement.tagName:'';
-      if(tag==='INPUT'||tag==='TEXTAREA')return;
       e.preventDefault();
       tafelkaartOpen=!tafelkaartOpen;
       renderTafelPanel(container);
@@ -2617,6 +2633,9 @@ function renderTafelkaart(){
   document.addEventListener('keydown',tafelkaartKeyHandler);
   document.addEventListener('click',function(e){if(!container.contains(e.target))closeTafelkaart();});
   inputFields.forEach(function(el){if(el)el.addEventListener('focus',function(){closeTafelkaart();});});
+  // Toon tafel-hint in balk
+  var tafelHint=document.getElementById('tafel-hint');
+  if(tafelHint)tafelHint.style.display='inline-block';
 }
 
 function renderTafelPanel(container){
@@ -2664,9 +2683,22 @@ function renderTafelPanel(container){
       });
       d.addEventListener('keydown',function(e){
         var idx=numBtns.indexOf(d);
-        if(e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();if(idx<numBtns.length-1)numBtns[idx+1].focus();}
-        if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();if(idx>0)numBtns[idx-1].focus();}
-        if(e.key==='Enter'||e.key===' '){e.preventDefault();d.click();}
+        if(e.key==='ArrowDown'||e.key==='ArrowRight'){e.preventDefault();numBtns[(idx+1)%numBtns.length].focus();}
+        else if(e.key==='ArrowUp'||e.key==='ArrowLeft'){e.preventDefault();numBtns[(idx-1+numBtns.length)%numBtns.length].focus();}
+        else if(e.key==='Tab'){e.preventDefault();numBtns[(idx+(e.shiftKey?-1:1)+numBtns.length)%numBtns.length].focus();}
+        else if(e.key==='Enter'||e.key===' '){
+          e.preventDefault();
+          tafelkaartGetal=num;
+          panel.querySelectorAll('.tafelkaart-num').forEach(function(b){b.classList.remove('active');});
+          d.classList.add('active');
+          container.querySelectorAll('.tafelkaart-tafel').forEach(function(e){e.remove();});
+          renderTafelTabel(container,num);
+          // Focus op eerste rij
+          setTimeout(function(){
+            var eersteRij=container.querySelector('.tafelkaart-rij');
+            if(eersteRij)eersteRij.focus();
+          },50);
+        }
       });
       nums.appendChild(d);numBtns.push(d);
     })(n);
@@ -2694,9 +2726,18 @@ function renderTafelTabel(container,n){
       rij.addEventListener('focus',function(){if(cfg.autoVoorlezen)speakTekst(spreekTekst);});
       rij.addEventListener('keydown',function(e){
         var idx=rijEls.indexOf(rij);
-        if(e.key==='ArrowDown'){e.preventDefault();if(idx<rijEls.length-1)rijEls[idx+1].focus();}
-        if(e.key==='ArrowUp'){e.preventDefault();if(idx>0)rijEls[idx-1].focus();else title.focus();}
-        if(e.key==='Escape'){closeTafelkaart();}
+        if(e.key==='ArrowDown'||e.key==='Tab'&&!e.shiftKey){e.preventDefault();if(idx<rijEls.length-1)rijEls[idx+1].focus();else rijEls[0].focus();}
+        else if(e.key==='ArrowUp'||e.key==='Tab'&&e.shiftKey){e.preventDefault();if(idx>0)rijEls[idx-1].focus();else rijEls[rijEls.length-1].focus();}
+        else if(e.key==='Enter'||e.key===' '){
+          e.preventDefault();
+          // Terug naar tafelkeuze, focus op de gekozen tafel
+          container.querySelectorAll('.tafelkaart-tafel').forEach(function(el){el.remove();});
+          setTimeout(function(){
+            var actief=container.querySelector('.tafelkaart-num.active');
+            if(actief)actief.focus();
+          },50);
+        }
+        else if(e.key==='Escape'){closeTafelkaart();}
       });
       tafel.appendChild(rij);
       rijEls.push(rij);
