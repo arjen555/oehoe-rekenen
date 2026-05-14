@@ -383,7 +383,7 @@ body::before {
 
 .resultaat-cel { font-size: 0.9rem; }
 .resultaat-goed { color: var(--green); font-weight: 700; }
-.resultaat-fout { color: var(--red); }
+.resultaat-niet-verbeterd { color: var(--red); }
 .resultaat-verbeterd { color: var(--orange); }
 
 .acties { display: flex; gap: 0.4rem; }
@@ -1485,7 +1485,7 @@ async function laadResultatenOverzicht() {
     tabel.className = 'leerlingen-tabel';
     tabel.style.cssText = 'border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);';
     tabel.innerHTML = `<div class="tabel-header res-header">
-      <div>Naam</div><div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Na verbeteren</div><div>Fouten</div><div>Tijd</div>
+      <div>Naam</div><div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Verbeterd</div><div>Niet verbeterd</div><div>Tijd</div>
     </div>`;
     (klas.leerlingen||[]).forEach(ll => {
       const res = (ll.resultaten||[])[0];
@@ -1512,7 +1512,7 @@ async function laadResultatenOverzicht() {
         <div>${hulpB}</div>
         <div class="resultaat-goed">${res ? res.direct_goed+'/'+res.aantal_gemaakt : '—'}</div>
         <div class="resultaat-verbeterd">${res ? res.na_verbetering_goed : '—'}</div>
-        <div class="resultaat-fout">${res ? res.fout : '—'}</div>
+        <div class="resultaat-niet-verbeterd">${res ? res.fout : '—'}</div>
         <div>${res ? fmtTijd(res.tijdsduur_seconden) : '—'}</div>`;
       rij.addEventListener('click', () => laadResultatenDetail(ll.id, ll.naam));
       tabel.appendChild(rij);
@@ -1538,7 +1538,7 @@ async function laadResultatenDetail(leerlingId, naam) {
   const tabel = document.createElement('div');
   tabel.className = 'leerlingen-tabel';
   tabel.innerHTML = `<div class="tabel-header res-header">
-    <div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Na verbeteren</div><div>Fouten</div><div>Tijd</div>
+    <div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Verbeterd</div><div>Niet verbeterd</div><div>Tijd</div>
   </div>`;
   res.forEach(r => {
     const oe = r.oefeningen;
@@ -1561,7 +1561,7 @@ async function laadResultatenDetail(leerlingId, naam) {
       <div>${hulpB}</div>
       <div class="resultaat-goed">${r.direct_goed}/${r.aantal_gemaakt}</div>
       <div class="resultaat-verbeterd">${r.na_verbetering_goed}</div>
-      <div class="resultaat-fout">${r.fout}</div>
+      <div class="resultaat-niet-verbeterd">${r.fout}</div>
       <div>${fmtTijd(r.tijdsduur_seconden)}</div>`;
     tabel.appendChild(rij);
   });
