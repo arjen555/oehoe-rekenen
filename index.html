@@ -63,6 +63,7 @@ html,body{height:100%;}
 body{font-family:var(--font);background:var(--bg);min-height:100vh;color:var(--text);line-height:1.6;transition:background 0.2s,color 0.2s;}
 .app{max-width:860px;margin:0 auto;padding:2rem 1.25rem 4rem;}
 .screen{display:none;animation:fadeIn 0.25s ease;}
+#screen-role.active{overflow:hidden;}
 #screen-leerling-login.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;}
 .screen.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
@@ -260,7 +261,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
       <span class="start-sub">Kies je opgaven en ga aan de slag</span>
     </button>
     <button class="start-card" id="btn-leerling-login" style="border-color:rgba(147,197,253,0.4);">
-      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/inloggen_transparant.png" style="width:240px;height:240px;object-fit:contain;" alt="Inloggen">
+      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/inloggen_transparant.png" style="width:120px;height:120px;object-fit:contain;" alt="Inloggen">
       <span class="start-title">Inloggen</span>
       <span class="start-sub">Als je leerkracht iets klaar heeft gezet</span>
     </button>
@@ -348,7 +349,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 </div>
 <div class="screen" id="screen-analysis" role="main">
   <div class="score-hero">
-    <img id="owl-analysis" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_nakijken.png" alt="Uil nakijkend" class="score-owl-big">
+    <img id="analysis-uil-img" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_nakijken.png" style="max-width:350px;border-radius:16px;" alt="Uil">
     <div class="score-number" id="score-pct">-</div>
     <div class="score-lbl-txt" id="score-lbl"></div>
   </div>
@@ -394,6 +395,13 @@ window.addEventListener('DOMContentLoaded',function(){
   bind('back-setup',goHome);
   bind('back-exercise',backFromExercise);
   bind('start-ex',startExercise);
+  // Pijltje rechts/links tussen vrij oefenen en inloggen
+  document.getElementById('btn-start').addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='Tab'){e.preventDefault();document.getElementById('btn-leerling-login').focus();}
+  });
+  document.getElementById('btn-leerling-login').addEventListener('keydown',function(e){
+    if(e.key==='ArrowLeft'||(e.key==='Tab'&&e.shiftKey)){e.preventDefault();document.getElementById('btn-start').focus();}
+  });
   document.getElementById('btn-leerling-login').addEventListener('click',function(){showScreen('screen-leerling-login');setTimeout(function(){document.getElementById('ll-klascode').focus();},100);});
   document.getElementById('btn-ll-inloggen').addEventListener('click',leerlingInloggen);
   document.getElementById('btn-ll-terug').addEventListener('click',function(){showScreen('screen-role');});
@@ -436,28 +444,31 @@ window.addEventListener('DOMContentLoaded',function(){
   var backEl=document.getElementById('back-exercise');
   if(backEl)addSpeakEvents(backEl,'Startscherm');
   showScreen('screen-role');
+  setTimeout(function(){
+    var btnStart=document.getElementById('btn-start');
+    if(btnStart)btnStart.focus();
+  },100);
 });
 
 function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
 // ── LOGO ZOOM VERGRENDELING ──
 (function(){
   function fixLogoZoom(){
-    var scale=1/window.devicePixelRatio*window.devicePixelRatio;
-    // Gebruik visual viewport als die beschikbaar is
-    var vvScale=window.visualViewport?window.visualViewport.scale:1;
+    if(!window.visualViewport)return;
+    var s=window.visualViewport.scale;
     var logos=document.querySelectorAll('.eduvip-logo,.logo-vast');
     logos.forEach(function(el){
-      el.style.transform=el.classList.contains('eduvip-logo')?
-        'rotate(-6deg) scale('+1/vvScale+')':
-        'scale('+1/vvScale+')';
-      el.style.transformOrigin='top '+(el.classList.contains('eduvip-logo')?'left':'right');
+      var isEduvip=el.classList.contains('eduvip-logo');
+      el.style.transform=isEduvip?'rotate(-6deg) scale('+1/s+')':'scale('+1/s+')';
+      el.style.transformOrigin='top '+(isEduvip?'left':'right');
+      el.style.willChange='transform';
     });
   }
   if(window.visualViewport){
     window.visualViewport.addEventListener('resize',fixLogoZoom);
     window.visualViewport.addEventListener('scroll',fixLogoZoom);
+    fixLogoZoom();
   }
-  window.addEventListener('resize',fixLogoZoom);
 })();
 
 // ── LEERLING LOGIN ──
@@ -487,6 +498,7 @@ async function leerlingInloggen(){
     cfg.eenBeetjeHulp=o.hulp==='beetje';cfg.veelHulp=o.hulp==='veel';
     cfg.tafelkaart=o.tafelkaart||false;
     cfg.getal1Place=o.getal1_place;cfg.getal2Place=o.getal2_place;cfg.count=o.aantal;
+    cfg.getal1Places=[o.getal1_place];cfg.getal2Places=[o.getal2_place];
     btn.textContent='Inloggen →';btn.disabled=false;
     // Check of oefening al afgerond is
     var resCheck=await fetch(SB_URL+'/rest/v1/resultaten?leerling_id=eq.'+ll[0].id+'&afgerond=eq.true&select=id',{headers:{'apikey':SB_KEY}});
@@ -512,7 +524,14 @@ function showScreen(id){
   var logoZichtbaar=(id==='screen-role'||id==='screen-setup');
   document.querySelectorAll('.logo-vast').forEach(function(el){el.style.display=logoZichtbaar?'block':'none';});
 }
-function goHome(){resetDisplaySize();showScreen('screen-role');}
+function goHome(){
+  resetDisplaySize();
+  showScreen('screen-role');
+  setTimeout(function(){
+    var btnStart=document.getElementById('btn-start');
+    if(btnStart)btnStart.focus();
+  },150);
+}
 function resetDisplaySize(){
   document.documentElement.style.setProperty('--font-size','24px');
   document.documentElement.style.setProperty('--cell-size','62px');
@@ -3010,16 +3029,21 @@ async function stuurResultatenNaarSupabase(){
 
 function showAnalysis(){
   showScreen('screen-analysis');
-  // Focus op volgende som knop zodat Enter werkt
+  // Focus op volgende som / klaar knop zodat Enter werkt
   setTimeout(function(){
     var isLast=session.currentIdx===session.problems.length-1;
     var focusKnop=document.getElementById(isLast?'btn-finish':'btn-next');
     if(focusKnop)focusKnop.focus();
-  },300);
+  },500);
   // Pas knoppen aan voor ingelogde leerlingen
   var isIngelogd=!!window._huidigeLeerling;
   document.getElementById('btn-restart').style.display=isIngelogd?'none':'inline-flex';
   document.getElementById('btn-home').style.display=isIngelogd?'none':'inline-flex';
+  // Focus op klaar/home knop zodat Enter werkt
+  setTimeout(function(){
+    var focusKnop=document.getElementById('btn-klaar-ingelogd')||document.getElementById('btn-home');
+    if(focusKnop&&focusKnop.style.display!=='none')focusKnop.focus();
+  },400);
   // Voeg 'Klaar!' knop toe of pas aan
   var btnKlaar=document.getElementById('btn-klaar-ingelogd');
   if(isIngelogd){
@@ -3044,12 +3068,20 @@ function showAnalysis(){
   if(owlAn)owlAn.src=OWL_EINDE;
   var total=session.problems.length,pct=Math.round(session.correct/total*100);
   document.getElementById('score-pct').textContent=pct+'%';
-  document.getElementById('score-lbl').textContent=session.correct+' van de '+total+' opgaven goed';
+  document.getElementById('score-lbl').textContent=session.correct+' van de '+total+' opgaven in één keer goed';
   document.getElementById('s-correct').textContent=session.correct;
   document.getElementById('s-wrong').textContent=session.wrong;
   document.getElementById('s-verbeterd').textContent=session.verbeterd||0;
   document.getElementById('s-total').textContent=total;
   var fb=[];
+  // Pas uil aan op basis van score
+  var uilImg=document.getElementById('analysis-uil-img');
+  if(uilImg){
+    var uilSrc='uil_nakijken.png';
+    if(pct<40)uilSrc='uil_wanhopig.png';
+    else if(pct<75)uilSrc='uil_verbaasd.png';
+    uilImg.src='https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/'+uilSrc;
+  }
   if(pct===100)fb.push({t:'pos',m:'Geweldig! Je hebt alle opgaven goed! Dat is echt heel knap!'});
   else if(pct>=80){fb.push({t:'pos',m:'Heel goed gedaan! Je begrijpt de methode goed.'});var foutTips=['Oefen nog eens, ik beloof, het wordt steeds makkelijker!','Fouten maken, niet erg. Daar leer je van hoor!','Niemand is ooit gegroeid zonder fouten te maken!','Fouten hebben, en dan opgeven, dat is pas fouten hebben!','Om te leren van fouten, moet je eerst weten dat je fouten maakt!','Mensen die geen fouten maken zijn geen mensen.','Goed bezig, je hebt een fout gemaakt, daar leer je van!'];fb.push({t:'tip',m:foutTips[Math.floor(Math.random()*foutTips.length)]});}
   else if(pct>=50){fb.push({t:'tip',m:'Je bent goed op weg, maar er zijn nog wat foutjes.'});var pat=errPattern();if(pat)fb.push({t:'tip',m:pat});}
