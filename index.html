@@ -645,8 +645,11 @@ function obp(g,i,l){return '<button class="opt-btn" data-place="'+g+'" data-idx=
 function obc(n){return '<button class="opt-btn" data-count="'+n+'" aria-pressed="false">'+n+'</button>';}
 
 function addSpeakEvents(btn,getTekst){
-  btn.addEventListener('mouseenter',function(){speakTekst(typeof getTekst==='function'?getTekst():getTekst);});
-  btn.addEventListener('focus',function(){speakTekst(typeof getTekst==='function'?getTekst():getTekst);});
+  btn.addEventListener('mouseenter',function(){
+    if(!window.speechSynthesis||!window.speechSynthesis.speaking)
+      speakTekst(typeof getTekst==='function'?getTekst():getTekst);
+  });
+  btn.addEventListener('focus',function(){speakTekst(typeof getTekst==='function'?getTekst():getTekst,true);});
 }
 
 function attachFormEvents(el){
@@ -1942,12 +1945,18 @@ function renderCijferend(p,area){
         document.querySelectorAll('.cell-static.hulp-active,.cell-input.kolom-hulp-active').forEach(function(c){
           c.classList.remove('hulp-active','kolom-hulp-active');
         });
-        // Highlight alleen de waarden in de tussenresultaatrijen (vermInputRows) voor deze kolom
-        if(cfg.eenBeetjeHulp||cfg.veelHulp){
+        // Highlight de waarden in de tussenresultaatrijen (vermInputRows) voor deze kolom
+        if((cfg.eenBeetjeHulp||cfg.veelHulp)&&item.col>=0){
           vermInputRows.forEach(function(vr){
             vr.inputs.forEach(function(it){
-              if(it.col===item.col&&it.inp.value!==''){
-                it.inp.classList.add('kolom-hulp-active');
+              if(it.col===item.col){
+                // Highlight de cel, ook als leeg (lege cellen tellen mee als 0)
+                var cel=it.inp.closest('td');
+                if(cel){
+                  var span=cel.querySelector('.cell-static-span,.cell-static');
+                  if(span)span.classList.add('hulp-active');
+                }
+                if(it.inp.value!=='')it.inp.classList.add('kolom-hulp-active');
               }
             });
           });
@@ -2411,9 +2420,20 @@ function checkStep(){
   if(isLast&&window._huidigeLeerling){
     stuurResultatenNaarSupabase();
   }
-  // Zet focus op de knop zodat Enter werkt - wacht eerst op voorlezen
+  // Enter onderbreekt voorlezen en gaat direct naar volgende som
+  function enterOnderbreekvoorlezen(e){
+    if(e.key!=='Enter')return;
+    document.removeEventListener('keydown',enterOnderbreekvoorlezen);
+    speechSynthesis.cancel();
+    volgendKnop.click();
+  }
+  document.addEventListener('keydown',enterOnderbreekvoorlezen);
+  // Focus na vertraging (zodat voorlezen eerst kan starten)
   var focusDelay=cfg.autoVoorlezen?2500:400;
-  setTimeout(function(){volgendKnop.focus();},focusDelay);
+  setTimeout(function(){
+    document.removeEventListener('keydown',enterOnderbreekvoorlezen);
+    volgendKnop.focus();
+  },focusDelay);
 }
 
 function showHulpAfterCheck(correctArr){
@@ -2677,6 +2697,8 @@ function renderTafelPanel(container){
         if(cfg.autoVoorlezen)speakTekst('Tafel van '+num);
       });
       d.addEventListener('focus',function(){
+        // Wis vorige active selectie
+        panel.querySelectorAll('.tafelkaart-num').forEach(function(b){b.classList.remove('active');});
         container.querySelectorAll('.tafelkaart-tafel').forEach(function(e){e.remove();});
         renderTafelTabel(container,num);
         if(cfg.autoVoorlezen)speakTekst('Tafel van '+num);
@@ -2801,17 +2823,16 @@ function hideFeedback(){
   if(btnOpnieuw)btnOpnieuw.style.display='none';
 }
 
-function speakTekst(tekst){
+function speakTekst(tekst,forceer){
   if(!cfg.autoVoorlezen||!window.speechSynthesis||!tekst)return;
-  var u=new SpeechSynthesisUtterance(tekst);u.lang='nl-NL';u.rate=spreekSnelheid;speechSynthesis.cancel();speechSynthesis.speak(u);
+  var u=new SpeechSynthesisUtterance(tekst);u.lang='nl-NL';u.rate=spreekSnelheid;
+  // Alleen cancel als we forceren (bewuste actie) of niets speelt
+  if(forceer||!window.speechSynthesis.speaking)speechSynthesis.cancel();
+  speechSynthesis.speak(u);
 }
 function speakDeelsom(tekst){
   if(!cfg.autoVoorlezen||!window.speechSynthesis)return;
   if(Date.now()<spreekGeblokkerdTot)return;
-  if(window.speechSynthesis.speaking){
-    setTimeout(function(){speakDeelsom(tekst);},300);
-    return;
-  }
   speakTekst(tekst);
 }
 function toggleVoorlezen(){
@@ -2885,6 +2906,18 @@ function speakTabPositie(el){
   // Getal in vakje
   var waarde=el.value.trim();
   var tekst=kolNaam+', '+rijNaamStr+(waarde?', '+waarde:'');
+  // Bij cijferend optellen: onthoudwaarde meenemen
+  if(cfg.method==='cijferend'&&(cfg.op==='optellen'||cfg.op==='aftrekken')){
+    var colTd3=el.closest('td');var colTr3=el.closest('tr');
+    var colI3=0;
+    if(colTd3&&colTr3){for(var ci3=0;ci3<colTr3.cells.length;ci3++){if(colTr3.cells[ci3]===colTd3){colI3=ci3-1;break;}}}
+    document.querySelectorAll('input.remember-input,input[data-remember]').forEach(function(oe){
+      var oeTd3=oe.closest('td');var oeTr3=oe.closest('tr');
+      var oeI3=0;
+      if(oeTd3&&oeTr3){for(var ci4=0;ci4<oeTr3.cells.length;ci4++){if(oeTr3.cells[ci4]===oeTd3){oeI3=ci4-1;break;}}}
+      if(oeI3===colI3&&oe.value.trim()){tekst+=', onthoud '+oe.value.trim();}
+    });
+  }
   speakTekst(tekst);
 }
 
@@ -2894,6 +2927,31 @@ document.addEventListener('keydown',function(e){
     if(inputFields.indexOf(el)>=0){
       e.preventDefault();
       speakTabPositie(el);
+      // Bij kolomsgewijs optellen/aftrekken: ook kolom-getallen voorlezen
+      if(cfg.method==='kolomsgewijs'&&(cfg.op==='optellen'||cfg.op==='aftrekken')&&currentProblem){
+        var tbl2=document.querySelector('#calc-area table');
+        var numCols2=tbl2&&tbl2.rows[0]?tbl2.rows[0].cells.length-1:0;
+        var td2=el.closest('td');var tr2=el.closest('tr');
+        var colIdx2=0;
+        if(td2&&tr2){for(var ci2=0;ci2<tr2.cells.length;ci2++){if(tr2.cells[ci2]===td2){colIdx2=ci2-1;break;}}}
+        var kolomWaarden=[];
+        var p2=currentProblem;
+        var kolMultiplier=Math.pow(10,numCols2-1-colIdx2);
+        // Haal de getallen op uit getal A en B voor deze kolom
+        var aStr3=String(Math.abs(p2.a));
+        var bStr3=String(Math.abs(p2.b));
+        var aDigitIdx=colIdx2-(numCols2-aStr3.length);
+        var bDigitIdx=colIdx2-(numCols2-bStr3.length);
+        var aDigit3=aDigitIdx>=0&&aDigitIdx<aStr3.length?parseInt(aStr3[aDigitIdx]):0;
+        var bDigit3=bDigitIdx>=0&&bDigitIdx<bStr3.length?parseInt(bStr3[bDigitIdx]):0;
+        var aWaarde=aDigit3*kolMultiplier;
+        var bWaarde=bDigit3*kolMultiplier;
+        if(aWaarde>0||bWaarde>0){
+          var opStr=cfg.op==='optellen'?' plus ':' min ';
+          var kolTekst=numToNL(aWaarde)+opStr+numToNL(bWaarde);
+          setTimeout(function(){speakTekst(kolTekst);},800);
+        }
+      }
     } else if(rememberFields.indexOf(el)>=0){
       e.preventDefault();
       // Onthoudvakje: bepaal kolomnaam via positie in de tabel
