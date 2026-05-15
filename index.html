@@ -1722,8 +1722,11 @@ function renderCijferend(p,area){
                   break;
                 }
               }
-              var aKolNaam2=kolombNaam(cols,echteColFromRight);
-              var bKolNaam2=kolombNaam(cols,cols-1-(bStr.length-1-(bStr.length-1-rowIdx2)));
+              // aKolNaam: kolom van het cijfer van getal A (echteColFromRight = afstand van rechts)
+              var kolNamen2=['eenheden','tientallen','honderdtallen','duizendtallen','tienduizendtallen','honderdduizendtallen'];
+              var aKolNaam2=kolNamen2[echteColFromRight]||('kolom '+echteColFromRight);
+              // bKolNaam: kolom van het cijfer van getal B (rowIdx2 = rij, geeft positie van rechts)
+              var bKolNaam2=kolNamen2[rowIdx2]||('kolom '+rowIdx2);
               var heeftOnthoud2=remVal2>0;
               var spreekStr2=aDigit2+' '+aKolNaam2+' keer '+bdVal2+' '+bKolNaam2+(heeftOnthoud2?' en het onthoudvakje':'');
               speakDeelsom(spreekStr2);
