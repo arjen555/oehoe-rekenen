@@ -1722,7 +1722,11 @@ function renderCijferend(p,area){
                   break;
                 }
               }
-              speakDeelsom(aDigit2+' keer '+bdVal2+(remVal2?' plus '+remVal2+' onthouden':''));
+              var aKolNaam2=kolombNaam(cols,echteColFromRight);
+              var bKolNaam2=kolombNaam(cols,cols-1-(bStr.length-1-(bStr.length-1-rowIdx2)));
+              var heeftOnthoud2=remVal2>0;
+              var spreekStr2=aDigit2+' '+aKolNaam2+' keer '+bdVal2+' '+bKolNaam2+(heeftOnthoud2?' en het onthoudvakje':'');
+              speakDeelsom(spreekStr2);
             }
           }
         });
@@ -1945,21 +1949,28 @@ function renderCijferend(p,area){
         document.querySelectorAll('.cell-static.hulp-active,.cell-input.kolom-hulp-active').forEach(function(c){
           c.classList.remove('hulp-active','kolom-hulp-active');
         });
-        // Highlight de waarden in de tussenresultaatrijen (vermInputRows) voor deze kolom
+        // Highlight de waarden in de tussenresultaatrijen voor deze kolom
         if((cfg.eenBeetjeHulp||cfg.veelHulp)&&item.col>=0){
+          var heeftWaarden=false;
           vermInputRows.forEach(function(vr){
             vr.inputs.forEach(function(it){
-              if(it.col===item.col){
-                // Highlight de cel, ook als leeg (lege cellen tellen mee als 0)
-                var cel=it.inp.closest('td');
-                if(cel){
-                  var span=cel.querySelector('.cell-static-span,.cell-static');
-                  if(span)span.classList.add('hulp-active');
-                }
-                if(it.inp.value!=='')it.inp.classList.add('kolom-hulp-active');
+              if(it.col===item.col&&it.inp.value!==''){
+                it.inp.classList.add('kolom-hulp-active');
+                heeftWaarden=true;
               }
             });
           });
+          // Voorlees ook de optelling bij een beetje hulp
+          if(cfg.autoVoorlezen&&cfg.eenBeetjeHulp&&heeftWaarden){
+            var optelVals=[];
+            vermInputRows.forEach(function(vr){
+              vr.inputs.forEach(function(it){
+                if(it.col===item.col&&it.inp.value!=='')optelVals.push(it.inp.value);
+              });
+            });
+            var kolNaamRL=kolombNaam(cols,colFromRight);
+            speakDeelsom(kolNaamRL+': '+optelVals.join(' plus '));
+          }
         }
         showAnsDeelsom(ansDsTd,colFromRight);
         if(cfg.autoVoorlezen){
@@ -2053,7 +2064,7 @@ function renderCijferend(p,area){
           if(huidigInvulvak&&huidigInvulvak.inp&&huidigInvulvak.inp.isConnected){
             huidigInvulvak.inp.focus();
             spreekGeblokkerdTot=0;
-            if(cfg.autoVoorlezen)updateAftrDeelsom(p,colIdx,cols);
+            updateAftrDeelsom(p,colIdx,cols);
           }
         },50);
 
@@ -2429,7 +2440,7 @@ function checkStep(){
   }
   document.addEventListener('keydown',enterOnderbreekvoorlezen);
   // Focus na vertraging (zodat voorlezen eerst kan starten)
-  var focusDelay=cfg.autoVoorlezen?2500:400;
+  var focusDelay=cfg.autoVoorlezen?4000:400;
   setTimeout(function(){
     document.removeEventListener('keydown',enterOnderbreekvoorlezen);
     volgendKnop.focus();
@@ -2679,7 +2690,7 @@ function renderTafelPanel(container){
   }
   var nums=document.createElement('div');nums.className='tafelkaart-nums';
   var numBtns=[];
-  for(var n=1;n<=9;n++){
+  for(var n=2;n<=9;n++){
     (function(num){
       var d=document.createElement('button');d.className='tafelkaart-num';d.textContent=num;
       d.setAttribute('tabindex','0');
@@ -2745,7 +2756,7 @@ function renderTafelTabel(container,n){
       rij.setAttribute('tabindex','0');
       var spreekTekst=k+' keer '+n+' is '+(k*n);
       rij.addEventListener('mouseenter',function(){if(cfg.autoVoorlezen)speakTekst(spreekTekst);});
-      rij.addEventListener('focus',function(){if(cfg.autoVoorlezen)speakTekst(spreekTekst);});
+      rij.addEventListener('focus',function(){if(cfg.autoVoorlezen){speechSynthesis.cancel();speakTekst(spreekTekst,true);}});
       rij.addEventListener('keydown',function(e){
         var idx=rijEls.indexOf(rij);
         if(e.key==='ArrowDown'||e.key==='Tab'&&!e.shiftKey){e.preventDefault();if(idx<rijEls.length-1)rijEls[idx+1].focus();else rijEls[0].focus();}
