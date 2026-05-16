@@ -474,14 +474,17 @@ function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
 // ── LOGO ZOOM VERGRENDELING ──
 (function(){
   function checkLogoZoom(){
-    // window.devicePixelRatio verandert bij browser zoom
     var ratio=window.devicePixelRatio||1;
-    // Standaard pixelratio is 1 of 1.25 (HiDPI), zoom >175% geeft ratio >1.75
-    // We gebruiken een basislijn van de initiële ratio
     var teGroot=(ratio/window._basePixelRatio)>=1.75;
+    var huidigScherm=document.querySelector('.screen.active');
+    var schermId=huidigScherm?huidigScherm.id:'';
+    var logoToegestaan=(schermId==='screen-role'||schermId==='screen-setup');
     document.querySelectorAll('.eduvip-logo,.logo-vast').forEach(function(el){
-      el.style.display=teGroot?'none':'';
+      el.style.display=(logoToegestaan&&!teGroot)?'block':'none';
     });
+    // Som-uil ook verbergen bij te grote zoom
+    var somUil=document.getElementById('uil-som');
+    if(somUil&&somUil.src)somUil.style.visibility=teGroot?'hidden':'visible';
   }
   window._basePixelRatio=window.devicePixelRatio||1;
   // Controleer bij resize én bij wheel+ctrl
