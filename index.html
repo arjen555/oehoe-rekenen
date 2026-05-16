@@ -1058,7 +1058,13 @@ function addAutoAdvance(el,ri){
     }
   });
   el.addEventListener('keydown',function(e){
-    if(e.key==='Enter'){checkStep();return;}
+    if(e.key==='Enter'){
+      e.preventDefault();
+      var btnCheck=document.getElementById('btn-check');
+      if(btnCheck&&btnCheck.offsetParent!==null){btnCheck.focus();}
+      else{checkStep();}
+      return;
+    }
     var i=inputFields.indexOf(el);
     if(e.key==='Backspace'){e.preventDefault();el.value='';for(var j=i-1;j>=0;j--){if(inputFields[j]&&!inputFields[j].disabled){inputFields[j].focus();break;}}return;}
     if(e.key==='ArrowLeft'){e.preventDefault();for(var j=i-1;j>=0;j--){if(inputFields[j]&&!inputFields[j].disabled){inputFields[j].focus();break;}}}
@@ -1113,7 +1119,13 @@ function mkInputRaw(ariaLabel,ri){
   el.style.width='var(--cell-size)';el.style.height='var(--cell-size)';
   el.addEventListener('focus',function(){el.select();});
   el.addEventListener('keydown',function(e){
-    if(e.key==='Enter'){checkStep();return;}
+    if(e.key==='Enter'){
+      e.preventDefault();
+      var btnCheck=document.getElementById('btn-check');
+      if(btnCheck&&btnCheck.offsetParent!==null){btnCheck.focus();}
+      else{checkStep();}
+      return;
+    }
     var i=inputFields.indexOf(el);
     if(e.key==='Backspace'){e.preventDefault();el.value='';for(var j=i+1;j<inputFields.length;j++){if(inputFields[j]&&!inputFields[j].disabled){inputFields[j].focus();break;}}return;}
   });
@@ -1131,7 +1143,7 @@ function mkSignInput(ariaLabel,ri){
   el.addEventListener('input',function(){
     if(el.value.length===1){var i=inputFields.indexOf(el);var next=inputFields[i+1];if(next&&!next.disabled)next.focus();}
   });
-  el.addEventListener('keydown',function(e){if(e.key==='Enter')checkStep();});
+  el.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var btnCheck=document.getElementById('btn-check');if(btnCheck&&btnCheck.offsetParent!==null){btnCheck.focus();}else{checkStep();}}});
   el.addEventListener('focus',function(){
     if(cfg.hulp&&ri>=0&&ri!==currentHulpRow){currentHulpRow=ri;updateHulpHighlight(ri);if(cfg.veelHulp)showVeelHulpForRow(ri);}
   });
@@ -1143,7 +1155,7 @@ function mkRemember(size,fontSize){
   el.type='text';el.inputMode='numeric';el.className='cell-remember';el.maxLength=2;el.autocomplete='off';
   el.style.cssText='width:'+size+'px;height:'+size+'px;font-size:'+fontSize+'px;';
   el.setAttribute('aria-label','Onthoud/leen');
-  el.addEventListener('keydown',function(e){if(e.key==='Enter')checkStep();});
+  el.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var btnCheck=document.getElementById('btn-check');if(btnCheck&&btnCheck.offsetParent!==null){btnCheck.focus();}else{checkStep();}}});
   el.addEventListener('input',function(){
     if(cfg.veelHulp&&cfg.method==='cijferend'&&cfg.op==='+'){
       var remIdx=rememberFields.indexOf(el);
@@ -1693,7 +1705,8 @@ function updateAftrDeelsom(p,colIdx,cols){
   } else {aValx=colIdx>=s1x?parseInt(a2x[colIdx-s1x]):0;}
   var kolNaamx=colFullName(fromRight2);
   // Altijd voorlezen als voorlezen aan staat
-  if(cfg.autoVoorlezen){
+  var aInRangeX=(colIdx>=s1x);var bInRangeX=(colIdx>=s2x);
+  if(cfg.autoVoorlezen&&!wachtOpHoofdsom&&(aInRangeX||bInRangeX)){
     setTimeout(function(){speakTekst(kolNaamx+': '+aValx+' min '+bDigitx,true);},150);
   }
   if(!cfg.veelHulp||!aftrDeelsomTd)return;
@@ -1921,7 +1934,9 @@ function renderCijferend(p,area){
               showVermDeelsom(vr.dsTd,rowIdx2,echteColFromRight,remTds);
             } else if(cfg.autoVoorlezen){
               var aDigStart2=cols-aStr.length;
-              var aDigit2=(absCol2>=aDigStart2)?parseInt(aStr[absCol2-aDigStart2]):0;
+              var aDigit2=(absCol2>=aDigStart2)?parseInt(aStr[absCol2-aDigStart2]):null;
+              // Als dit een kolom is buiten bereik van getal A: niks zeggen
+              if(aDigit2===null){/* geen som hier */} else {
               var bdVal2=vr.bd;
               var remVal2=0;
               for(var rr2=0;rr2<remTds.length;rr2++){
@@ -1948,6 +1963,7 @@ function renderCijferend(p,area){
                   speakTekst(spreekStr2,true);
                 }
               },100);
+              } // einde aDigit2 null-check
             }
           }
         });
@@ -2365,7 +2381,8 @@ function renderCijferend(p,area){
               aVal2=colIdx>=s1s?parseInt(a2s[colIdx-s1s]):0;
             }
             var bVal2=colIdx>=s2s?parseInt(b2s[colIdx-s2s]):0;
-            speakDeelsom(colFullName(fromRight2)+': '+aVal2+' min '+bVal2);
+            var aInRangeS=(colIdx>=s1s);var bInRangeS=(colIdx>=s2s);
+            if(aInRangeS||bInRangeS)speakDeelsom(colFullName(fromRight2)+': '+aVal2+' min '+bVal2);
           }
           setupLeenKlik(colIdx);
         });
@@ -2473,14 +2490,16 @@ function renderCijferend(p,area){
               if(cidx===colIdx&&rf.value)remValS=parseInt(rf.value)||0;
             });
             var partsS=[aDigS,bDigS];if(remValS)partsS.push(remValS);
-            speakDeelsom(colFullName(cols-1-colIdx)+': '+partsS.join(' plus '));
+            var aInRangeV=(colIdx>=s1s);var bInRangeV=(colIdx>=s2s);
+            if(aInRangeV||bInRangeV||remValS)speakDeelsom(colFullName(cols-1-colIdx)+': '+partsS.join(' plus '));
           }
         } else if(cfg.autoVoorlezen){
           var a2o=String(Math.abs(p.a)),s1o=cols-a2o.length;
           var b2o=String(Math.abs(p.b)),s2o=cols-b2o.length;
           var aDigO=colIdx>=s1o?parseInt(a2o[colIdx-s1o]):0;
           var bDigO=colIdx>=s2o?parseInt(b2o[colIdx-s2o]):0;
-          speakDeelsom(colFullName(cols-1-colIdx)+': '+aDigO+' plus '+bDigO);
+          var aInRange=(colIdx>=s1o);var bInRange=(colIdx>=s2o);
+          if(aInRange||bInRange)speakDeelsom(colFullName(cols-1-colIdx)+': '+aDigO+' plus '+bDigO);
         }
       });
       item.inp.addEventListener('input',function(e){
@@ -2661,18 +2680,9 @@ function checkStep(){
   if(isLast&&window._huidigeLeerling){
     stuurResultatenNaarSupabase();
   }
-  // Enter onderbreekt voorlezen en gaat direct naar volgende som
-  function enterOnderbreekvoorlezen(e){
-    if(e.key!=='Enter')return;
-    document.removeEventListener('keydown',enterOnderbreekvoorlezen);
-    speechSynthesis.cancel();
-    volgendKnop.click();
-  }
-  document.addEventListener('keydown',enterOnderbreekvoorlezen);
-  // Focus na vertraging (zodat voorlezen eerst kan starten)
+  // Focus op de volgende-knop na vertraging (zodat voorlezen eerst kan starten)
   var focusDelay=cfg.autoVoorlezen?4000:400;
   setTimeout(function(){
-    document.removeEventListener('keydown',enterOnderbreekvoorlezen);
     volgendKnop.focus();
   },focusDelay);
 }
@@ -3170,11 +3180,13 @@ function speakTabPositie(el){
   var waarde=el.value.trim();
 
   // Kolomsgewijs optellen/aftrekken: volgorde = cursorkolom, rij X, somkolom + waarden
-  if(cfg.method==='kolomsgewijs'&&(cfg.op==='optellen'||cfg.op==='aftrekken')&&currentProblem&&cfg.hulp){
+  if(cfg.method==='kolomsgewijs'&&(cfg.op==='optellen'||cfg.op==='aftrekken')&&currentProblem){
     var tblS=document.querySelector('#calc-area table');
     var numColsS=tblS&&tblS.rows[0]?tblS.rows[0].cells.length-1:0;
-    var omkadering=Array.from(document.querySelectorAll('.cell-static.hulp-active,.cell-input.kolom-hulp-active'));
     var somDeel='';
+
+    // Bepaal de somkolom en waarden: eerst via omkadering (hulp aan), anders via cursor + p.a/p.b
+    var omkadering=Array.from(document.querySelectorAll('.cell-static.hulp-active,.cell-input.kolom-hulp-active'));
     if(omkadering.length>0){
       var eersteOmk=omkadering[0];
       var tdO=eersteOmk.closest('td');var trO=eersteOmk.closest('tr');
@@ -3191,7 +3203,20 @@ function speakTabPositie(el){
         var opStr2=cfg.op==='optellen'?' plus ':' min ';
         somDeel=', '+kolNaamO+': '+omkWaarden.join(opStr2);
       }
+    } else {
+      // Geen hulp/omkadering: gebruik cursorkolom en waarden uit p.a / p.b
+      var fromRightC=numColsS-1-colIdx;
+      var kolNaamC=COL_FULL_NAMES[fromRightC]||('kolom '+(fromRightC+1));
+      var pvC=Math.pow(10,fromRightC);
+      var dAC=Math.floor(Math.abs(currentProblem.a)/pvC%10);
+      var dBC=Math.floor(Math.abs(currentProblem.b)/pvC%10);
+      var opStrC=cfg.op==='optellen'?' plus ':' min ';
+      var somWaarden=[];
+      if(dAC!==0)somWaarden.push(dAC);
+      if(dBC!==0)somWaarden.push(dBC);
+      if(somWaarden.length>0)somDeel=', '+kolNaamC+': '+somWaarden.join(opStrC);
     }
+
     var rijNr=uniekeRijen.indexOf(ri)+1;
     var isEindRijS=(ri===uniekeRijen[uniekeRijen.length-1]);
     var rijDeel=isEindRijS?'einduitkomst':'rij '+rijNr;
@@ -3234,6 +3259,23 @@ document.addEventListener('keydown',function(e){
       speakTekst('onthoudvakje '+kolNaam+(waarde?', '+waarde:''));
     }
   }
+});
+
+// Pijltjestoetsen links/rechts tussen de zichtbare knoppen onderaan
+document.addEventListener('keydown',function(e){
+  if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
+  var actief=document.activeElement;
+  if(!actief||actief.tagName!=='BUTTON')return;
+  var navBar=document.getElementById('main-btn-row');
+  if(!navBar||!navBar.contains(actief))return;
+  e.preventDefault();
+  var knoppen=Array.from(navBar.querySelectorAll('button')).filter(function(b){
+    return b.offsetParent!==null&&!b.disabled; // alleen zichtbare, niet-disabled knoppen
+  });
+  var idx=knoppen.indexOf(actief);
+  if(idx<0)return;
+  if(e.key==='ArrowRight'){knoppen[(idx+1)%knoppen.length].focus();}
+  else{knoppen[(idx-1+knoppen.length)%knoppen.length].focus();}
 });
 
 // Globale leen-toetsenbord handler voor cijferend aftrekken
@@ -3371,6 +3413,12 @@ function speakProblem(){
     // Na hoofdsom: spreek eerste rij voor kolomsgewijs optellen/aftrekken
     if(cfg.autoVoorlezen&&(cfg.eenBeetjeHulp||cfg.veelHulp)&&cfg.method==='kolomsgewijs'&&(cfg.op==='optellen'||cfg.op==='aftrekken')){
       if(typeof showVeelHulpForRow==='function')showVeelHulpForRow(0);
+    }
+    // Na hoofdsom: spreek eerste deelsom voor cijferend aftrekken
+    if(cfg.autoVoorlezen&&cfg.method==='cijferend'&&cfg.op==='aftrekken'&&currentProblem){
+      var tblA=document.querySelector('#calc-area table');
+      var colsA=tblA&&tblA.rows[0]?tblA.rows[0].cells.length-1:0;
+      if(colsA>0)updateAftrDeelsom(currentProblem,colsA-1,colsA);
     }
   };
   wachtOpHoofdsom=true;
