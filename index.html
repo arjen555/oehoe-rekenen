@@ -370,7 +370,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 var BASE_URL='https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/';
 
 // Som-uil: plaatjes rechtsonder tijdens een som
-var _somUilAantal=2; // verhoog dit als je meer plaatjes toevoegt
+var _somUilAantal=1; // verhoog dit als je meer plaatjes toevoegt
 var _somUilVorige=-1;
 function toonSomUil(){
   var img=document.getElementById('uil-som');
@@ -475,7 +475,7 @@ function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
 (function(){
   function checkLogoZoom(){
     var ratio=window.devicePixelRatio||1;
-    var teGroot=(ratio/window._basePixelRatio)>=1.75;
+    var teGroot=(ratio>=1.75);
     var huidigScherm=document.querySelector('.screen.active');
     var schermId=huidigScherm?huidigScherm.id:'';
     var logoToegestaan=(schermId==='screen-role'||schermId==='screen-setup');
@@ -3066,6 +3066,39 @@ function analyzeErrors(correctArr){
     else if(ansWrong&&!subWrong)msg+='De tussenresultaten zijn goed, maar de eindoptelsom klopt niet.';
     else msg+='Controleer de tussenresultaten én de eindoptelsom.';
   } else {
+    // Cijferend aftrekken: check of de leerling in minstens één kolom b-a deed ipv a-b
+    if(cfg.op==='aftrekken'&&currentProblem){
+      var p=currentProblem;
+      var aStr=String(Math.abs(p.a)),bStr=String(Math.abs(p.b));
+      var cols=Math.max(aStr.length,bStr.length);
+      // Zoek de antwoordrij: de rij met de hoogste rowInfo-waarde (laatste rij)
+      var maxRij=-1;
+      rowInfo.forEach(function(r){if(r>maxRij)maxRij=r;});
+      var antwoordRijInputs=[];
+      for(var ai2=0;ai2<inputFields.length;ai2++){
+        if(inputFields[ai2]&&rowInfo[ai2]===maxRij)antwoordRijInputs.push(inputFields[ai2]);
+      }
+      // Pad naar cols lengte (links opvullen)
+      while(antwoordRijInputs.length<cols)antwoordRijInputs.unshift(null);
+      var omgekeerdGevonden=false;
+      for(var oi=0;oi<cols;oi++){
+        var aIdx=oi-(cols-aStr.length);var bIdx=oi-(cols-bStr.length);
+        var aD=aIdx>=0?parseInt(aStr[aIdx]):0;
+        var bD=bIdx>=0?parseInt(bStr[bIdx]):0;
+        if(bD>aD){
+          // In deze kolom moet geleend worden; check of leerling b-a invulde
+          var invEl=antwoordRijInputs[oi];
+          var invVal=invEl?parseInt(invEl.value)||0:0;
+          if(invVal===bD-aD){omgekeerdGevonden=true;break;}
+        }
+      }
+      console.log('omgekeerd debug: cols='+cols+' aStr='+aStr+' bStr='+bStr+' antwoordInputs='+antwoordRijInputs.length+' gevonden='+omgekeerdGevonden);
+      antwoordRijInputs.forEach(function(el,i){console.log('  input['+i+']=',el?el.value:'null');});
+      if(omgekeerdGevonden){
+        msg+='Let op: je trekt het bovenste getal af van het onderste. Dat moet andersom!';
+        return msg;
+      }
+    }
     if(!correctArr[correctArr.length-1])msg+='De eenheden kloppen niet. Begin altijd rechts.';
     else if(!correctArr[0])msg+='Let op het onthouden of lenen.';
     else msg+='Controleer de rode vakjes zorgvuldig.';
