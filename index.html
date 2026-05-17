@@ -1421,6 +1421,45 @@ function renderKolomOpAf(p,area){
       });
     });
   }
+
+  // Kolomsgewijs aftrekken: voorlees de invulrijen bij eerste focus op einduitkomstrij
+  if(cfg.op==='aftrekken'&&cfg.autoVoorlezen){
+    var eindRijInputs=inputFields.slice(inputFields.length-numDigitCols-1);
+    var eersteEindFocus=true;
+    eindRijInputs.forEach(function(inp){
+      if(!inp)return;
+      inp.addEventListener('focus',function(){
+        if(!eersteEindFocus)return;
+        eersteEindFocus=false;
+        var delen=[];
+        subtotals.forEach(function(sub,si){
+          var tekenInp=null;
+          var rijWaardeParts=[];
+          for(var fi=0;fi<inputFields.length;fi++){
+            if(rowInfo[fi]!==si||!inputFields[fi])continue;
+            var el=inputFields[fi];
+            // Tekenvakje herkennen via class
+            var isSign=el.classList&&el.classList.contains('cell-sign');
+            if(isSign){tekenInp=el;}
+            else if(el.value.trim()!==''&&el.value.trim()!=='0'){rijWaardeParts.push(el.value.trim());}
+          }
+          console.log('rij '+si+': tekenInp=',tekenInp?tekenInp.value:'null',' waarden=',rijWaardeParts);
+          if(rijWaardeParts.length===0)return;
+          var numWaarde=parseInt(rijWaardeParts.join(''))*Math.pow(10,sub.pos);
+          if(numWaarde===0)return;
+          var isMin=(tekenInp&&tekenInp.value.trim()==='-');
+          if(delen.length===0){delen.push(String(numWaarde));}
+          else{delen.push((isMin?'eraf':'plus')+' '+numWaarde);}
+        });
+        if(!delen.length)return;
+        // Spreek de delen met pauze via aparte setTimeout aanroepen
+        delen.forEach(function(deel,idx){
+          setTimeout(function(){speakTekst(deel,idx>0);},200+idx*1200);
+        });
+      });
+    });
+  }
+
   area.innerHTML='';area.appendChild(t);
 }
 
@@ -3092,10 +3131,8 @@ function analyzeErrors(correctArr){
           if(invVal===bD-aD){omgekeerdGevonden=true;break;}
         }
       }
-      console.log('omgekeerd debug: cols='+cols+' aStr='+aStr+' bStr='+bStr+' antwoordInputs='+antwoordRijInputs.length+' gevonden='+omgekeerdGevonden);
-      antwoordRijInputs.forEach(function(el,i){console.log('  input['+i+']=',el?el.value:'null');});
       if(omgekeerdGevonden){
-        msg+='Let op: je trekt het bovenste getal af van het onderste. Dat moet andersom!';
+        msg+='Let op: je trekt het bovenste getal af van het onderste.<br>Dat moet andersom!';
         return msg;
       }
     }
