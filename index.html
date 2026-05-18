@@ -217,6 +217,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .tooltip-wrap:hover .tooltip-box,.tooltip-wrap:focus-within .tooltip-box{display:block;}
 /* Cijferend veel-hulp deelsom kader (inline, rechts van invulrij) */
 .cij-deelsom-cel{padding-left:18px;vertical-align:middle;white-space:nowrap;}
+
 .cij-deelsom-wrap{display:inline-flex;flex-direction:column;align-items:center;background:rgba(252,211,77,0.13);border:2px solid #FCD34D;border-radius:var(--radius);padding:6px 16px;min-width:80px;}
 .cij-deelsom-kol{font-family:var(--font);font-size:calc(var(--font-size)*0.7);font-weight:800;color:#FCD34D;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;text-align:center;}
 .cij-deelsom-som{font-family:var(--font);font-size:var(--font-size);font-weight:800;color:#FCD34D;text-align:center;}
@@ -876,7 +877,9 @@ function changeCellSize(dir){
         if(!appEl)return;
         var tbl=appEl.querySelector('.calc-card table');
         if(tbl){
-          var breedte=tbl.offsetWidth+200;
+          // Meet de volledige breedte inclusief het hulpkader naast de tabel
+          var calcCard=appEl.querySelector('.calc-card');
+          var breedte=(calcCard?calcCard.scrollWidth:tbl.offsetWidth)+120;
           var nieuw=Math.max(1000,breedte);
           var opgeslagen=parseInt(appEl.dataset.maxBreedte||'0');
           var definitief=Math.max(opgeslagen,nieuw);
@@ -1106,14 +1109,45 @@ function addAutoAdvance(el,ri){
     }
   });
   el.addEventListener('focus',function(){
-    if(cfg.hulp&&ri>=0&&ri!==currentHulpRow){
-      // Bij veel hulp + kolomsgewijs aftrekken: einduitkomst-vakjes hebben
-      // hun eigen highlight-logica via de focus-handler in renderKolomOpAf
-      if(cfg.veelHulp&&cfg.method==='kolomsgewijs'&&cfg.op==='aftrekken'&&
-         kolomAftrEindVakjes.indexOf(el)>=0){
-        currentHulpRow=ri; // bijhouden maar verder niets
+    if(!cfg.hulp||ri<0) return;
+    // Bij veel hulp + kolomsgewijs aftrekken: einduitkomst-vakjes hebben eigen logica
+    if(cfg.veelHulp&&cfg.method==='kolomsgewijs'&&cfg.op==='aftrekken'&&
+       kolomAftrEindVakjes.indexOf(el)>=0){
+      currentHulpRow=ri;
+      return;
+    }
+    // Bij kolomsgewijs optellen in de einduitkomstrij: highlight per kolom
+    // (altijd uitvoeren, ook als ri niet verandert — kolom kan wel veranderd zijn)
+    if(cfg.method==='kolomsgewijs'&&cfg.op==='optellen'){
+      var maxRi=0;
+      for(var k=0;k<rowInfo.length;k++){if(rowInfo[k]>maxRi)maxRi=rowInfo[k];}
+      if(ri===maxRi){
+        currentHulpRow=ri;
+        // Bepaal kolomindex: tel hoeveel niet-disabled vakjes van dezelfde rij vóór el staan
+        var elIdx=inputFields.indexOf(el);
+        var kolomIdx=0;
+        for(var k=0;k<elIdx;k++){
+          if(rowInfo[k]===ri&&inputFields[k]&&!inputFields[k].disabled) kolomIdx++;
+        }
+        // Wis bestaande highlights
+        document.querySelectorAll('.cell-static.hulp-active').forEach(function(c){c.classList.remove('hulp-active');});
+        document.querySelectorAll('.cell-input.kolom-hulp-active').forEach(function(c){c.classList.remove('kolom-hulp-active');});
+        // Markeer invulrij-vakjes in dezelfde kolom
+        for(var k=0;k<inputFields.length;k++){
+          if(rowInfo[k]<maxRi&&inputFields[k]&&!inputFields[k].disabled){
+            var kIdx=0;
+            for(var j=0;j<k;j++){
+              if(rowInfo[j]===rowInfo[k]&&inputFields[j]&&!inputFields[j].disabled) kIdx++;
+            }
+            if(kIdx===kolomIdx&&inputFields[k].value.trim()!==''&&inputFields[k].value.trim()!=='0'){
+              inputFields[k].classList.add('kolom-hulp-active');
+            }
+          }
+        }
         return;
       }
+    }
+    if(ri!==currentHulpRow){
       currentHulpRow=ri;
       updateHulpHighlight(ri);
       if(cfg.veelHulp)showVeelHulpForRow(ri);
@@ -1369,6 +1403,32 @@ function renderKolomOpAf(p,area){
     return res;
   }
 
+  // Lees de daadwerkelijk ingevulde waarde van tussenrij rijIdx uit de inputvelden
+  // De vakjes bevatten al de volledig-geschaalde waarde (bijv. "4","0","0" = 400)
+  // Geen extra vermenigvuldiging met pos nodig
+  function ingevuldeWaardeVanRij(rijIdx){
+    var heeftMin = false;
+    var cijfers = '';
+    for(var fi=0; fi<inputFields.length; fi++){
+      if(rowInfo[fi] !== rijIdx || !inputFields[fi]) continue;
+      var v = inputFields[fi].value.trim();
+      if(v === '-'){ heeftMin = true; }
+      else if(v !== ''){ cijfers += v; }
+    }
+    if(cijfers === '') return 0;
+    var getal = parseInt(cijfers);
+    return heeftMin ? -getal : getal;
+  }
+
+  // Bereken het lopende resultaat op basis van wat de leerling daadwerkelijk heeft ingevuld
+  function berekenIngevuldTussenResultaat(stapIdx){
+    var res = ingevuldeWaardeVanRij(0);
+    for(var si=1; si<=stapIdx+1 && si<subtotals.length; si++){
+      res += ingevuldeWaardeVanRij(si);
+    }
+    return res;
+  }
+
   // Hulpfunctie: hoeveel cijfers heeft het tussenresultaat van stap stapIdx?
   // (minteken telt niet mee, het gaat om de cijferposities)
   function aantalCijfersVanResultaat(val){
@@ -1383,11 +1443,11 @@ function renderKolomOpAf(p,area){
 
     var basis, volgend;
     if(stapIdx === 0){
-      basis = subtotals[0].val;
+      basis = ingevuldeWaardeVanRij(0);
     } else {
-      basis = berekenTussenResultaat(stapIdx - 1);
+      basis = berekenIngevuldTussenResultaat(stapIdx - 1);
     }
-    volgend = subtotals[stapIdx + 1].val;
+    volgend = ingevuldeWaardeVanRij(stapIdx + 1);
 
     var opTeken = volgend < 0 ? ' \u2212 ' : ' + ';
     var somTekst = basis + opTeken + Math.abs(volgend) + ' =';
@@ -1515,14 +1575,16 @@ function renderKolomOpAf(p,area){
       });
     });
 
+    // Het laatste vakje van elke stap is altijd het meest rechtse eindvakje
+    // (de eenhedenpositie van het tussenresultaat)
+    function laatsteVakjeVanStap(stapIdx){
+      return cijferEindVakjes[cijferEindVakjes.length - 1];
+    }
+
     cijferEindVakjes.forEach(function(el){
       el.addEventListener('input', function(){
         var stapIdx = kolomAftrEindstapIndex;
-        var aantalVoorDezeStap = vakjesVanStap(stapIdx);
         var isLaatsteStap = (stapIdx === aantalStappen - 1);
-
-        // Tel deze toetsaanslag mee
-        getypteVakjesDezeStap++;
 
         // Zodra eerste cijfer in laatste stap getypt: alle blauwe → wit
         if(isLaatsteStap){
@@ -1532,8 +1594,9 @@ function renderKolomOpAf(p,area){
           kleurEindVakjes(stapIdx, false);
         }
 
-        // Is het laatste vakje van deze stap nu ingevuld (op basis van getypte toetsaanslagen)?
-        if(getypteVakjesDezeStap >= aantalVoorDezeStap && stapIdx < aantalStappen - 1){
+        // Schakel door naar volgende stap als het LAATSTE vakje van deze stap ingevuld is
+        var laatste = laatsteVakjeVanStap(stapIdx);
+        if(laatste === el && el.value.trim() !== '' && stapIdx < aantalStappen - 1){
           kolomAftrEindstapIndex++;
           getypteVakjesDezeStap = 0;
           updateEindHulpKader(kolomAftrEindstapIndex);
@@ -3889,6 +3952,6 @@ function opnieuwSom(){
     if(eersteInput)setTimeout(function(){eersteInput.focus();},50);
   }
 }
+
+
 </script>
-</body>
-</html>
