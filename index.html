@@ -1394,46 +1394,14 @@ function renderKolomOpAf(p,area){
     eindhulpTd.innerHTML = '<div class="cij-deelsom-wrap" style="min-width:80px;max-width:400px;white-space:nowrap;font-size:calc(var(--font-size)*0.85)"><div class="cij-deelsom-som">' + somTekst + '</div></div>';
   }
 
-  // Hulpfunctie: kleur einduitkomst-vakjes in voor de huidige stap
-  // Stap-vakjes = lichtblauw, vorige stap-vakjes = wit, laatste stap = wit zodra er getypt wordt
+  // Hulpfunctie: kleur einduitkomst-vakjes in
+  // Zolang we niet in de laatste stap zitten: alle vakjes blauw
+  // Zodra de laatste stap begint (isLaatsteStapActief): alle vakjes wit
   function kleurEindVakjes(stapIdx, isLaatsteStapActief){
     if(!cfg.veelHulp || cfg.method!=='kolomsgewijs') return;
-    var aantalStappen = subtotals.length - 1;
-
-    // Bepaal welke eindvakjes (cijfer-only, geen minteken) bij welke stap horen
-    // De einduitkomstrij heeft numDigitCols cijfervakjes (index 1 t/m numDigitCols in eindVakjesLijst)
-    // We verdelen ze op basis van aantalCijfers van elk tussenresultaat
-    // Stap 0: tussenresultaat = berekenTussenResultaat(0), dat zijn de meest rechtse cijfers
-    // We werken van rechts naar links
-
-    // Bouw een mapping: voor elk eindvakje (0=meest links) → stapnummer
     var cijferVakjes = eindVakjesLijst.filter(function(el){ return el.className.indexOf('cell-sign')===-1; });
-    var stapPerVakje = new Array(cijferVakjes.length).fill(-1); // -1 = hoort nergens bij
-    var positieVanRechts = cijferVakjes.length; // teller van rechts
-
-    for(var si=aantalStappen-1; si>=0; si--){
-      var res = berekenTussenResultaat(si);
-      var nCijfers = aantalCijfersVanResultaat(res);
-      // de rechtse nCijfers vakjes horen bij stap si
-      for(var vi=0; vi<nCijfers && positieVanRechts>0; vi++){
-        positieVanRechts--;
-        stapPerVakje[positieVanRechts] = si;
-      }
-    }
-
-    // Nu kleuren toewijzen
-    cijferVakjes.forEach(function(el, vi){
-      var stapVanDitVakje = stapPerVakje[vi];
-      if(stapVanDitVakje < stapIdx){
-        // Al ingevulde stap: wit
-        el.style.color = '';
-      } else if(stapVanDitVakje === stapIdx){
-        // Huidige stap: lichtblauw, tenzij het de laatste stap is én er al getypt wordt
-        el.style.color = isLaatsteStapActief ? '' : 'var(--blue-mid)';
-      } else {
-        // Toekomstige stap: nog niet relevant, geen kleur
-        el.style.color = '';
-      }
+    cijferVakjes.forEach(function(el){
+      el.style.color = isLaatsteStapActief ? '' : 'var(--blue-mid)';
     });
   }
 
@@ -1505,20 +1473,11 @@ function renderKolomOpAf(p,area){
       return 0;
     }
 
-    // Hoeveel vakjes van de huidige stap zijn al ingevuld?
-    function ingevuldVanHuidigeStap(stapIdx){
-      var gevuld = 0;
-      var offsetVanRechts = 0;
-      for(var si=aantalStappen-1; si>stapIdx; si--){
-        offsetVanRechts += vakjesVanStap(si);
-      }
-      var nVakjes = vakjesVanStap(stapIdx);
-      var startIdx = cijferEindVakjes.length - offsetVanRechts - nVakjes;
-      if(startIdx < 0) startIdx = 0;
-      for(var vi=startIdx; vi<startIdx+nVakjes && vi<cijferEindVakjes.length; vi++){
-        if(cijferEindVakjes[vi] && cijferEindVakjes[vi].value.trim() !== '') gevuld++;
-      }
-      return gevuld;
+    // Tel hoeveel toetsaanslagen de leerling heeft gedaan in de huidige stap
+    var getypteVakjesDezeStap = 0;
+
+    function resetGetypteVakjes(){
+      getypteVakjesDezeStap = 0;
     }
 
     // Focus-handler op einduitkomst-vakjes:
@@ -1560,17 +1519,23 @@ function renderKolomOpAf(p,area){
       el.addEventListener('input', function(){
         var stapIdx = kolomAftrEindstapIndex;
         var aantalVoorDezeStap = vakjesVanStap(stapIdx);
-        var gevuld = ingevuldVanHuidigeStap(stapIdx);
         var isLaatsteStap = (stapIdx === aantalStappen - 1);
+
+        // Tel deze toetsaanslag mee
+        getypteVakjesDezeStap++;
 
         // Zodra eerste cijfer in laatste stap getypt: alle blauwe → wit
         if(isLaatsteStap){
           kleurEindVakjes(stapIdx, true);
+        } else {
+          // Niet de laatste stap: kleur de huidige stap-vakjes blauw
+          kleurEindVakjes(stapIdx, false);
         }
 
-        // Is het laatste vakje van deze stap nu ingevuld?
-        if(gevuld >= aantalVoorDezeStap && stapIdx < aantalStappen - 1){
+        // Is het laatste vakje van deze stap nu ingevuld (op basis van getypte toetsaanslagen)?
+        if(getypteVakjesDezeStap >= aantalVoorDezeStap && stapIdx < aantalStappen - 1){
           kolomAftrEindstapIndex++;
+          getypteVakjesDezeStap = 0;
           updateEindHulpKader(kolomAftrEindstapIndex);
           kleurEindVakjes(kolomAftrEindstapIndex, false);
           updateEindHighlight();
@@ -1604,10 +1569,12 @@ function renderKolomOpAf(p,area){
         // dan overschrijven we met onze stap-0 cursor
         setTimeout(function(){
           kolomAftrEindstapIndex = 0;
+          getypteVakjesDezeStap = 0;
           updateEindHulpKader(0);
           kleurEindVakjes(0, false);
           updateEindHighlight();
-          cursorNaarEersteLegVanStap(0);
+          // Cursor iets later zodat bovenstaande updates eerst renderen
+          setTimeout(function(){ cursorNaarEersteLegVanStap(0); }, 30);
         }, 50);
       });
     }
