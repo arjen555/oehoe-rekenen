@@ -271,6 +271,57 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .tip-bullet{font-size:1.1em;color:var(--blue-mid);flex-shrink:0;margin-top:1px;}
 .tip-sluit{font-size:0.88em;color:var(--text-muted);text-align:center;margin-top:18px;}
 
+/* Tips groot-modus: volledig scherm */
+#tips-paneel.tips-groot{
+  position:fixed;
+  inset:0;
+  border-radius:0;
+  z-index:500;
+  background:#0f172a;
+  padding:36px 48px 48px 48px;
+  overflow-y:auto;
+}
+#tips-paneel.tips-groot .tips-title{font-size:4.8em;color:#fff;}
+#tips-paneel.tips-groot .tip-blok{
+  background:#1e293b;
+  border-color:#334155;
+  padding:36px 40px;
+  margin-bottom:30px;
+}
+#tips-paneel.tips-groot .tip-blok-titel{font-size:3.8em;color:#60a5fa;}
+#tips-paneel.tips-groot .tip-icon{font-size:1.1em;}
+#tips-paneel.tips-groot .tip-item{font-size:3.2em;margin-bottom:22px;color:#e2e8f0;}
+#tips-paneel.tips-groot .tip-bullet{color:#60a5fa;}
+#tips-paneel.tips-groot .tip-sluit{font-size:2.6em;color:#94a3b8;margin-top:36px;}
+#tips-paneel.tips-groot kbd{
+  background:#334155;color:#e2e8f0;
+  padding:2px 8px;border-radius:5px;
+  font-size:0.9em;
+}
+.tips-vergroot-btn{
+  background:var(--blue-mid);color:#fff;
+  border:none;border-radius:50%;
+  width:52px;height:52px;
+  font-size:2em;font-weight:900;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background 0.15s,transform 0.1s;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+  flex-shrink:0;
+}
+.tips-vergroot-btn:hover{background:#2563eb;transform:scale(1.08);}
+.tips-voorlees-btn{
+  background:#0d9488;color:#fff;
+  border:none;border-radius:50%;
+  width:52px;height:52px;
+  font-size:1.6em;
+  cursor:pointer;display:none;align-items:center;justify-content:center;
+  transition:background 0.15s,transform 0.1s;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+  flex-shrink:0;
+}
+.tips-voorlees-btn:hover{background:#0f766e;transform:scale(1.08);}
+.tips-header-rechts{display:flex;align-items:center;gap:10px;}
+
 /* ── Suggesties-formulier overlay ── */
 #suggesties-overlay{
   display:none;
@@ -443,7 +494,11 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <div id="tips-paneel" role="dialog" aria-modal="true" aria-label="Handige tips">
       <div class="tips-header">
         <span class="tips-title">&#128161; Handige tips</span>
-        <button class="tips-close" id="tips-sluit" aria-label="Tips sluiten" title="Sluiten (Escape)">&#10005;</button>
+        <div class="tips-header-rechts">
+          <button class="tips-voorlees-btn" id="tips-voorlees-btn" onclick="leesTipsVoor()" aria-label="Tips voorlezen" title="Voorlezen">&#128266;</button>
+          <button class="tips-vergroot-btn" id="tips-vergroot-btn" onclick="wisselTipsGroot()" aria-label="Tips vergroten" title="Vergroten">+</button>
+          <button class="tips-close" id="tips-sluit" aria-label="Tips sluiten" title="Sluiten (Escape)">&#10005;</button>
+        </div>
       </div>
 
       <div class="tip-blok" tabindex="0" role="group" aria-label="Cijferend aftrekken, lenen">
@@ -4150,17 +4205,68 @@ function openTips(){
   if(!p) return;
   p.style.display='block';
   // Focus op eerste blok, of sluiten-knop als er geen blokken zijn
-  var eersteBlok=p.querySelector('.tip-blok');
-  if(eersteBlok){
-    setTimeout(function(){eersteBlok.focus();},50);
+  var vergrootBtn=document.getElementById('tips-vergroot-btn');
+  if(vergrootBtn){
+    setTimeout(function(){vergrootBtn.focus();},50);
   } else {
     document.getElementById('tips-sluit').focus();
   }
 }
 function sluitTips(){
   var p=document.getElementById('tips-paneel');
-  if(p){p.style.display='none';}
+  if(!p)return;
+  p.style.display='none';
+  // Reset groot-modus
+  if(_tipsGroot){
+    _tipsGroot=false;
+    p.classList.remove('tips-groot');
+    var btn=document.getElementById('tips-vergroot-btn');
+    if(btn){btn.textContent='+';btn.setAttribute('title','Vergroten');}
+    var vb=document.getElementById('tips-voorlees-btn');
+    if(vb)vb.style.display='none';
+    if(window.speechSynthesis)speechSynthesis.cancel();
+  }
 }
+// ── Tips groot-modus ──
+var _tipsGroot=false;
+
+function wisselTipsGroot(){
+  _tipsGroot=!_tipsGroot;
+  var p=document.getElementById('tips-paneel');
+  var btn=document.getElementById('tips-vergroot-btn');
+  var vb=document.getElementById('tips-voorlees-btn');
+  if(_tipsGroot){
+    p.classList.add('tips-groot');
+    btn.textContent='−';
+    btn.setAttribute('title','Verkleinen');
+    if(vb){vb.style.display='flex';}
+    // Focus op eerste blok
+    var eersteBlok=p.querySelector('.tip-blok');
+    if(eersteBlok)setTimeout(function(){eersteBlok.focus();},50);
+  } else {
+    p.classList.remove('tips-groot');
+    btn.textContent='+';
+    btn.setAttribute('title','Vergroten');
+    if(vb){vb.style.display='none';}
+    if(window.speechSynthesis)speechSynthesis.cancel();
+  }
+}
+
+function leesTipsVoor(){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  var p=document.getElementById('tips-paneel');
+  if(!p)return;
+  var tekst='Handige tips. ';
+  p.querySelectorAll('.tip-blok').forEach(function(blok){
+    tekst+=getTipTekst(blok)+' ';
+  });
+  var u=new SpeechSynthesisUtterance(tekst.trim());
+  u.lang='nl-NL';
+  u.rate=spreekSnelheid||1;
+  speechSynthesis.speak(u);
+}
+
 function getTipBlokken(){
   var p=document.getElementById('tips-paneel');
   return p?Array.from(p.querySelectorAll('.tip-blok')):[];
