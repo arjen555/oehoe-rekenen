@@ -26,7 +26,7 @@
   --calc-bg:#0a1628;
   --cell-static-bg:#1e3a5f;--cell-static-border:#334155;--cell-static-color:#e2e8f0;
   --cell-input-bg:#0f172a;--cell-input-border:#475569;--cell-input-color:#f1f5f9;
-  --cell-op-color:#94a3b8;--kolom-hdr-color:#93C5FD;--calc-line:#475569;
+  --cell-op-color:#e2e8f0;--kolom-hdr-color:#93C5FD;--calc-line:#475569;
   --label-color:#64748b;
   --opt-sel-bg:#2563EB;--opt-sel-text:#FCD34D;--opt-sel-border:#3B82F6;
 }
@@ -41,8 +41,8 @@ body.inverted .badge-blue{background:#dbeafe;color:#1e3a8a;}
 body.inverted .badge-teal{background:#d1fae5;color:#065f46;}
 body.inverted .step-feedback.ok{background:#d1fae5;color:#065f46;border-color:#10B981;}
 body.inverted .step-feedback.fout{background:#fee2e2;color:#991b1b;border-color:#EF4444;}
-body.inverted .cell-input.correct{border-color:#10B981!important;background:#d1fae5!important;color:#065f46!important;}
-body.inverted .cell-input.incorrect{border-color:#EF4444!important;background:#fee2e2!important;color:#991b1b!important;}
+body.inverted .cell-input.correct,body.inverted .cell-sign.correct{border-color:#10B981!important;background:#d1fae5!important;color:#065f46!important;}
+body.inverted .cell-input.incorrect,body.inverted .cell-sign.incorrect{border-color:#EF4444!important;background:#fee2e2!important;color:#991b1b!important;}
 body.inverted .feedback-pos{background:#d1fae5;color:#065f46;border-color:#10B981;}
 body.inverted .cij-deelsom-wrap{background:rgba(124,58,237,0.1);border-color:#7c3aed;color:#000;}
 body.inverted .cij-deelsom-kol{color:#5b21b6;}
@@ -145,8 +145,8 @@ body.inverted .cell-static.hulp-active{outline:6px solid #7c3aed;outline-offset:
 .cell-input.kolom-hulp-active{outline:3px solid #FCD34D!important;outline-offset:2px;}
 body.inverted .cell-input.kolom-hulp-active{outline:6px solid #7c3aed!important;outline-offset:-1px;background:#ede9fe!important;}
 body.inverted #tab-hint{color:var(--text-muted);background:rgba(0,0,0,0.15);border-color:var(--border);}
-.cell-input.correct{border-color:#10B981!important;background:#052e16!important;color:#6EE7B7!important;border-width:3px!important;}
-.cell-input.incorrect{border-color:#EF4444!important;background:#450a0a!important;color:#FCA5A5!important;border-width:4px!important;}
+.cell-input.correct,.cell-sign.correct{border-color:#10B981!important;background:#052e16!important;color:#6EE7B7!important;border-width:3px!important;}
+.cell-input.incorrect,.cell-sign.incorrect{border-color:#EF4444!important;background:#450a0a!important;color:#FCA5A5!important;border-width:4px!important;}
 .cell-sign{border:3px solid var(--cell-input-border);border-radius:var(--radius-sm);background:var(--cell-input-bg);font-family:var(--font);font-weight:800;color:var(--cell-input-color);text-align:center;vertical-align:middle;padding:2px;outline:none;width:var(--cell-size);height:var(--cell-size);font-size:var(--font-size);}
 .cell-sign:focus{border-color:#3B82F6;box-shadow:0 0 0 3px rgba(59,130,246,0.4);}
 .cell-remember{border:2px dashed #FCD34D;border-radius:var(--radius-sm);background:rgba(252,211,77,0.08);font-family:var(--font);font-weight:800;color:#FCD34D;text-align:center;vertical-align:middle;padding:1px;outline:none;display:block;}
@@ -243,6 +243,33 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .feedback-pos{background:#052e16;color:#6ee7b7;border-color:#10B981;}
 .feedback-neg{background:#450a0a;color:#FCA5A5;border-color:#EF4444;}
 .feedback-tip{background:#431407;color:#FCD34D;border-color:#D97706;}
+
+/* ── Tips-paneel ── */
+#tips-paneel{
+  display:none;
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  background:var(--card);
+  border-radius:var(--radius);
+  z-index:200;
+  overflow-y:auto;
+  padding:28px 28px 36px 28px;
+  box-sizing:border-box;
+  animation:fadeInTips 0.18s ease;
+}
+@keyframes fadeInTips{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.tips-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.tips-title{font-size:1.35em;font-weight:800;color:var(--text);letter-spacing:-0.01em;}
+.tips-close{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.6em;line-height:1;padding:4px 8px;border-radius:8px;transition:background 0.15s;}
+.tips-close:hover{background:var(--border);}
+.tip-blok{background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:16px;cursor:default;outline:none;transition:border-color 0.15s;}
+.tip-blok:focus{border-color:var(--blue-mid);box-shadow:0 0 0 3px rgba(59,130,246,0.35);}
+.tip-blok-titel{font-size:1.18em;font-weight:800;color:var(--blue-mid);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.tip-blok-titel .tip-icon{font-size:1.3em;}
+.tip-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:1.08em;color:var(--text);}
+.tip-item:last-child{margin-bottom:0;}
+.tip-bullet{font-size:1.1em;color:var(--blue-mid);flex-shrink:0;margin-top:1px;}
+.tip-sluit{font-size:0.88em;color:var(--text-muted);text-align:center;margin-top:18px;}
 </style>
 </head>
 <body>
@@ -300,7 +327,44 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <img id="owl-vraagt" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_vraagt.png" alt="Uil die vraagt wat je wilt oefenen" class="setup-owl-img">
   </div>
   <div class="app-header"><button class="back-btn" id="back-setup">&#8592;</button><div><div class="header-main">Kies je oefening</div><div class="header-sub">Stel in hoe en wat je wilt oefenen</div></div></div>
-  <div class="card"><div id="setup-form"></div></div>
+  <div class="card" style="position:relative;">
+    <div id="tips-paneel" role="dialog" aria-modal="true" aria-label="Handige tips">
+      <div class="tips-header">
+        <span class="tips-title">&#128161; Handige tips</span>
+        <button class="tips-close" id="tips-sluit" aria-label="Tips sluiten" title="Sluiten (Escape)">&#10005;</button>
+      </div>
+
+      <div class="tip-blok" tabindex="0" role="group" aria-label="Cijferend aftrekken, lenen">
+        <div class="tip-blok-titel"><span class="tip-icon">&#9999;&#65039;</span>Cijferend aftrekken &mdash; lenen</div>
+        <div class="tip-item"><span class="tip-bullet">&#9654;</span><span>Typ de <strong>letter van de kolomnaam</strong> (bijvoorbeeld <kbd>t</kbd> van tientallen) om direct van die kolom te lenen.</span></div>
+        <div class="tip-item"><span class="tip-bullet">&#9654;</span><span>Je kunt ook het getal waar je van wilt lenen <strong>aanklikken</strong> met de muis.</span></div>
+      </div>
+
+      <div class="tip-blok" tabindex="0" role="group" aria-label="Vermenigvuldigen, tafelkaart">
+        <div class="tip-blok-titel"><span class="tip-icon">&#10005;</span>Vermenigvuldigen &mdash; tafelkaart</div>
+        <div class="tip-item"><span class="tip-bullet">&#9654;</span><span>Heb je de tafelkaart gekozen? Druk op <kbd>t</kbd> om de tafelkaart op te roepen.</span></div>
+        <div class="tip-item"><span class="tip-bullet">&#9654;</span><span>Je kunt de tafelkaart ook <strong>rechtsboven in het scherm</strong> aanklikken met de muis.</span></div>
+      </div>
+
+      <div class="tip-blok" tabindex="0" role="group" aria-label="Voorlezen">
+        <div class="tip-blok-titel"><span class="tip-icon">&#128266;</span>Voorlezen</div>
+        <div class="tip-item"><span class="tip-bullet">&#9654;</span><span>Heb je voorlezen ingeschakeld? Druk op de <strong>spatiebalk</strong> om te horen waar je bent.</span></div>
+      </div>
+
+      <div class="tip-blok" tabindex="0" role="group" aria-label="Hoge vergroting">
+        <div class="tip-blok-titel"><span class="tip-icon">&#128269;</span>Hoge vergroting</div>
+        <div class="tip-item"><span class="tip-bullet">&#9654;</span><span>Met <strong>A+</strong> vergroot je het lettertype. Wil je nog groter? Gebruik dan <strong>Ctrl&nbsp;+</strong> of <strong>Ctrl + muiswiel</strong> &mdash; zo blijft alles netjes in beeld.</span></div>
+      </div>
+
+      <div class="tip-blok" tabindex="0" role="group" aria-label="Iets nog handiger">
+        <div class="tip-blok-titel"><span class="tip-icon">&#128172;</span>Iets nog handiger?</div>
+        <div class="tip-item"><span class="tip-bullet">&#9654;</span><span>Gebruik het <strong>invulformulier op de startpagina</strong> (rechtsonder in het scherm) om een suggestie door te geven.</span></div>
+      </div>
+
+      <div class="tip-sluit">Druk op <kbd>Escape</kbd> of <kbd>Enter</kbd>, of klik buiten dit venster om terug te gaan.</div>
+    </div>
+    <div id="setup-form"></div>
+  </div>
   <div class="btn-row"><button class="btn-primary" id="start-ex">Starten! &#8594;</button></div>
 </div>
 <div class="screen" id="screen-exercise" role="main">
@@ -480,7 +544,7 @@ function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
     var huidigScherm=document.querySelector('.screen.active');
     var schermId=huidigScherm?huidigScherm.id:'';
     var logoToegestaan=(schermId==='screen-role'||schermId==='screen-setup');
-    document.querySelectorAll('.eduvip-logo,.logo-vast').forEach(function(el){
+    document.querySelectorAll('.logo-vast').forEach(function(el){
       el.style.display=(logoToegestaan&&!teGroot)?'block':'none';
     });
     // Som-uil ook verbergen bij te grote zoom
@@ -547,11 +611,15 @@ async function leerlingInloggen(){
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   document.getElementById(id).classList.add('active');
+  // Zorg dat tips-paneel altijd gesloten is bij schermwissel
+  if(typeof sluitTips==='function') sluitTips();
 
   document.querySelectorAll('.suggesties-btn').forEach(function(b){b.style.display=(id==='screen-role')?'flex':'none';});
   if(id!=='screen-exercise')verbergSomUil();
   var logoZichtbaar=(id==='screen-role'||id==='screen-setup');
   document.querySelectorAll('.logo-vast').forEach(function(el){el.style.display=logoZichtbaar?'block':'none';});
+  // Hercheck zoom zodat logo bij te grote zoom alsnog verborgen blijft
+  if(typeof checkLogoZoom==='function') checkLogoZoom();
 }
 function goHome(){
   resetDisplaySize();
@@ -622,6 +690,7 @@ function buildForm(tid){
   h+='<button class="opt-btn'+(invertedContrast?' selected':'')+'" data-inv="1" aria-pressed="'+invertedContrast+'">'+(invertedContrast?'Donker op licht':'Licht op donker')+'</button>';
   h+='<button class="opt-btn'+(cfg.autoVoorlezen?' selected':'')+'" data-autoVoorlezen="1" aria-pressed="'+cfg.autoVoorlezen+'">&#128266; Voorlezen</button>';
   h+='<button id="setup-speed-btn" class="opt-btn" style="display:'+(cfg.autoVoorlezen?'inline-flex':'none')+';min-width:60px;" aria-label="Spreeksnelheid">'+({1:'1×',2:'2×',3:'3×',4:'4×'}[spreekSnelheid]||'1×')+'</button>';
+  h+='<button class="opt-btn" id="btn-tips" style="margin-left:6px;" aria-label="Handige tips bekijken">&#128161; Handige tips</button>';
   h+='</div></div><hr class="divider">';
   h+='<div><label class="form-label">Rekenmethode</label><div class="option-row">';
   h+=ob('method','kolomsgewijs','Kolomsgewijs')+ob('method','cijferend','Cijferend');
@@ -662,6 +731,7 @@ function buildForm(tid){
   h+='</div></div>';
   el.innerHTML=h;
   attachFormEvents(el);
+  initTipsBtn();
 }
 function ob(g,v,l){return '<button class="opt-btn" data-group="'+g+'" data-val="'+v+'" aria-pressed="false">'+l+'</button>';}
 function obp(g,i,l){return '<button class="opt-btn" data-place="'+g+'" data-idx="'+i+'" aria-pressed="false">'+l+'</button>';}
@@ -2053,7 +2123,7 @@ function renderCijferend(p,area){
     addHR(t,cols+1);
 
     var startAns=cols-ansStr.length;
-    var ar=t.insertRow();var eqTd=ar.insertCell();eqTd.className='cell-label-col';eqTd.textContent='=';
+    var ar=t.insertRow();var eqTd=ar.insertCell();eqTd.className='cell-op';eqTd.textContent='=';
     var ansInputsLR=[];
     for(var c=0;c<cols;c++){
       var vtd=ar.insertCell();
@@ -2323,7 +2393,7 @@ function renderCijferend(p,area){
       var invoegIdx=eersteInvulTr?eersteInvulTr.rowIndex:2;
       var optRemRij=t.insertRow(invoegIdx);
       optRemRij.className='opt-rem-rij';
-      optRemRij.insertCell().className='cell-label-col';
+      var optPlusTd=optRemRij.insertCell();optPlusTd.className='cell-op';optPlusTd.textContent='+';
       var optRemInputs=[];
       for(var c2=0;c2<cols;c2++){
         var rtd=optRemRij.insertCell();
@@ -2506,7 +2576,7 @@ function renderCijferend(p,area){
     var startAns=cols-ansStr.length;
     var leadingZeros=ansStr.match(/^(0+)/);var numLeading=leadingZeros?leadingZeros[1].length:0;
     var ansInputs=[];
-    var ar=t.insertRow();var eqTd=ar.insertCell();eqTd.className='cell-label-col';eqTd.textContent='=';
+    var ar=t.insertRow();var eqTd=ar.insertCell();eqTd.className='cell-op';eqTd.textContent='=';
     for(var c=0;c<cols;c++){
       var td=ar.insertCell();
       var inp=mkInput('Antwoord cijfer '+(c+1),0);
@@ -2683,7 +2753,7 @@ function renderCijferend(p,area){
         if(cidx>=0)optRemTds.push({col:cidx-1,inp:rf});
       }
     });
-    var ar=t.insertRow();var eqTd=ar.insertCell();eqTd.className='cell-label-col';eqTd.textContent='=';
+    var ar=t.insertRow();var eqTd=ar.insertCell();eqTd.className='cell-op';eqTd.textContent='=';
     for(var c=0;c<cols;c++){
       var td=ar.insertCell();
       if(c>=startAns){
@@ -2897,7 +2967,8 @@ function checkStep(){
   inputFields.forEach(function(el,i){
     var v=el.value.trim(),val=v===''?null:(v==='-'?-99:parseInt(v));
     userArr.push(val);
-    var ok=isOptional(expectedAnswers[i])||(val===expectedAnswers[i])||(verwachtMinteken(expectedAnswers[i])&&v==='-');
+    var isTekenVakje=(expectedAnswers[i]===-2);
+    var ok=(isTekenVakje&&(v===''||v==='-'))||(!isTekenVakje&&isOptional(expectedAnswers[i])&&(v===''||v==='0'||v==='-'))||(val===expectedAnswers[i])||(verwachtMinteken(expectedAnswers[i])&&v==='-');
     correctArr.push(ok);
     el.classList.remove('correct','incorrect');el.classList.add(ok?'correct':'incorrect');
     if(!ok)allCorrect=false;el.disabled=true;
@@ -3658,20 +3729,14 @@ function spreekKolomVermDeelsom(){
   var ri=currentHulpRow>=0?currentHulpRow:0;
   var verlichte=stepHighlightCells[ri]||[];
   if(verlichte.length<2)return;
-  var tabel=document.querySelector('#calc-area table');
-  var numColsH=tabel&&tabel.rows[0]?tabel.rows[0].cells.length-1:0;
-  var teksten=[];
+  // Spreek alleen de getallen, zonder kolomnamen (consistent met latere deelbewerkingen)
+  var getallen=[];
   verlichte.forEach(function(cell){
-    var td=cell.closest('td');var tr=cell.closest('tr');
-    if(!td||!tr)return;
-    var colI=0;for(var ci=0;ci<tr.cells.length;ci++){if(tr.cells[ci]===td){colI=ci-1;break;}}
-    var fromR=numColsH-1-colI;
-    var kolN=COL_FULL_NAMES[fromR]||('kolom '+fromR);
     var waarde=cell.tagName==='INPUT'?cell.value:cell.textContent;
-    if(waarde&&waarde.trim())teksten.push(waarde.trim()+' '+kolN);
+    if(waarde&&waarde.trim())getallen.push(waarde.trim());
   });
-  if(teksten.length>=2)speakTekst(teksten.join(' keer '),true);
-  else if(teksten.length===1)speakTekst(teksten[0],true);
+  if(getallen.length>=2)speakTekst(getallen.join(' keer '),true);
+  else if(getallen.length===1)speakTekst(getallen[0],true);
 }
 
 function speakProblem(){
@@ -3684,7 +3749,7 @@ function speakProblem(){
     spreekGeblokkerdTot=0;
     eersteDeelsomCijferendGesproken=false;
     // Na hoofdsom: spreek de eerste deelbewerking
-    if(cfg.autoVoorlezen&&cfg.eenBeetjeHulp&&cfg.method==='kolomsgewijs'&&cfg.op==='vermenigvuldigen'&&!kolomVermOptelfase){
+    if(cfg.autoVoorlezen&&(cfg.eenBeetjeHulp||cfg.veelHulp)&&cfg.method==='kolomsgewijs'&&cfg.op==='vermenigvuldigen'&&!kolomVermOptelfase){
       spreekKolomVermDeelsom();
     }
     // Na hoofdsom: spreek eerste rij voor kolomsgewijs optellen/aftrekken
@@ -3696,6 +3761,18 @@ function speakProblem(){
       var tblA=document.querySelector('#calc-area table');
       var colsA=tblA&&tblA.rows[0]?tblA.rows[0].cells.length-1:0;
       if(colsA>0)updateAftrDeelsom(currentProblem,colsA-1,colsA);
+    }
+    // Na hoofdsom: spreek eerste deelsom voor cijferend vermenigvuldigen
+    if(cfg.autoVoorlezen&&(cfg.eenBeetjeHulp||cfg.veelHulp)&&cfg.method==='cijferend'&&cfg.op==='vermenigvuldigen'){
+      // Lees de tekst direct uit het gele kader
+      var deelsomEl=document.querySelector('.cij-deelsom-som');
+      if(deelsomEl&&deelsomEl.textContent.trim()){
+        var deelsomTekst=deelsomEl.textContent.trim()
+          .replace(/×/g,' keer ')
+          .replace(/\+/g,' plus ')
+          .replace(/\s+/g,' ').trim();
+        speakTekst(deelsomTekst,true);
+      }
     }
   };
   wachtOpHoofdsom=true;
@@ -3954,4 +4031,94 @@ function opnieuwSom(){
 }
 
 
+
+// ── Tips-paneel ──
+function openTips(){
+  var p=document.getElementById('tips-paneel');
+  if(!p) return;
+  p.style.display='block';
+  // Focus op eerste blok, of sluiten-knop als er geen blokken zijn
+  var eersteBlok=p.querySelector('.tip-blok');
+  if(eersteBlok){
+    setTimeout(function(){eersteBlok.focus();},50);
+  } else {
+    document.getElementById('tips-sluit').focus();
+  }
+}
+function sluitTips(){
+  var p=document.getElementById('tips-paneel');
+  if(p){p.style.display='none';}
+}
+function getTipBlokken(){
+  var p=document.getElementById('tips-paneel');
+  return p?Array.from(p.querySelectorAll('.tip-blok')):[];
+}
+function getTipTekst(blok){
+  // Titel zonder het icoon-span
+  var titelEl=blok.querySelector('.tip-blok-titel');
+  var titelTekst='';
+  if(titelEl){
+    titelEl.childNodes.forEach(function(n){
+      if(n.nodeType===3) titelTekst+=n.textContent; // tekstknoop
+      else if(n.classList&&!n.classList.contains('tip-icon')) titelTekst+=n.textContent;
+    });
+  }
+  // Items zonder het bullet-span
+  var tekst=titelTekst.trim()+'. ';
+  blok.querySelectorAll('.tip-item').forEach(function(it){
+    var itemTekst='';
+    it.childNodes.forEach(function(n){
+      if(n.nodeType===3) itemTekst+=n.textContent;
+      else if(n.classList&&!n.classList.contains('tip-bullet')) itemTekst+=n.textContent;
+    });
+    tekst+=itemTekst.trim()+'. ';
+  });
+  return tekst.replace(/\s+/g,' ').trim();
+}
+function initTipsBtn(){
+  var btn=document.getElementById('btn-tips');
+  if(btn){
+    btn.addEventListener('click',function(e){e.stopPropagation();openTips();});
+    addSpeakEvents(btn,'Handige tips');
+  }
+  var sluit=document.getElementById('tips-sluit');
+  if(sluit){sluit.addEventListener('click',sluitTips);}
+  // Klik buiten paneel sluit het
+  document.addEventListener('mousedown',function(e){
+    var p=document.getElementById('tips-paneel');
+    if(p&&p.style.display==='block'&&!p.contains(e.target)){sluitTips();}
+  });
+  // Toetsenbord: Escape/Enter sluiten, pijltjes navigeren tussen blokken
+  document.addEventListener('keydown',function(e){
+    var p=document.getElementById('tips-paneel');
+    if(!p||p.style.display!=='block') return;
+    if(e.key==='Escape'||e.key==='Enter'){
+      e.preventDefault();
+      if(window.speechSynthesis) speechSynthesis.cancel();
+      sluitTips();
+      return;
+    }
+    var blokken=getTipBlokken();
+    var huidigIdx=blokken.indexOf(document.activeElement);
+    var volgendIdx=-1;
+    if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key==='Tab'&&!e.shiftKey){
+      if(huidigIdx>=0&&huidigIdx<blokken.length-1){e.preventDefault();volgendIdx=huidigIdx+1;}
+    } else if(e.key==='ArrowUp'||e.key==='ArrowLeft'||(e.key==='Tab'&&e.shiftKey)){
+      if(huidigIdx>0){e.preventDefault();volgendIdx=huidigIdx-1;}
+    }
+    if(volgendIdx>=0){blokken[volgendIdx].focus();}
+  });
+  // Voorlezen bij focus op een blok
+  var blokken=getTipBlokken();
+  blokken.forEach(function(blok){
+    blok.addEventListener('focus',function(){
+      if(cfg.autoVoorlezen) speakTekst(getTipTekst(blok));
+    });
+    blok.addEventListener('blur',function(){
+      if(window.speechSynthesis) speechSynthesis.cancel();
+    });
+  });
+}
+// Initialiseer na buildForm (buildForm wordt aangeroepen vanuit showScreen/goHome)
+var _origBuildForm=window.buildForm;
 </script>
