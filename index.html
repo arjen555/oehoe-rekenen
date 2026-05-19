@@ -289,6 +289,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   width:min(520px,90vw);
   box-shadow:0 20px 60px rgba(0,0,0,0.5);
   animation:fadeInTips 0.18s ease;
+  position:relative;
 }
 .sug-titel{font-size:1.2em;font-weight:800;color:var(--text);margin-bottom:6px;}
 .sug-sub{font-size:0.9em;color:var(--text-muted);margin-bottom:20px;}
@@ -311,6 +312,48 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .sug-bevestiging{display:none;text-align:center;padding:16px 0 8px;}
 .sug-bevestiging-icoon{font-size:2.5em;margin-bottom:8px;}
 .sug-bevestiging-tekst{font-size:1.05em;font-weight:700;color:var(--text);}
+/* Grote modus suggesties-formulier */
+#suggesties-form-card.sug-groot{
+  width:min(1100px,98vw);
+  max-height:96vh;
+  overflow-y:auto;
+  padding:56px 60px 48px 60px;
+  background:#0f172a;
+}
+#suggesties-form-card.sug-groot .sug-titel{font-size:2.8em;color:#fff;}
+#suggesties-form-card.sug-groot .sug-sub{font-size:1.6em;margin-bottom:36px;color:#cbd5e1;}
+#suggesties-form-card.sug-groot .sug-label{font-size:1.8em;margin-top:28px;margin-bottom:10px;color:#fff;}
+#suggesties-form-card.sug-groot .sug-input,
+#suggesties-form-card.sug-groot .sug-textarea{font-size:1.8em;padding:16px 20px;color:#fff;background:#1e293b;border-color:#475569;}
+#suggesties-form-card.sug-groot .sug-input::placeholder,
+#suggesties-form-card.sug-groot .sug-textarea::placeholder{color:#94a3b8;}
+#suggesties-form-card.sug-groot .sug-textarea{min-height:180px;}
+#suggesties-form-card.sug-groot .sug-verzend{font-size:1.6em;padding:16px 36px;}
+#suggesties-form-card.sug-groot .sug-annuleer{font-size:1.6em;padding:16px 28px;color:#fff;border-color:#475569;}
+#suggesties-form-card.sug-groot .sug-bevestiging-icoon{font-size:4em;}
+#suggesties-form-card.sug-groot .sug-bevestiging-tekst{font-size:2em;color:#fff;}
+.sug-vergroot-btn{
+  position:absolute;top:14px;right:14px;
+  background:var(--blue-mid);color:#fff;
+  border:none;border-radius:50%;
+  width:64px;height:64px;
+  font-size:2.6em;font-weight:900;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  line-height:1;transition:background 0.15s,transform 0.1s;
+  box-shadow:0 3px 12px rgba(0,0,0,0.4);
+}
+.sug-vergroot-btn:hover{background:#2563eb;transform:scale(1.08);}
+.sug-voorlees-btn{
+  position:absolute;top:14px;right:88px;
+  background:#0d9488;color:#fff;
+  border:none;border-radius:50%;
+  width:64px;height:64px;
+  font-size:1.9em;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background 0.15s,transform 0.1s;
+  box-shadow:0 3px 12px rgba(0,0,0,0.4);
+}
+.sug-voorlees-btn:hover{background:#0f766e;transform:scale(1.08);}
 </style>
 </head>
 <body>
@@ -342,11 +385,15 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 
 <div id="suggesties-overlay" role="dialog" aria-modal="true" aria-label="Suggesties formulier">
   <div id="suggesties-form-card">
+    <button class="sug-vergroot-btn" onclick="wisselSugGroot()" id="sug-vergroot-btn" aria-label="Formulier vergroten" title="Vergroten / verkleinen">+</button>
+    <button class="sug-voorlees-btn" id="sug-voorlees-btn" onclick="leesSuggestieFormulierVoor()" aria-label="Formulier voorlezen" title="Formulier voorlezen" style="display:none;">&#128266;</button>
     <div class="sug-titel">&#128172; Suggesties ter verbetering</div>
     <div class="sug-sub">Wat zou jij anders willen zien? Laat het ons weten!</div>
     <div id="sug-formulier">
-      <label class="sug-label" for="sug-naam">Je naam (optioneel)</label>
+      <label class="sug-label" for="sug-naam">Je naam</label>
       <input class="sug-input" id="sug-naam" type="text" placeholder="Naam" autocomplete="off">
+      <label class="sug-label" for="sug-email">E-mailadres</label>
+      <input class="sug-input" id="sug-email" type="email" placeholder="jouw@email.nl" autocomplete="off">
       <label class="sug-label" for="sug-bericht">Jouw suggestie</label>
       <textarea class="sug-textarea" id="sug-bericht" placeholder="Typ hier je suggestie..."></textarea>
       <div class="sug-btn-rij">
@@ -500,7 +547,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 var BASE_URL='https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/';
 
 // Som-uil: plaatjes rechtsonder tijdens een som
-var _somUilAantal=20; // verhoog dit als je meer plaatjes toevoegt
+var _somUilAantal=25; // verhoog dit als je meer plaatjes toevoegt
 var _somUilVorige=-1;
 function toonSomUil(){
   var img=document.getElementById('uil-som');
@@ -3045,7 +3092,7 @@ function checkStep(){
   if(allCorrect){
     if(!wasVerbeterPoging)session.correct++;
     else session.verbeterd++;
-    var posMsg=['Super! Helemaal goed! Geweldig gedaan!','Wat ben jij goed bezig!','Rekenkanjer!','Jij komt er wel!','Toppie topper!','Hatsjikidee, die is goed!','Nou en of, zo moet het dus!','Oehoe oehoe, hier wordt uil blij van!','Alle staartveren, wat knap!','Daar gaan mijn veertjes van wiebelen, zo goed!','Sapperdeflapper dit is top!','Holy moly ja zo moet het!','Je bent een wandelende rekenmachine!','Als ik het niet meer snap, vraag ik het aan jou','Ik wiebel bijna van mijn tak af, zo goed!','Jij hebt een lekker muisje verdiend hoor!','Top, hier ga ik salto\'s van vliegen!','Ga zo door en je krijgt een eigen standbeeld!','Oehoe oe oe oeioeioei wat goe oe oed!','Jij kunt super rekenen, maar kun je ook vliegen?','Mmm, dat heerlijke gevoel van een som die goed is','Top topper de topper die je bent!','Skibbedie goed!','6-7... 6-7... go go goed!'];
+    var posMsg=['Super! Helemaal goed! Geweldig gedaan!','Wat ben jij goed bezig!','Rekenkanjer!','Jij komt er wel!','Toppie topper!','Hatsjikidee, die is goed!','Nou en of, zo moet het dus!','Oehoe oehoe, hier wordt uil blij van!','Alle staartveren, wat knap!','Daar gaan mijn veertjes van wiebelen, zo goed!','Sapperdeflapper dit is top!','Holy moly ja zo moet het!','Je bent een wandelende rekenmachine!','Als ik het niet meer snap, vraag ik het aan jou','Ik wiebel bijna van mijn tak af, zo goed!','Jij hebt een lekker muisje verdiend hoor!','Top, hier ga ik salto\'s van vliegen!','Ga zo door en je krijgt een eigen standbeeld!','Oehoe oe oe oeioeioei wat goe oe oed!','Jij kunt super rekenen, maar kun je ook vliegen?','Mmm, dat heerlijke gevoel van een som die goed is','Top topper de topper die je bent!','Skibbedie goed!','6-7... 6-7... go go goed!','Jij bent zeker een uil, zo goed als jij kunt rekenen!','Alle braakballen in een bakje, wat knap!','Dit is de nobelprijs voor sommen oplossen waard!','Oelaka Boelaka Boebie, nou en of!','Ik val bijna flauw zo top gedaan dit!'];
     var posMsgVerbeterd=['Oehoe de aanhouder wint!','Jij geeft niet op dus naar de top!','Wist je dat bloemkoolkwallen bestaan? Dat rijmt op goed gedaan!','Oogjes dicht en snaveltjes toe!','Niet de eerste keer, maar nu lekkrrrr wel!','En nu heb je wel een veertje verdiend!','Alle potten pindakaas, zo moet het!','Hupjes en hopjes en huppakee!','Parallelle piepedummedingetje yes!','Hier is je prijs, een voetreis naar Rome!'];
     var gekozenMsg=wasVerbeterPoging?posMsgVerbeterd[Math.floor(Math.random()*posMsgVerbeterd.length)]:posMsg[Math.floor(Math.random()*posMsg.length)];
     showFeedback(gekozenMsg,'ok',OWL_OK);
@@ -4195,16 +4242,115 @@ function openSuggestiesForm(){
   document.getElementById('sug-formulier').style.display='';
   document.getElementById('sug-bevestiging').style.display='none';
   document.getElementById('sug-naam').value='';
+  document.getElementById('sug-email').value='';
   document.getElementById('sug-bericht').value='';
+  // Groot-modus altijd resetten bij openen
+  _sugGroot=false;
+  document.getElementById('suggesties-form-card').classList.remove('sug-groot');
+  var vb=document.getElementById('sug-vergroot-btn');
+  if(vb){vb.textContent='+';vb.setAttribute('title','Vergroten');}
+  var vlb=document.getElementById('sug-voorlees-btn');
+  if(vlb)vlb.style.display='none';
+  if(window.speechSynthesis)speechSynthesis.cancel();
   ov.classList.add('actief');
-  setTimeout(function(){document.getElementById('sug-bericht').focus();},50);
+  setTimeout(function(){
+    document.getElementById('sug-vergroot-btn').focus();
+    initSuggestieGeleideStroom();
+  },50);
 }
 function sluitSuggestiesForm(){
   var ov=document.getElementById('suggesties-overlay');
   if(ov)ov.classList.remove('actief');
 }
+var _sugGroot=false;
+function wisselSugGroot(){
+  _sugGroot=!_sugGroot;
+  var card=document.getElementById('suggesties-form-card');
+  var btn=document.getElementById('sug-vergroot-btn');
+  var vb=document.getElementById('sug-voorlees-btn');
+  if(_sugGroot){
+    card.classList.add('sug-groot');
+    btn.textContent='−';
+    btn.setAttribute('title','Verkleinen');
+    if(vb)vb.style.display='flex';
+  } else {
+    card.classList.remove('sug-groot');
+    btn.textContent='+';
+    btn.setAttribute('title','Vergroten');
+    if(vb)vb.style.display='none';
+    if(window.speechSynthesis)speechSynthesis.cancel();
+  }
+}
+function sugSpreek(tekst, daarna){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(tekst);
+  u.lang='nl-NL';
+  u.rate=spreekSnelheid||1;
+  if(daarna)u.onend=daarna;
+  speechSynthesis.speak(u);
+}
+
+function leesSuggestieFormulierVoor(){
+  // Cursor naar naam-vak en start geleide stroom
+  var naamEl=document.getElementById('sug-naam');
+  if(naamEl){
+    naamEl.focus();
+    sugSpreek('Suggesties ter verbetering. Wat zou jij anders willen zien? Vul eerst je naam in.');
+  }
+}
+
+var _sugStroomInit=false;
+function initSuggestieGeleideStroom(){
+  if(_sugStroomInit)return;
+  _sugStroomInit=true;
+  var naamEl=document.getElementById('sug-naam');
+  var emailEl=document.getElementById('sug-email');
+  var berichtEl=document.getElementById('sug-bericht');
+  var verzendBtn=document.querySelector('.sug-verzend');
+
+  if(!naamEl||!emailEl||!berichtEl)return;
+
+  // Enter in naam-vak → naar e-mail
+  naamEl.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){
+      e.preventDefault();
+      emailEl.focus();
+      sugSpreek('En nu je e-mailadres alsjeblieft.');
+    }
+  });
+
+  // Enter in e-mail-vak → naar suggestie
+  emailEl.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){
+      e.preventDefault();
+      berichtEl.focus();
+      sugSpreek('Typ nu je suggestie.');
+    }
+  });
+
+  // Tab in suggestie-vak → naar verzendknop
+  berichtEl.addEventListener('keydown',function(e){
+    if(e.key==='Tab'&&!e.shiftKey){
+      e.preventDefault();
+      if(verzendBtn){
+        verzendBtn.focus();
+        sugSpreek('Versturen.');
+      }
+    }
+  });
+
+  // Verzendknop: voorlezen bij focus
+  if(verzendBtn){
+    verzendBtn.addEventListener('focus',function(){
+      // Alleen voorlezen als groot-modus actief is
+      if(_sugGroot) sugSpreek('Versturen.');
+    });
+  }
+}
 async function verzendSuggestie(){
   var naam=document.getElementById('sug-naam').value.trim();
+  var email=document.getElementById('sug-email').value.trim();
   var bericht=document.getElementById('sug-bericht').value.trim();
   if(!bericht){document.getElementById('sug-bericht').focus();return;}
   var btn=document.querySelector('.sug-verzend');
@@ -4213,7 +4359,7 @@ async function verzendSuggestie(){
     var resp=await fetch('https://formspree.io/f/mreawveq',{
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({naam:naam||'Anoniem',bericht:bericht})
+      body:JSON.stringify({naam:naam||'Anoniem',email:email||'',bericht:bericht})
     });
     if(resp.ok){
       document.getElementById('sug-formulier').style.display='none';
