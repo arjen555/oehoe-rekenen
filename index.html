@@ -270,6 +270,47 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .tip-item:last-child{margin-bottom:0;}
 .tip-bullet{font-size:1.1em;color:var(--blue-mid);flex-shrink:0;margin-top:1px;}
 .tip-sluit{font-size:0.88em;color:var(--text-muted);text-align:center;margin-top:18px;}
+
+/* ── Suggesties-formulier overlay ── */
+#suggesties-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  z-index:300;
+  align-items:center;
+  justify-content:center;
+}
+#suggesties-overlay.actief{display:flex;}
+#suggesties-form-card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:28px 28px 24px 28px;
+  width:min(520px,90vw);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  animation:fadeInTips 0.18s ease;
+}
+.sug-titel{font-size:1.2em;font-weight:800;color:var(--text);margin-bottom:6px;}
+.sug-sub{font-size:0.9em;color:var(--text-muted);margin-bottom:20px;}
+.sug-label{display:block;font-size:0.9em;font-weight:700;color:var(--text-muted);margin-bottom:6px;margin-top:14px;}
+.sug-input,.sug-textarea{
+  width:100%;box-sizing:border-box;
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);font-family:var(--font);font-size:1em;
+  padding:9px 12px;outline:none;
+  transition:border-color 0.15s;
+}
+.sug-input:focus,.sug-textarea:focus{border-color:var(--blue-mid);}
+.sug-textarea{resize:vertical;min-height:100px;}
+.sug-btn-rij{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.sug-verzend{background:var(--blue-mid);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px 22px;font-family:var(--font);font-size:1em;font-weight:700;cursor:pointer;}
+.sug-verzend:hover{opacity:0.88;}
+.sug-annuleer{background:none;border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-family:var(--font);font-size:1em;font-weight:700;color:var(--text-muted);cursor:pointer;}
+.sug-annuleer:hover{background:var(--surface);}
+.sug-bevestiging{display:none;text-align:center;padding:16px 0 8px;}
+.sug-bevestiging-icoon{font-size:2.5em;margin-bottom:8px;}
+.sug-bevestiging-tekst{font-size:1.05em;font-weight:700;color:var(--text);}
 </style>
 </head>
 <body>
@@ -297,7 +338,31 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   </div>
 </div>
 <a href="https://arjen555.github.io/oehoe-rekenen/leerkracht.html" target="_blank" class="suggesties-btn" style="right:auto;left:20px;background:rgba(147,197,253,0.15);border-color:rgba(147,197,253,0.4);color:#93C5FD;font-size:16px;padding:11px 20px;">&#128203; Leerkracht</a>
-<a href="mailto:arjenvandewetering@visio.org" class="suggesties-btn">&#128172; Suggesties ter verbetering?</a>
+<button class="suggesties-btn" id="btn-suggesties" onclick="openSuggestiesForm()">&#128172; Suggesties ter verbetering?</button>
+
+<div id="suggesties-overlay" role="dialog" aria-modal="true" aria-label="Suggesties formulier">
+  <div id="suggesties-form-card">
+    <div class="sug-titel">&#128172; Suggesties ter verbetering</div>
+    <div class="sug-sub">Wat zou jij anders willen zien? Laat het ons weten!</div>
+    <div id="sug-formulier">
+      <label class="sug-label" for="sug-naam">Je naam (optioneel)</label>
+      <input class="sug-input" id="sug-naam" type="text" placeholder="Naam" autocomplete="off">
+      <label class="sug-label" for="sug-bericht">Jouw suggestie</label>
+      <textarea class="sug-textarea" id="sug-bericht" placeholder="Typ hier je suggestie..."></textarea>
+      <div class="sug-btn-rij">
+        <button class="sug-annuleer" onclick="sluitSuggestiesForm()">Annuleren</button>
+        <button class="sug-verzend" onclick="verzendSuggestie()">Versturen &#8594;</button>
+      </div>
+    </div>
+    <div class="sug-bevestiging" id="sug-bevestiging">
+      <div class="sug-bevestiging-icoon">&#10004;&#65039;</div>
+      <div class="sug-bevestiging-tekst">Bedankt voor je suggestie!<br>We nemen hem zeker mee.</div>
+      <div class="sug-btn-rij" style="justify-content:center;margin-top:16px;">
+        <button class="sug-annuleer" onclick="sluitSuggestiesForm()">Sluiten</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="screen" id="screen-leerling-login" role="main">
   <div style="background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:20px;padding:2.5rem;width:100%;max-width:420px;box-shadow:0 8px 48px rgba(0,0,0,0.5);">
     <div style="text-align:center;margin-bottom:2rem;">
@@ -4121,4 +4186,57 @@ function initTipsBtn(){
 }
 // Initialiseer na buildForm (buildForm wordt aangeroepen vanuit showScreen/goHome)
 var _origBuildForm=window.buildForm;
+
+// ── Suggesties-formulier ──
+function openSuggestiesForm(){
+  var ov=document.getElementById('suggesties-overlay');
+  if(!ov)return;
+  // Reset
+  document.getElementById('sug-formulier').style.display='';
+  document.getElementById('sug-bevestiging').style.display='none';
+  document.getElementById('sug-naam').value='';
+  document.getElementById('sug-bericht').value='';
+  ov.classList.add('actief');
+  setTimeout(function(){document.getElementById('sug-bericht').focus();},50);
+}
+function sluitSuggestiesForm(){
+  var ov=document.getElementById('suggesties-overlay');
+  if(ov)ov.classList.remove('actief');
+}
+async function verzendSuggestie(){
+  var naam=document.getElementById('sug-naam').value.trim();
+  var bericht=document.getElementById('sug-bericht').value.trim();
+  if(!bericht){document.getElementById('sug-bericht').focus();return;}
+  var btn=document.querySelector('.sug-verzend');
+  btn.textContent='Bezig...';btn.disabled=true;
+  try{
+    var resp=await fetch('https://formspree.io/f/mreawveq',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({naam:naam||'Anoniem',bericht:bericht})
+    });
+    if(resp.ok){
+      document.getElementById('sug-formulier').style.display='none';
+      document.getElementById('sug-bevestiging').style.display='block';
+    } else {
+      alert('Er ging iets mis. Probeer het later opnieuw.');
+      btn.textContent='Versturen \u2192';btn.disabled=false;
+    }
+  }catch(e){
+    alert('Geen verbinding. Probeer het later opnieuw.');
+    btn.textContent='Versturen \u2192';btn.disabled=false;
+  }
+}
+// Klikken buiten het formulier sluit het
+document.addEventListener('mousedown',function(e){
+  var ov=document.getElementById('suggesties-overlay');
+  var card=document.getElementById('suggesties-form-card');
+  if(ov&&ov.classList.contains('actief')&&!card.contains(e.target)){sluitSuggestiesForm();}
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    var ov=document.getElementById('suggesties-overlay');
+    if(ov&&ov.classList.contains('actief')){sluitSuggestiesForm();}
+  }
+});
 </script>
