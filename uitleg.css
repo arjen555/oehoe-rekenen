@@ -247,9 +247,9 @@
 
 .uitleg-stap-kaart {
   flex: 0 1 auto;
-  min-width: 560px;
+  min-width: 560px !important;
   max-width: 860px;
-  width: auto;
+  width: 560px;
   background: var(--card);
   border: 2px solid var(--border);
   border-radius: var(--radius);

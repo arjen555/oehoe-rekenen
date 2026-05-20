@@ -129,7 +129,8 @@ function _renderStap(si,di){
   _updateUilPijlen(si,di);
 
   _uitlegSpreek(titelTekst+'. '+uitlegTekst);
-  if(tekEl)setTimeout(function(){tekEl.focus();},60);
+  var kaartEl=document.getElementById('uitleg-stap-kaart');
+  if(kaartEl)setTimeout(function(){kaartEl.focus();},60);
 }
 
 // ── Navigatiekolom bijwerken ───────────────────────────────────
@@ -200,6 +201,8 @@ function uitlegDeelTerug(){
 
 // Muiswiel navigatie door stappen
 function _handleWheel(e){
+  // Ctrl+muiswiel: laat browser zoom werken
+  if(e.ctrlKey)return;
   // Als muis boven de som-container: laat normaal scrollen
   var somCont=document.getElementById('uitleg-som-container');
   if(somCont&&somCont.contains(e.target))return;
@@ -353,9 +356,11 @@ function _bouwUitlegScherm(def){
   var kaart=document.createElement('div');
   kaart.id='uitleg-stap-kaart';
   kaart.className='uitleg-stap-kaart';
+  kaart.setAttribute('tabindex','0');
+  kaart.id='uitleg-stap-kaart';
   kaart.innerHTML=
     '<span class="uitleg-stap-titel-tekst" id="uitleg-stap-titel"></span>'+
-    '<div class="uitleg-stap-uitleg" id="uitleg-stap-tekst" tabindex="0"></div>';
+    '<div class="uitleg-stap-uitleg" id="uitleg-stap-tekst"></div>';
 
   var uilRechts=document.createElement('div');
   uilRechts.className='uitleg-uil-pijl';
@@ -389,28 +394,100 @@ function _bouwUitlegScherm(def){
   // Muiswiel
   scherm.addEventListener('wheel',_handleWheel,{passive:false});
 
-  // Focus trap + ESC
+  // Focus trap, TAB en pijltjestoetsen
   scherm.addEventListener('keydown',function(e){
     if(e.key==='Escape'){sluitUitleg();return;}
+
+    var actief=document.activeElement;
+    var inNav=actief&&(actief.classList.contains('uitleg-bol')||actief.classList.contains('uitleg-deelbol'));
+    var inKaart=actief&&actief.id==='uitleg-stap-kaart';
+    var inUilL=actief&&actief.id==='uitleg-uil-links';
+    var inUilR=actief&&actief.id==='uitleg-uil-rechts';
+    var inTerug=actief&&actief.id==='uitleg-int-terug';
+
+    function getEl(id){return document.getElementById(id);}
+    function zichtbaar(el){return el&&!el.classList.contains('verborgen');}
+
+    // TAB-volgorde: terugknop → nav(bol-0) → uil-links → kaart → uil-rechts → terugknop
     if(e.key==='Tab'){
-      // Focusbare elementen in volgorde
-      var foc=[
-        document.getElementById('uitleg-bol-0'),
-        document.getElementById('uitleg-stap-tekst'),
-        document.getElementById('uitleg-uil-links'),
-        document.getElementById('uitleg-uil-rechts'),
-        document.getElementById('uitleg-int-terug')
-      ].filter(function(el){return el&&!el.classList.contains('verborgen');});
-      var huidig=document.activeElement;
-      var idx=foc.indexOf(huidig);
       e.preventDefault();
-      if(e.shiftKey){
-        var prev=idx<=0?foc[foc.length-1]:foc[idx-1];
-        if(prev)prev.focus();
+      var bol0=getEl('uitleg-bol-0');
+      var uilL=getEl('uitleg-uil-links');
+      var kaart=getEl('uitleg-stap-kaart');
+      var uilR=getEl('uitleg-uil-rechts');
+      var terug=getEl('uitleg-int-terug');
+      if(!e.shiftKey){
+        if(inTerug||(!inNav&&!inKaart&&!inUilL&&!inUilR)){if(bol0)bol0.focus();}
+        else if(inNav){if(zichtbaar(uilL))uilL.focus();else if(kaart)kaart.focus();}
+        else if(inUilL){if(kaart)kaart.focus();}
+        else if(inKaart){if(zichtbaar(uilR))uilR.focus();else if(terug)terug.focus();}
+        else if(inUilR){if(terug)terug.focus();}
       } else {
-        var next=idx>=foc.length-1?foc[0]:foc[idx+1];
-        if(next)next.focus();
+        if(inNav){if(terug)terug.focus();}
+        else if(inUilL){if(bol0)bol0.focus();}
+        else if(inKaart){if(zichtbaar(uilL))uilL.focus();else if(bol0)bol0.focus();}
+        else if(inUilR){if(kaart)kaart.focus();}
+        else if(inTerug){if(zichtbaar(uilR))uilR.focus();else if(kaart)kaart.focus();}
       }
+      return;
+    }
+
+    // Pijltjes links/rechts buiten nav: tussen zones
+    if(!inNav&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){
+      e.preventDefault();
+      var uilL2=getEl('uitleg-uil-links');
+      var kaart2=getEl('uitleg-stap-kaart');
+      var uilR2=getEl('uitleg-uil-rechts');
+      var bol02=getEl('uitleg-bol-0');
+      if(e.key==='ArrowRight'){
+        if(inUilL){if(kaart2)kaart2.focus();}
+        else if(inKaart){if(zichtbaar(uilR2))uilR2.focus();}
+        else if(inUilR){uitlegDeelVolgende();}
+      } else {
+        if(inUilR){if(kaart2)kaart2.focus();}
+        else if(inKaart){if(zichtbaar(uilL2))uilL2.focus();else if(bol02)bol02.focus();}
+        else if(inUilL){if(bol02)bol02.focus();}
+      }
+      return;
+    }
+
+    // Pijltjes omhoog/omlaag in nav: door bolletjes
+    if(inNav&&(e.key==='ArrowDown'||e.key==='ArrowUp')){
+      e.preventDefault();
+      var alleBollen=Array.from(scherm.querySelectorAll('[id^="uitleg-bol-"],[id^="uitleg-deelbol-"]'));
+      // Filter alleen zichtbare
+      alleBollen=alleBollen.filter(function(b){
+        var lijst=b.closest('.uitleg-deelstap-lijst');
+        return !lijst||lijst.classList.contains('open');
+      });
+      var huidigeIdx=alleBollen.indexOf(actief);
+      var nieuweIdx=e.key==='ArrowDown'?Math.min(huidigeIdx+1,alleBollen.length-1):Math.max(huidigeIdx-1,0);
+      var doelBol=alleBollen[nieuweIdx];
+      if(doelBol){
+        doelBol.focus();
+        doelBol.scrollIntoView({block:'nearest'});
+        var bolId=doelBol.id;
+        var mH=/^uitleg-bol-(\d+)$/.exec(bolId);
+        var mD=/^uitleg-deelbol-(\d+)-(\d+)$/.exec(bolId);
+        if(mH){_uitlegOpenStap=parseInt(mH[1]);_gaNaarStap(parseInt(mH[1]),0);}
+        else if(mD){_gaNaarStap(parseInt(mD[1]),parseInt(mD[2]));}
+      }
+      return;
+    }
+
+    // Pijltjes links in nav: ga naar uil-links of kaart
+    if(inNav&&e.key==='ArrowLeft'){
+      e.preventDefault();
+      var uilL3=getEl('uitleg-uil-links');
+      if(zichtbaar(uilL3))uilL3.focus();else{var k3=getEl('uitleg-stap-kaart');if(k3)k3.focus();}
+      return;
+    }
+    // Pijltjes rechts in nav: ga naar uil-links
+    if(inNav&&e.key==='ArrowRight'){
+      e.preventDefault();
+      var uilL4=getEl('uitleg-uil-links');
+      if(zichtbaar(uilL4))uilL4.focus();else{var k4=getEl('uitleg-stap-kaart');if(k4)k4.focus();}
+      return;
     }
   });
 }
