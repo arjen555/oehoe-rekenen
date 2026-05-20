@@ -34,7 +34,7 @@
   flex-shrink:0;
 }
 .uitleg-som-container .uitleg-table{
-  font-size:5.5em;
+  font-size:11em;
   border-spacing:0;
 }
 .uitleg-som-container .uitleg-table td,
@@ -132,7 +132,7 @@
 }
 .uitleg-uil-pijl{
   flex-shrink:0;
-  width:160px;
+  width:320px;
   display:flex;
   align-items:stretch;
   justify-content:center;
