@@ -204,19 +204,7 @@ function _scrollNaarStap() {
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-var _uitlegZoomNiveau = 100;
 
-function uitlegVergroot() {
-  _uitlegZoomNiveau = Math.min(_uitlegZoomNiveau + 10, 200);
-  var scherm = document.getElementById('screen-uitleg-interactief');
-  if (scherm) scherm.style.zoom = (_uitlegZoomNiveau / 100).toFixed(2);
-}
-
-function uitlegVerklein() {
-  _uitlegZoomNiveau = Math.max(_uitlegZoomNiveau - 10, 60);
-  var scherm = document.getElementById('screen-uitleg-interactief');
-  if (scherm) scherm.style.zoom = (_uitlegZoomNiveau / 100).toFixed(2);
-}
 
 function uitlegVoorlees() {
   var titel = document.getElementById('uitleg-stap-titel');
@@ -243,7 +231,7 @@ function openUitleg(methode, bewerking) {
   _uitlegDef         = def;
   _uitlegStapIdx     = 0;
   _uitlegDeelstapIdx = 0;
-  _uitlegZoomNiveau  = 100;
+
 
   _bouwUitlegScherm(def);
   if (typeof showScreen === 'function') showScreen('screen-uitleg-interactief');
@@ -256,8 +244,7 @@ function sluitUitleg() {
   if (_uitlegAnimTimeout) { clearTimeout(_uitlegAnimTimeout); _uitlegAnimTimeout = null; }
   if (window.speechSynthesis) speechSynthesis.cancel();
   // Herstel de originele zoom
-  var scherm = document.getElementById('screen-uitleg-interactief');
-  if (scherm) scherm.style.zoom = '';
+
   if (typeof showScreen === 'function') showScreen('screen-exercise');
 }
 
@@ -324,7 +311,11 @@ var UITLEG_DEFINITIES = {
           tabel: [
             { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
             { cellen: [ {type:'op',tekst:''},  {id:'a-h',tekst:'3'}, {id:'a-t',tekst:'4'}, {id:'a-e',tekst:'7'} ] },
-            { cellen: [ {type:'op',tekst:'+'},{id:'b-h',tekst:'2'}, {id:'b-t',tekst:'5'}, {id:'b-e',tekst:'6'} ] },
+            { cellen: [ {type:'op',tekst:'+'}, {id:'b-h',tekst:'2'}, {id:'b-t',tekst:'5'}, {id:'b-e',tekst:'6'} ] },
+            { type:'hr', colspan:4 },
+            { cellen: [ {type:'lbl',tekst:'H'}, {id:'inv1-h',type:'input',tekst:''}, {id:'inv1-t',type:'input',tekst:''}, {id:'inv1-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:'T'}, {id:'inv2-h',type:'input',tekst:''}, {id:'inv2-t',type:'input',tekst:''}, {id:'inv2-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:'E'}, {id:'inv3-h',type:'input',tekst:''}, {id:'inv3-t',type:'input',tekst:''}, {id:'inv3-e',type:'input',tekst:''} ] },
             { type:'hr', colspan:4 },
             { cellen: [ {type:'op',tekst:''}, {id:'ans-h',type:'input',tekst:''}, {id:'ans-t',type:'input',tekst:''}, {id:'ans-e',type:'input',tekst:''} ] }
           ]
