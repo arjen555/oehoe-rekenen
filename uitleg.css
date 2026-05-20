@@ -34,16 +34,16 @@
   flex-shrink:0;
 }
 .uitleg-som-container .uitleg-table{
-  font-size:3.2em;
+  font-size:5.5em;
   border-spacing:0;
 }
 .uitleg-som-container .uitleg-table td,
 .uitleg-som-container .uitleg-table th{
-  min-width:1.6em;
-  min-height:1.6em;
-  width:1.6em;
-  height:1.6em;
-  padding:4px;
+  min-width:1.4em;
+  min-height:1.4em;
+  width:1.4em;
+  height:1.4em;
+  padding:3px;
 }
 .uitleg-interactief td.uitleg-highlight{
   border-color:#FCD34D!important;
@@ -132,19 +132,19 @@
 }
 .uitleg-uil-pijl{
   flex-shrink:0;
-  width:120px;
+  width:160px;
   display:flex;
-  align-items:center;
+  align-items:stretch;
   justify-content:center;
   cursor:pointer;
   opacity:0.85;
   transition:opacity 0.15s;
+  align-self:stretch;
 }
 .uitleg-uil-pijl:hover{opacity:1;}
 .uitleg-uil-pijl img{
   width:100%;
-  height:auto;
-  max-height:160px;
+  height:100%;
   object-fit:contain;
   display:block;
 }
