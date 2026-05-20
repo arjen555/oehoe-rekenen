@@ -30,20 +30,13 @@
   display:flex;
   justify-content:center;
   align-items:flex-start;
-  padding:40px 20px 24px 20px;
+  padding:20px 20px 0 20px;
   flex-shrink:0;
 }
-.uitleg-som-container .uitleg-table{
-  font-size:11em;
-  border-spacing:0;
-}
-.uitleg-som-container .uitleg-table td,
-.uitleg-som-container .uitleg-table th{
-  min-width:1.4em;
-  min-height:1.4em;
-  width:1.4em;
-  height:1.4em;
-  padding:3px;
+.uitleg-som-wrap{
+  transform:scale(2.8);
+  transform-origin:top center;
+  margin-bottom:calc(1.8 * 200px);
 }
 .uitleg-interactief td.uitleg-highlight{
   border-color:#FCD34D!important;
@@ -89,14 +82,13 @@
   justify-content:center;
   gap:16px;
   margin:20px auto 0 auto;
-  max-width:1200px;
   width:96%;
   padding:0 8px;
   box-sizing:border-box;
 }
 .uitleg-stap-kaart{
   flex:1;
-  min-width:0;
+  min-width:500px;
   margin:0;
   background:var(--card);
   border:2px solid var(--border);
@@ -132,7 +124,8 @@
 }
 .uitleg-uil-pijl{
   flex-shrink:0;
-  width:320px;
+  width:220px;
+  max-width:22vw;
   display:flex;
   align-items:stretch;
   justify-content:center;

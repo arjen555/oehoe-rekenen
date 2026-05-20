@@ -183,7 +183,10 @@ function _bouwSom(somDef) {
   var container = document.getElementById('uitleg-som-container');
   if (!container || !somDef || !somDef.tabel) return;
   container.innerHTML = '';
-  container.appendChild(_bouwTabel(somDef.tabel));
+  var wrap = document.createElement('div');
+  wrap.className = 'uitleg-som-wrap';
+  wrap.appendChild(_bouwTabel(somDef.tabel));
+  container.appendChild(wrap);
 }
 
 // Uil-pijl rechts: volgende DEELstap, of naar volgende hoofdstap als laatste deelstap
