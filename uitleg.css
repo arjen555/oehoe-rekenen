@@ -246,10 +246,10 @@
 .uitleg-uil-pijl img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
 .uitleg-stap-kaart {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   min-width: 560px !important;
-  max-width: 860px;
-  width: 560px;
+  max-width: 1000px;
+  width: 700px;
   background: var(--card);
   border: 2px solid var(--border);
   border-radius: var(--radius);

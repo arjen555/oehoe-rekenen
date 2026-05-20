@@ -17,6 +17,7 @@ var _uitlegActief=false, _uitlegDef=null;
 var _uitlegStapIdx=0, _uitlegDeelstapIdx=0;
 var _uitlegAnimTimeout=null, _uitlegCells={};
 var _uitlegOpenStap=-1; // welke hoofdstap heeft deelstappen open
+var _uitlegFocusInNav=false; // voorkomt dat renderStap focus naar kaart stuurt
 
 // ── Hulpfuncties ───────────────────────────────────────────────
 function _uitlegSpreek(tekst){
@@ -129,8 +130,11 @@ function _renderStap(si,di){
   _updateUilPijlen(si,di);
 
   _uitlegSpreek(titelTekst+'. '+uitlegTekst);
-  var kaartEl=document.getElementById('uitleg-stap-kaart');
-  if(kaartEl)setTimeout(function(){kaartEl.focus();},60);
+  if(!_uitlegFocusInNav){
+    var kaartEl=document.getElementById('uitleg-stap-kaart');
+    if(kaartEl)setTimeout(function(){kaartEl.focus();},60);
+  }
+  _uitlegFocusInNav=false;
 }
 
 // ── Navigatiekolom bijwerken ───────────────────────────────────
@@ -292,22 +296,17 @@ function _bouwUitlegScherm(def){
       item.appendChild(deelLijst);
     }
 
-    // Pijltjesnavigatie op bol
+    // Enter op bol → navigeer naar stap en focus naar kaart
     (function(s){
       bol.addEventListener('keydown',function(e){
-        if(e.key==='ArrowDown'||e.key==='ArrowRight'){
-          e.preventDefault();
-          var volgende=document.getElementById('uitleg-bol-'+(s+1));
-          if(volgende) volgende.focus();
-        }
-        if(e.key==='ArrowUp'||e.key==='ArrowLeft'){
-          e.preventDefault();
-          var vorige=document.getElementById('uitleg-bol-'+(s-1));
-          if(vorige) vorige.focus();
-        }
         if(e.key==='Enter'||e.key===' '){
           e.preventDefault();
+          _uitlegFocusInNav=false;
           bolRij.click();
+          setTimeout(function(){
+            var k=document.getElementById('uitleg-stap-kaart');
+            if(k)k.focus();
+          },120);
         }
       });
     })(si);
@@ -464,13 +463,14 @@ function _bouwUitlegScherm(def){
       var nieuweIdx=e.key==='ArrowDown'?Math.min(huidigeIdx+1,alleBollen.length-1):Math.max(huidigeIdx-1,0);
       var doelBol=alleBollen[nieuweIdx];
       if(doelBol){
-        doelBol.focus();
-        doelBol.scrollIntoView({block:'nearest'});
+        _uitlegFocusInNav=true;
         var bolId=doelBol.id;
         var mH=/^uitleg-bol-(\d+)$/.exec(bolId);
         var mD=/^uitleg-deelbol-(\d+)-(\d+)$/.exec(bolId);
         if(mH){_uitlegOpenStap=parseInt(mH[1]);_gaNaarStap(parseInt(mH[1]),0);}
         else if(mD){_gaNaarStap(parseInt(mD[1]),parseInt(mD[2]));}
+        doelBol.scrollIntoView({block:'nearest'});
+        setTimeout(function(){doelBol.focus();},80);
       }
       return;
     }
