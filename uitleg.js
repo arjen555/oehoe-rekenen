@@ -160,6 +160,15 @@ function _renderStap(stapIdx, deelstapIdx) {
   var volgBtn  = document.getElementById('uitleg-nav-volgende');
   if (terugBtn) terugBtn.disabled = isEerste;
   if (volgBtn)  { volgBtn.disabled = false; volgBtn.textContent = isLaatste ? 'Klaar \u2713' : 'Volgende stap \u2192'; }
+  // Uil-pijlen: verborgen als helemaal eerste/laatste positie
+  var isEersteDeelstap = (stapIdx === 0 && deelstapIdx === 0);
+  var isLaatsteDeelstap = _isLaatsteDeelstap(stapIdx, deelstapIdx);
+  var uilL = document.getElementById('uitleg-uil-links');
+  var uilR = document.getElementById('uitleg-uil-rechts');
+  if (uilL) uilL.className = 'uitleg-uil-pijl' + (isEersteDeelstap ? ' verborgen' : '');
+  if (uilR) uilR.className = 'uitleg-uil-pijl' + (isLaatsteDeelstap ? ' verborgen' : '');
+  // Vorige stap knop: verborgen bij stap 0
+  if (terugBtn) terugBtn.style.visibility = (_uitlegStapIdx === 0 ? 'hidden' : '');
 
   _uitlegSpreek(titelTekst + '. ' + uitlegTekst);
 }
@@ -171,7 +180,8 @@ function _bouwSom(somDef) {
   container.appendChild(_bouwTabel(somDef.tabel));
 }
 
-function uitlegVolgende() {
+// Uil-pijl rechts: volgende DEELstap, of naar volgende hoofdstap als laatste deelstap
+function uitlegDeelVolgende() {
   var def = _uitlegDef;
   var aantalDs = _aantalDeelstappen(_uitlegStapIdx);
   if (_uitlegDeelstapIdx < aantalDs - 1) {
@@ -187,13 +197,37 @@ function uitlegVolgende() {
   }
 }
 
-function uitlegTerug() {
+// Uil-pijl links: vorige DEELstap, of naar laatste deelstap van vorige hoofdstap
+function uitlegDeelTerug() {
   if (_uitlegDeelstapIdx > 0) {
     _uitlegDeelstapIdx--;
     _renderStap(_uitlegStapIdx, _uitlegDeelstapIdx);
   } else if (_uitlegStapIdx > 0) {
     _uitlegStapIdx--;
     _uitlegDeelstapIdx = _aantalDeelstappen(_uitlegStapIdx) - 1;
+    _renderStap(_uitlegStapIdx, _uitlegDeelstapIdx);
+    _scrollNaarStap();
+  }
+}
+
+// Knop Volgende stap: naar EERSTE deelstap van volgende hoofdstap
+function uitlegVolgende() {
+  var def = _uitlegDef;
+  if (_uitlegStapIdx < def.stappen.length - 1) {
+    _uitlegStapIdx++;
+    _uitlegDeelstapIdx = 0;
+    _renderStap(_uitlegStapIdx, _uitlegDeelstapIdx);
+    _scrollNaarStap();
+  } else {
+    sluitUitleg();
+  }
+}
+
+// Knop Vorige stap: naar EERSTE deelstap van vorige hoofdstap
+function uitlegTerug() {
+  if (_uitlegStapIdx > 0) {
+    _uitlegStapIdx--;
+    _uitlegDeelstapIdx = 0;
     _renderStap(_uitlegStapIdx, _uitlegDeelstapIdx);
     _scrollNaarStap();
   }
@@ -255,19 +289,25 @@ function _bouwUitlegScherm(def) {
   var header = document.createElement('div');
   header.className = 'uitleg-int-header';
   header.innerHTML =
-    '<button class="back-btn" id="uitleg-int-terug" aria-label="Terug naar de som">&#8592;</button>' +
-    '<div class="uitleg-int-titel">' + (def.titel || 'Uitleg') + '</div>' +
-    '<div class="uitleg-int-knoppen">' +
-    '<button class="uitleg-ctrl-btn" onclick="uitlegVergroot()" title="Groter">A+</button>' +
-    '<button class="uitleg-ctrl-btn" onclick="uitlegVerklein()" title="Kleiner">A&#8722;</button>' +
-    
-    '</div>';
+    '<div class="uitleg-int-terug-wrap"><button class="back-btn" id="uitleg-int-terug" aria-label="Terug naar de som">&#8592;</button></div>' +
+    '<div class="uitleg-int-titel">' + (def.titel || 'Uitleg') + '</div>';
   scherm.appendChild(header);
 
   var somCont = document.createElement('div');
   somCont.id = 'uitleg-som-container';
   somCont.className = 'uitleg-som-container';
   scherm.appendChild(somCont);
+
+  // Uil-pijl links + stap-kaart + uil-pijl rechts
+  var kaartWrap = document.createElement('div');
+  kaartWrap.className = 'uitleg-stap-kaart-wrap';
+
+  var uilLinks = document.createElement('div');
+  uilLinks.className = 'uitleg-uil-pijl';
+  uilLinks.id = 'uitleg-uil-links';
+  uilLinks.setAttribute('aria-label', 'Vorige stap');
+  uilLinks.innerHTML = '<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl2.png" alt="Vorige stap">';
+  uilLinks.addEventListener('click', uitlegDeelTerug);
 
   var kaart = document.createElement('div');
   kaart.id = 'uitleg-stap-kaart';
@@ -278,7 +318,18 @@ function _bouwUitlegScherm(def) {
     '<span class="uitleg-stap-titel-tekst" id="uitleg-stap-titel"></span>' +
     '</div>' +
     '<div class="uitleg-stap-uitleg" id="uitleg-stap-tekst"></div>';
-  scherm.appendChild(kaart);
+
+  var uilRechts = document.createElement('div');
+  uilRechts.className = 'uitleg-uil-pijl';
+  uilRechts.id = 'uitleg-uil-rechts';
+  uilRechts.setAttribute('aria-label', 'Volgende stap');
+  uilRechts.innerHTML = '<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl.png" alt="Volgende stap">';
+  uilRechts.addEventListener('click', uitlegDeelVolgende);
+
+  kaartWrap.appendChild(uilLinks);
+  kaartWrap.appendChild(kaart);
+  kaartWrap.appendChild(uilRechts);
+  scherm.appendChild(kaartWrap);
 
   var nav = document.createElement('div');
   nav.className = 'uitleg-nav';
