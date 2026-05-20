@@ -27,9 +27,23 @@
   position:absolute;left:16px;
 }
 .uitleg-som-container{
-  display:flex;justify-content:center;
-  padding:24px 20px 16px 20px;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:40px 20px 24px 20px;
   flex-shrink:0;
+}
+.uitleg-som-container .uitleg-table{
+  font-size:3.2em;
+  border-spacing:0;
+}
+.uitleg-som-container .uitleg-table td,
+.uitleg-som-container .uitleg-table th{
+  min-width:1.6em;
+  min-height:1.6em;
+  width:1.6em;
+  height:1.6em;
+  padding:4px;
 }
 .uitleg-interactief td.uitleg-highlight{
   border-color:#FCD34D!important;
@@ -37,7 +51,6 @@
   background:#3d3200!important;
   color:#FCD34D!important;
 }
-/* Uitleg tabel opmaak */
 .uitleg-interactief td{
   color:var(--text)!important;
   background:var(--cell-static-bg)!important;
@@ -70,9 +83,21 @@
   background:transparent!important;
   height:4px;padding:0;
 }
-.uitleg-stap-kaart{
+.uitleg-stap-kaart-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
   margin:20px auto 0 auto;
-  max-width:900px;width:90%;
+  max-width:1200px;
+  width:96%;
+  padding:0 8px;
+  box-sizing:border-box;
+}
+.uitleg-stap-kaart{
+  flex:1;
+  min-width:0;
+  margin:0;
   background:var(--card);
   border:2px solid var(--border);
   border-radius:var(--radius);
@@ -105,22 +130,6 @@
   padding:20px;
   flex-shrink:0;
 }
-/* Stap-kaart met uil-pijlen links en rechts */
-.uitleg-stap-kaart-wrap{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:16px;
-  margin:20px auto 0 auto;
-  max-width:1200px;
-  width:96%;
-  padding:0 8px;
-  box-sizing:border-box;
-}
-.uitleg-stap-kaart{
-  flex:1;
-  min-width:0;
-}
 .uitleg-uil-pijl{
   flex-shrink:0;
   width:120px;
@@ -140,34 +149,3 @@
   display:block;
 }
 .uitleg-uil-pijl.verborgen{visibility:hidden;}
-.uitleg-int-knoppen{
-  display:flex;gap:8px;margin-left:auto;align-items:center;
-}
-.uitleg-ctrl-btn{
-  background:var(--surface);border:2px solid var(--border);
-  color:var(--text);border-radius:var(--radius-sm);
-  padding:6px 14px;font-family:var(--font);font-size:0.95em;
-  font-weight:700;cursor:pointer;transition:background 0.15s;
-  white-space:nowrap;
-}
-.uitleg-ctrl-btn:hover{background:var(--blue-light);}
-.uitleg-voorlees-btn{font-size:1.1em;padding:6px 10px;}
-.uitleg-som-container{
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  padding:40px 20px 24px 20px;
-  flex-shrink:0;
-}
-.uitleg-som-container .uitleg-table{
-  font-size:3.2em;
-  border-spacing:0;
-}
-.uitleg-som-container .uitleg-table td,
-.uitleg-som-container .uitleg-table th{
-  min-width:1.6em;
-  min-height:1.6em;
-  width:1.6em;
-  height:1.6em;
-  padding:4px;
-}
