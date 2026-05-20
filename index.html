@@ -418,17 +418,22 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 }
 #screen-uitleg-interactief.active{display:flex;}
 .uitleg-int-header{
-  display:flex;align-items:center;gap:16px;
+  display:flex;align-items:center;justify-content:center;
   padding:18px 28px 14px 20px;
   background:var(--card);
   border-bottom:2px solid var(--border);
   flex-shrink:0;
   width:100%;
   box-sizing:border-box;
+  position:relative;
 }
 .uitleg-int-titel{
-  font-size:calc(var(--font-size)*1.2);
+  font-size:calc(var(--font-size)*1.4);
   font-weight:800;color:var(--text);
+  text-align:center;
+}
+.uitleg-int-terug-wrap{
+  position:absolute;left:16px;
 }
 .uitleg-som-container{
   display:flex;justify-content:center;
@@ -509,6 +514,41 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   padding:20px;
   flex-shrink:0;
 }
+/* Stap-kaart met uil-pijlen links en rechts */
+.uitleg-stap-kaart-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  margin:20px auto 0 auto;
+  max-width:1200px;
+  width:96%;
+  padding:0 8px;
+  box-sizing:border-box;
+}
+.uitleg-stap-kaart{
+  flex:1;
+  min-width:0;
+}
+.uitleg-uil-pijl{
+  flex-shrink:0;
+  width:120px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  opacity:0.85;
+  transition:opacity 0.15s;
+}
+.uitleg-uil-pijl:hover{opacity:1;}
+.uitleg-uil-pijl img{
+  width:100%;
+  height:auto;
+  max-height:160px;
+  object-fit:contain;
+  display:block;
+}
+.uitleg-uil-pijl.verborgen{visibility:hidden;}
 .uitleg-int-knoppen{
   display:flex;gap:8px;margin-left:auto;align-items:center;
 }
@@ -524,9 +564,12 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .uitleg-som-container{
   display:flex;
   justify-content:center;
+  align-items:flex-start;
   padding:40px 20px 24px 20px;
   flex-shrink:0;
-  font-size:2.5em;
+}
+.uitleg-som-container .uitleg-table{
+  font-size:2.8em;
 }
 </style>
 </head>
