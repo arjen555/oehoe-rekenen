@@ -371,10 +371,32 @@ var UITLEG_DEFINITIES = {
             { cellen: [ {type:'op',tekst:''}, {id:'ans-h',type:'input',tekst:''}, {id:'ans-t',type:'input',tekst:''}, {id:'ans-e',type:'input',tekst:''} ] }
           ]
         },
-        titel: 'Schrijf de getallen onder elkaar',
-        uitleg: 'We schrijven 347 bovenaan en 256 eronder. Elke kolom heeft zijn eigen positie: honderdtallen, tientallen en eenheden.',
+        titel: 'Hoe moet je zo\'n optelling lezen?',
+        uitleg: 'Bij kolomsgewijs optellen zetten we de som onder elkaar en tellen we per kolom de getallen op.',
         highlight: [],
-        animaties: []
+        animaties: [],
+        deelstappen: [
+          {
+            uitleg: 'Bij kolomsgewijs optellen zetten we de som onder elkaar en tellen we per kolom de getallen op.',
+            highlight: [],
+            animaties: []
+          },
+          {
+            uitleg: 'Deelstap 1.2 — komt er nog aan.',
+            highlight: [],
+            animaties: []
+          },
+          {
+            uitleg: 'Deelstap 1.3 — komt er nog aan.',
+            highlight: [],
+            animaties: []
+          },
+          {
+            uitleg: 'Deelstap 1.4 — komt er nog aan.',
+            highlight: [],
+            animaties: []
+          }
+        ]
       },
       {
         som: null,
