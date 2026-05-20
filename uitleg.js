@@ -12,9 +12,6 @@ var _uitlegStapIdx      = 0;
 var _uitlegDeelstapIdx  = 0;
 var _uitlegAnimTimeout  = null;
 var _uitlegCells        = {};
-var _uitlegFontStap     = 3;
-var _UITLEG_FONT_STAPPEN = [50, 70, 85, 100, 115, 130, 150, 175, 200];
-
 function _uitlegSpreek(tekst) {
   if (typeof speakTekst === 'function' && cfg && cfg.autoVoorlezen) {
     speakTekst(tekst, true);
@@ -207,24 +204,32 @@ function _scrollNaarStap() {
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-function _uitlegPasFontToe() {
-  var scherm = document.getElementById('screen-uitleg-interactief');
-  if (!scherm) return;
-  scherm.style.fontSize = (_UITLEG_FONT_STAPPEN[_uitlegFontStap] || 100) + '%';
-}
+var _uitlegZoomNiveau = 100; // percentage
 
 function uitlegVergroot() {
-  if (_uitlegFontStap < _UITLEG_FONT_STAPPEN.length - 1) { _uitlegFontStap++; _uitlegPasFontToe(); }
+  _uitlegZoomNiveau = Math.min(_uitlegZoomNiveau + 10, 200);
+  document.documentElement.style.fontSize = _uitlegZoomNiveau + '%';
 }
 
 function uitlegVerklein() {
-  if (_uitlegFontStap > 0) { _uitlegFontStap--; _uitlegPasFontToe(); }
+  _uitlegZoomNiveau = Math.max(_uitlegZoomNiveau - 10, 60);
+  document.documentElement.style.fontSize = _uitlegZoomNiveau + '%';
 }
 
 function uitlegVoorlees() {
   var titel = document.getElementById('uitleg-stap-titel');
   var tekst = document.getElementById('uitleg-stap-tekst');
-  if (titel && tekst) _uitlegSpreek((titel.textContent || '') + '. ' + (tekst.textContent || ''));
+  if (!titel || !tekst) return;
+  var spreekTekst_fn = typeof speakTekst === 'function' ? speakTekst : null;
+  var volTekst = (titel.textContent || '') + '. ' + (tekst.textContent || '');
+  if (spreekTekst_fn) {
+    spreekTekst_fn(volTekst, true);
+  } else if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(volTekst);
+    u.lang = 'nl-NL';
+    window.speechSynthesis.speak(u);
+  }
 }
 
 function openUitleg(methode, bewerking) {
@@ -236,7 +241,7 @@ function openUitleg(methode, bewerking) {
   _uitlegDef         = def;
   _uitlegStapIdx     = 0;
   _uitlegDeelstapIdx = 0;
-  _uitlegFontStap    = 3;
+  _uitlegZoomNiveau  = 100;
 
   _bouwUitlegScherm(def);
   if (typeof showScreen === 'function') showScreen('screen-uitleg-interactief');
@@ -248,6 +253,8 @@ function sluitUitleg() {
   _uitlegActief = false;
   if (_uitlegAnimTimeout) { clearTimeout(_uitlegAnimTimeout); _uitlegAnimTimeout = null; }
   if (window.speechSynthesis) speechSynthesis.cancel();
+  // Herstel de originele zoom
+  document.documentElement.style.fontSize = '';
   if (typeof showScreen === 'function') showScreen('screen-exercise');
 }
 
@@ -298,7 +305,6 @@ function _bouwUitlegScherm(def) {
     if (e.key === 'Escape') sluitUitleg();
   });
   scherm.setAttribute('tabindex', '-1');
-  _uitlegPasFontToe();
 }
 
 /* ================================================================
@@ -322,7 +328,7 @@ var UITLEG_DEFINITIES = {
         },
         titel: 'Schrijf de getallen onder elkaar',
         uitleg: 'We schrijven 347 bovenaan en 256 eronder. Elke kolom heeft zijn eigen positie: honderdtallen, tientallen en eenheden.',
-        highlight: ['a-h','a-t','a-e','b-h','b-t','b-e'],
+        highlight: [],
         animaties: []
       },
       {
