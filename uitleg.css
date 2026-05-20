@@ -30,13 +30,22 @@
   display:flex;
   justify-content:center;
   align-items:flex-start;
-  padding:20px 20px 0 20px;
+  padding:32px 20px 24px 20px;
   flex-shrink:0;
 }
 .uitleg-som-wrap{
-  transform:scale(2.8);
-  transform-origin:top center;
-  margin-bottom:calc(1.8 * 200px);
+  display:inline-block;
+}
+.uitleg-som-wrap .uitleg-table{
+  border-spacing:4px;
+}
+.uitleg-som-wrap .uitleg-table td,
+.uitleg-som-wrap .uitleg-table th{
+  width:90px;
+  height:90px;
+  font-size:2.8em;
+  text-align:center;
+  vertical-align:middle;
 }
 .uitleg-interactief td.uitleg-highlight{
   border-color:#FCD34D!important;
