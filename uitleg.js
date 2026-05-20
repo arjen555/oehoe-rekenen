@@ -247,6 +247,9 @@ function _bouwUitlegScherm(def){
     label.className='uitleg-stap-label';
     label.textContent=stap.titel||('Stap '+(si+1));
 
+    bol.setAttribute('tabindex', '0');
+    bol.setAttribute('role', 'button');
+    bol.setAttribute('aria-label', 'Stap ' + (si+1) + ': ' + (stap.titel||''));
     bolRij.appendChild(bol);
     bolRij.appendChild(label);
     item.appendChild(bolRij);
@@ -285,6 +288,26 @@ function _bouwUitlegScherm(def){
       });
       item.appendChild(deelLijst);
     }
+
+    // Pijltjesnavigatie op bol
+    (function(s){
+      bol.addEventListener('keydown',function(e){
+        if(e.key==='ArrowDown'||e.key==='ArrowRight'){
+          e.preventDefault();
+          var volgende=document.getElementById('uitleg-bol-'+(s+1));
+          if(volgende) volgende.focus();
+        }
+        if(e.key==='ArrowUp'||e.key==='ArrowLeft'){
+          e.preventDefault();
+          var vorige=document.getElementById('uitleg-bol-'+(s-1));
+          if(vorige) vorige.focus();
+        }
+        if(e.key==='Enter'||e.key===' '){
+          e.preventDefault();
+          bolRij.click();
+        }
+      });
+    })(si);
 
     // Klik op hoofdstap-rij
     (function(s){
@@ -366,9 +389,29 @@ function _bouwUitlegScherm(def){
   // Muiswiel
   scherm.addEventListener('wheel',_handleWheel,{passive:false});
 
-  // ESC sluit deelstappen
+  // Focus trap + ESC
   scherm.addEventListener('keydown',function(e){
-    if(e.key==='Escape') sluitUitleg();
+    if(e.key==='Escape'){sluitUitleg();return;}
+    if(e.key==='Tab'){
+      // Focusbare elementen in volgorde
+      var foc=[
+        document.getElementById('uitleg-bol-0'),
+        document.getElementById('uitleg-stap-tekst'),
+        document.getElementById('uitleg-uil-links'),
+        document.getElementById('uitleg-uil-rechts'),
+        document.getElementById('uitleg-int-terug')
+      ].filter(function(el){return el&&!el.classList.contains('verborgen');});
+      var huidig=document.activeElement;
+      var idx=foc.indexOf(huidig);
+      e.preventDefault();
+      if(e.shiftKey){
+        var prev=idx<=0?foc[foc.length-1]:foc[idx-1];
+        if(prev)prev.focus();
+      } else {
+        var next=idx>=foc.length-1?foc[0]:foc[idx+1];
+        if(next)next.focus();
+      }
+    }
   });
 }
 
@@ -386,6 +429,7 @@ function openUitleg(methode,bewerking){
   if(typeof showScreen==='function')showScreen('screen-uitleg-interactief');
   _bouwSom(_vindSom(0));
   _renderStap(0,0);
+  setTimeout(function(){var b=document.getElementById('uitleg-bol-0');if(b)b.focus();},100);
 }
 
 function sluitUitleg(){
