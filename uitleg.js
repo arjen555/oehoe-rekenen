@@ -1,7 +1,10 @@
 // ── CSS injectie voor uitleg-scherm ──────────────────────────────
 (function(){
-  var stijl = document.createElement('style');
-  stijl.textContent = `
+  function injecteerCss(){
+    var stijl = document.createElement('style');
+    stijl.id = 'uitleg-css';
+    if(document.getElementById('uitleg-css')) return; // niet dubbel injecteren
+    stijl.textContent = `
 #screen-uitleg-interactief{
   display:none;flex-direction:column;
   width:100vw;min-height:100vh;
@@ -177,7 +180,13 @@
 }
 
   `;
-  document.head.appendChild(stijl);
+    (document.head || document.documentElement).appendChild(stijl);
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', injecteerCss);
+  } else {
+    injecteerCss();
+  }
 })();
 
 /* ================================================================
