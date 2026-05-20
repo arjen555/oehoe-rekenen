@@ -1117,9 +1117,7 @@ function changeCellSize(dir){
         if(!appEl)return;
         var tbl=appEl.querySelector('.calc-card table');
         if(tbl){
-          // Meet de volledige breedte inclusief het hulpkader naast de tabel
-          var calcCard=appEl.querySelector('.calc-card');
-          var breedte=(calcCard?calcCard.scrollWidth:tbl.offsetWidth)+120;
+          var breedte=tbl.offsetWidth+200;
           var nieuw=Math.max(1000,breedte);
           var opgeslagen=parseInt(appEl.dataset.maxBreedte||'0');
           var definitief=Math.max(opgeslagen,nieuw);
