@@ -436,6 +436,37 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   background:#3d3200!important;
   color:#FCD34D!important;
 }
+/* Uitleg tabel opmaak */
+.uitleg-interactief td{
+  color:var(--text)!important;
+  background:var(--cell-static-bg)!important;
+}
+.uitleg-interactief th,
+.uitleg-interactief td.uitleg-lbl{
+  color:var(--blue-mid)!important;
+  background:transparent!important;
+  border:none!important;
+  font-weight:800;
+}
+.uitleg-interactief td.uitleg-op{
+  color:#FCD34D!important;
+  background:transparent!important;
+  border:none!important;
+  font-weight:800;
+}
+.uitleg-interactief td.uitleg-input{
+  background:var(--cell-input-bg)!important;
+  color:var(--cell-input-color)!important;
+  border:2px solid var(--border)!important;
+  min-width:calc(var(--cell-size)*2.5);
+  min-height:calc(var(--cell-size)*2.5);
+}
+.uitleg-interactief tr.uitleg-hr td{
+  border:none!important;
+  border-top:3px solid var(--calc-line)!important;
+  background:transparent!important;
+  height:4px;padding:0;
+}
 .uitleg-stap-kaart{
   margin:0 auto;
   max-width:700px;width:90%;
