@@ -472,6 +472,23 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   padding:20px;
   flex-shrink:0;
 }
+.uitleg-int-knoppen{
+  display:flex;gap:8px;margin-left:auto;align-items:center;
+}
+.uitleg-ctrl-btn{
+  background:var(--surface);border:2px solid var(--border);
+  color:var(--text);border-radius:var(--radius-sm);
+  padding:6px 14px;font-family:var(--font);font-size:0.95em;
+  font-weight:700;cursor:pointer;transition:background 0.15s;
+  white-space:nowrap;
+}
+.uitleg-ctrl-btn:hover{background:var(--blue-light);}
+.uitleg-voorlees-btn{font-size:1.1em;padding:6px 10px;}
+.uitleg-som-container{
+  transform:scale(2.5);
+  transform-origin:top center;
+  margin-bottom:calc(var(--cell-size)*2.5*3);
+}
 </style>
 </head>
 <body>
