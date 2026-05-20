@@ -159,6 +159,7 @@ function _renderStap(stapIdx, deelstapIdx) {
   if (tekEl) tekEl.textContent = uitlegTekst;
 
   _uitlegHighlight(highlights || []);
+  _updateBolletjes(stapIdx, deelstapIdx);
 
   var isEerste = (stapIdx === 0 && deelstapIdx === 0);
   var isLaatste = _isLaatsteDeelstap(stapIdx, deelstapIdx);
@@ -177,6 +178,44 @@ function _renderStap(stapIdx, deelstapIdx) {
   if (terugBtn) terugBtn.style.visibility = (_uitlegStapIdx === 0 ? 'hidden' : '');
 
   _uitlegSpreek(titelTekst + '. ' + uitlegTekst);
+  // Focus op tekstvak zodat voorlezen en navigatie werken
+  var tekstvakEl = document.getElementById('uitleg-stap-tekst');
+  if (tekstvakEl) setTimeout(function(){ tekstvakEl.focus(); }, 60);
+}
+
+function _updateBolletjes(stapIdx, deelstapIdx) {
+  var stap = _uitlegDef.stappen[stapIdx];
+  if (!stap) return;
+  var aantalDs = _aantalDeelstappen(stapIdx);
+  var container = document.getElementById('uitleg-bolletjes');
+  var nrWrap = document.getElementById('uitleg-stap-nr-wrap');
+  var titEl = document.getElementById('uitleg-stap-titel');
+  if (!container) return;
+
+  container.innerHTML = '';
+  for (var di = 0; di < aantalDs; di++) {
+    (function(d) {
+      var bol = document.createElement('div');
+      bol.className = 'uitleg-bol' + (d === deelstapIdx ? ' actief' : '');
+      bol.textContent = (stapIdx + 1) + '.' + (d + 1);
+      bol.title = 'Ga naar deelstap ' + (stapIdx + 1) + '.' + (d + 1);
+      bol.addEventListener('click', function() {
+        _uitlegDeelstapIdx = d;
+        _renderStap(_uitlegStapIdx, d);
+      });
+      container.appendChild(bol);
+    })(di);
+  }
+
+  // Titel boven bolletjes als er meer dan 6 deelstappen zijn of titel lang is
+  if (nrWrap && titEl) {
+    var titelLang = (titEl.textContent || '').length > 30;
+    if (aantalDs > 6 || titelLang) {
+      nrWrap.classList.add('titel-boven');
+    } else {
+      nrWrap.classList.remove('titel-boven');
+    }
+  }
 }
 
 function _bouwSom(somDef) {
@@ -315,24 +354,24 @@ function _bouwUitlegScherm(def) {
   uilLinks.className = 'uitleg-uil-pijl';
   uilLinks.id = 'uitleg-uil-links';
   uilLinks.setAttribute('aria-label', 'Vorige stap');
-  uilLinks.innerHTML = '<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl2.png" alt="Vorige stap">';
+  uilLinks.innerHTML = '<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl2.png" alt="Vorige deelstap">';
   uilLinks.addEventListener('click', uitlegDeelTerug);
 
   var kaart = document.createElement('div');
   kaart.id = 'uitleg-stap-kaart';
   kaart.className = 'uitleg-stap-kaart';
   kaart.innerHTML =
-    '<div class="uitleg-stap-nr-wrap">' +
-    '<span class="uitleg-stap-badge" id="uitleg-stap-nr">1</span>' +
+    '<div class="uitleg-stap-nr-wrap" id="uitleg-stap-nr-wrap">' +
+    '<div class="uitleg-bolletjes" id="uitleg-bolletjes"></div>' +
     '<span class="uitleg-stap-titel-tekst" id="uitleg-stap-titel"></span>' +
     '</div>' +
-    '<div class="uitleg-stap-uitleg" id="uitleg-stap-tekst"></div>';
+    '<div class="uitleg-stap-uitleg" id="uitleg-stap-tekst" tabindex="0"></div>';
 
   var uilRechts = document.createElement('div');
   uilRechts.className = 'uitleg-uil-pijl';
   uilRechts.id = 'uitleg-uil-rechts';
   uilRechts.setAttribute('aria-label', 'Volgende stap');
-  uilRechts.innerHTML = '<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl.png" alt="Volgende stap">';
+  uilRechts.innerHTML = '<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl.png" alt="Volgende deelstap">';
   uilRechts.addEventListener('click', uitlegDeelVolgende);
 
   kaartWrap.appendChild(uilLinks);
@@ -350,11 +389,33 @@ function _bouwUitlegScherm(def) {
   document.getElementById('uitleg-int-terug').addEventListener('click', sluitUitleg);
 
   scherm.addEventListener('keydown', function(e) {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); uitlegVolgende(); }
-    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); uitlegTerug(); }
-    if (e.key === 'Escape') sluitUitleg();
+    if (e.key === 'Escape') { sluitUitleg(); return; }
   });
   scherm.setAttribute('tabindex', '-1');
+
+  // Maak uil-pijlen focusbaar via tabindex
+  uilLinks.setAttribute('tabindex', '0');
+  uilRechts.setAttribute('tabindex', '0');
+
+  // Toetsenbordnavigatie op uil-pijlen
+  uilLinks.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); uitlegDeelTerug(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); uitlegDeelTerug(); }
+  });
+  uilRechts.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); uitlegDeelVolgende(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); uitlegDeelVolgende(); }
+  });
+
+  // Pijltjestoetsen op tekstvak navigeren naar uil-pijlen
+  var tekstvak = kaart.querySelector('#uitleg-stap-tekst');
+  if (tekstvak) {
+    tekstvak.setAttribute('tabindex', '0');
+    tekstvak.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); var ul=document.getElementById('uitleg-uil-links'); if(ul&&!ul.classList.contains('verborgen'))ul.focus(); else uitlegDeelTerug(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); var ur=document.getElementById('uitleg-uil-rechts'); if(ur&&!ur.classList.contains('verborgen'))ur.focus(); else uitlegDeelVolgende(); }
+    });
+  }
 }
 
 /* ================================================================
