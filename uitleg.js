@@ -207,15 +207,7 @@ function _updateBolletjes(stapIdx, deelstapIdx) {
     })(di);
   }
 
-  // Titel boven bolletjes als er meer dan 6 deelstappen zijn of titel lang is
-  if (nrWrap && titEl) {
-    var titelLang = (titEl.textContent || '').length > 30;
-    if (aantalDs > 6 || titelLang) {
-      nrWrap.classList.add('titel-boven');
-    } else {
-      nrWrap.classList.remove('titel-boven');
-    }
-  }
+  // Titel staat altijd boven de bolletjes (via CSS)
 }
 
 function _bouwSom(somDef) {
