@@ -405,6 +405,73 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   box-shadow:0 3px 12px rgba(0,0,0,0.4);
 }
 .sug-voorlees-btn:hover{background:#0f766e;transform:scale(1.08);}
+
+/* ── Interactief uitleg-scherm ── */
+#screen-uitleg-interactief{
+  display:none;flex-direction:column;
+  min-height:100vh;
+  background:var(--bg);
+  padding:0;
+}
+#screen-uitleg-interactief.active{display:flex;}
+.uitleg-int-header{
+  display:flex;align-items:center;gap:16px;
+  padding:18px 28px 14px 20px;
+  background:var(--card);
+  border-bottom:2px solid var(--border);
+  flex-shrink:0;
+}
+.uitleg-int-titel{
+  font-size:calc(var(--font-size)*1.2);
+  font-weight:800;color:var(--text);
+}
+.uitleg-som-container{
+  display:flex;justify-content:center;
+  padding:24px 20px 16px 20px;
+  flex-shrink:0;
+}
+.uitleg-interactief td.uitleg-highlight{
+  border-color:#FCD34D!important;
+  box-shadow:0 0 0 3px #FCD34D!important;
+  background:#3d3200!important;
+  color:#FCD34D!important;
+}
+.uitleg-stap-kaart{
+  margin:0 auto;
+  max-width:700px;width:90%;
+  background:var(--card);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px 28px;
+  margin-top:20px;
+}
+.uitleg-stap-nr-wrap{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:14px;
+}
+.uitleg-stap-badge{
+  background:var(--blue-mid);color:#fff;
+  border-radius:50%;
+  min-width:calc(var(--font-size)*1.8);
+  height:calc(var(--font-size)*1.8);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:calc(var(--font-size)*1.1);
+  flex-shrink:0;
+}
+.uitleg-stap-titel-tekst{
+  font-size:calc(var(--font-size)*1.15);
+  font-weight:800;color:var(--text);
+}
+.uitleg-stap-uitleg{
+  font-size:calc(var(--font-size)*1.05);
+  color:var(--text);
+  line-height:1.6;
+}
+.uitleg-nav{
+  display:flex;justify-content:center;gap:16px;
+  padding:20px;
+  flex-shrink:0;
+}
 </style>
 </head>
 <body>
@@ -573,7 +640,8 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <button class="btn-primary" id="btn-finish" style="display:none;">Klaar! &#8594;</button>
   </div>
 </div>
-<div class="screen" id="screen-uitleg" role="main">
+<div class="screen" id="screen-uitleg-interactief" role="main" tabindex="-1"></div>
+  <div class="screen" id="screen-uitleg" role="main">
   <div class="app-header"><button class="back-btn" id="back-uitleg">&#8592;</button><div><div class="header-main" id="uitleg-title">Uitleg</div><div class="header-sub">Zo werkt het</div></div></div>
   <div id="uitleg-content"></div>
   <div style="display:flex;align-items:flex-end;gap:2rem;margin-top:1.5rem;flex-wrap:wrap;">
@@ -4036,7 +4104,7 @@ var UITLEG={
     stappen:['Zet het grootste getal boven en het kleinste getal onder.','Vermenigvuldig het bovenste getal met het eerste (rechter) cijfer: 345 × 7 = 2415.','Vermenigvuldig daarna met het volgende cijfer: 345 × 20 = 6900.','Tel alle rijen bij elkaar op: 2415 + 6900 = 9315.']}
 };
 
-function showUitleg(){
+function showUitlegOud(){
   session.hints++;
   var key=cfg.method+'-'+cfg.op;var u=UITLEG[key];if(!u)return;
   document.getElementById('uitleg-title').textContent=u.titel;
@@ -4045,6 +4113,14 @@ function showUitleg(){
   }).join('')+'</div>';
   document.getElementById('uitleg-content').innerHTML='<div class="uitleg-section"><div class="uitleg-title">'+u.titel+'</div><div class="uitleg-layout"><div>'+u.tabel()+'</div><div>'+stHtml+'</div></div></div>';
   showScreen('screen-uitleg');
+}
+function showUitleg(){
+  session.hints++;
+  if(typeof openUitleg==='function'){
+    openUitleg(cfg.method,cfg.op);
+  } else {
+    showUitlegOud();
+  }
 }
 
 /* ---- ANALYSIS ---- */
