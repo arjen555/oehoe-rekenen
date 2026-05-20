@@ -204,16 +204,18 @@ function _scrollNaarStap() {
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-var _uitlegZoomNiveau = 100; // percentage
+var _uitlegZoomNiveau = 100;
 
 function uitlegVergroot() {
   _uitlegZoomNiveau = Math.min(_uitlegZoomNiveau + 10, 200);
-  document.documentElement.style.fontSize = _uitlegZoomNiveau + '%';
+  var scherm = document.getElementById('screen-uitleg-interactief');
+  if (scherm) scherm.style.zoom = (_uitlegZoomNiveau / 100).toFixed(2);
 }
 
 function uitlegVerklein() {
   _uitlegZoomNiveau = Math.max(_uitlegZoomNiveau - 10, 60);
-  document.documentElement.style.fontSize = _uitlegZoomNiveau + '%';
+  var scherm = document.getElementById('screen-uitleg-interactief');
+  if (scherm) scherm.style.zoom = (_uitlegZoomNiveau / 100).toFixed(2);
 }
 
 function uitlegVoorlees() {
@@ -254,7 +256,8 @@ function sluitUitleg() {
   if (_uitlegAnimTimeout) { clearTimeout(_uitlegAnimTimeout); _uitlegAnimTimeout = null; }
   if (window.speechSynthesis) speechSynthesis.cancel();
   // Herstel de originele zoom
-  document.documentElement.style.fontSize = '';
+  var scherm = document.getElementById('screen-uitleg-interactief');
+  if (scherm) scherm.style.zoom = '';
   if (typeof showScreen === 'function') showScreen('screen-exercise');
 }
 
@@ -270,7 +273,7 @@ function _bouwUitlegScherm(def) {
     '<div class="uitleg-int-knoppen">' +
     '<button class="uitleg-ctrl-btn" onclick="uitlegVergroot()" title="Groter">A+</button>' +
     '<button class="uitleg-ctrl-btn" onclick="uitlegVerklein()" title="Kleiner">A&#8722;</button>' +
-    '<button class="uitleg-ctrl-btn" onclick="uitlegVoorlees()" title="Voorlezen">&#128266;</button>' +
+    
     '</div>';
   scherm.appendChild(header);
 
