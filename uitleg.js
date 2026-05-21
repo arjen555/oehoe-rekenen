@@ -227,10 +227,12 @@ function _handleWheel(e){
     // Vergroot/verklein de som via font-size
     var wrap=somCont.querySelector('.uitleg-som-wrap');
     if(wrap){
-      var huidig=parseFloat(wrap.style.fontSize)||1;
+      var huidig=parseFloat(wrap.dataset.schaal)||1;
       var nieuw=e.deltaY<0?Math.min(huidig+0.1,4):Math.max(huidig-0.1,0.5);
-      wrap.style.fontSize=nieuw+'em';
-      wrap.style.lineHeight='1';
+      wrap.dataset.schaal=nieuw;
+      wrap.style.transform='scale('+nieuw+')';
+      wrap.style.transformOrigin='top center';
+      wrap.style.marginBottom=((nieuw-1)*wrap.offsetHeight)+'px';
     }
     e.preventDefault();
     return;
@@ -576,7 +578,22 @@ var UITLEG_DEFINITIES = {
           { uitleg: 'Bij kolomsgewijs optellen zetten we de som onder elkaar en tellen we per kolom de getallen op.', highlight: [], animaties: [] },
           { uitleg: 'De cijfers in iedere kolom hebben een andere waarde. De 3 en de 2, die je in deze kolom ziet, zijn 300 en 200 waard in de getallen van de som. Daarom staat bovenaan de letter H, die staat voor honderdtallen.', highlight: ['a-h','b-h','inv1-h','inv2-h','inv3-h','ans-h'], animaties: [] },
           { uitleg: 'De 4 en de 5 zijn op diezelfde manier tientallen: 40 en 50. Bovenaan de kolom staat dan ook de T van tientallen.', highlight: ['a-t','b-t','inv1-t','inv2-t','inv3-t','ans-t'], animaties: [] },
-          { uitleg: 'Deelstap 1.4 — komt er nog aan.', highlight: [], animaties: [] }
+          { uitleg: 'En tenslotte, de 7 en de 6, dat zijn de losse getallen, die noemen we ook wel eenheden. Vandaar de letter E bovenaan de kolom.', highlight: ['a-e','b-e','inv1-e','inv2-e','inv3-e','ans-e'], animaties: [] }
+        ]
+      },
+      {
+        som: null,
+        titel: 'Per kolom optellen',
+        uitleg: 'Nu gaan we per kolom de getallen optellen.',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          {
+            uitleg: 'Zoals er een kolom van boven naar beneden is voor de honderdtallen, zo is er ook een rij van links naar rechts voor de honderdtallen: de H-rij.',
+            highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'],
+            animaties: []
+          },
+          { uitleg: 'Deelstap 2.2 — komt er nog aan.', highlight: [], animaties: [] }
         ]
       },
       {
