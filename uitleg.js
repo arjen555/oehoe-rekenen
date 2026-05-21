@@ -132,7 +132,9 @@ function _renderStap(si,di){
 
   var titEl=document.getElementById('uitleg-stap-titel');
   var tekEl=document.getElementById('uitleg-stap-tekst');
-  if(titEl)titEl.textContent=titelTekst;
+  // Titel alleen tonen bij eerste deelstap of stap zonder deelstappen
+  var toonTitel=(di===0||!stap.deelstappen||stap.deelstappen.length<=1);
+  if(titEl){titEl.textContent=titelTekst;titEl.style.display=toonTitel?'':'none';}
   if(tekEl)tekEl.textContent=uitlegTekst;
 
   _uitlegHighlight(highlights||[]);
@@ -593,7 +595,15 @@ var UITLEG_DEFINITIES = {
             highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'],
             animaties: []
           },
-          { uitleg: 'Deelstap 2.2 — komt er nog aan.', highlight: [], animaties: [] }
+          { uitleg: 'In de H-rij tellen we de honderdtallen van de som bij elkaar en vullen die in, zoals hier.', highlight: ['a-h','b-h'], animaties: [
+            { type:'vulIn', cel:'inv1-h', waarde:'5' },
+            { type:'vulIn', cel:'inv1-t', waarde:'0' },
+            { type:'vulIn', cel:'inv1-e', waarde:'0' }
+          ] },
+          { uitleg: 'Na de honderdtallen zijn de tientallen aan de beurt, de 4 en de 5. Die optelsom schrijven we in de T-rij. Let er goed op dat je begint in te vullen in de T-kolom, het zijn immers tientallen.', highlight: ['a-t','b-t','inv2-h','inv2-t','inv2-e'], animaties: [
+            { type:'vulIn', cel:'inv2-t', waarde:'9' },
+            { type:'vulIn', cel:'inv2-e', waarde:'0' }
+          ] }
         ]
       },
       {
