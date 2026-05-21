@@ -21,7 +21,17 @@ var _uitlegFocusInNav=false; // voorkomt dat renderStap focus naar kaart stuurt
 
 // ── Hulpfuncties ───────────────────────────────────────────────
 function _uitlegSpreek(tekst){
+  if(!tekst)return;
+  if(window.speechSynthesis)speechSynthesis.cancel();
   if(typeof speakTekst==='function'&&cfg&&cfg.autoVoorlezen) speakTekst(tekst,true);
+}
+function _uitlegSpreekDirect(tekst){
+  // Spreek altijd voor, ook zonder cfg.autoVoorlezen check (voor focus-events)
+  if(!tekst)return;
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  if(typeof speakTekst==='function'&&cfg&&cfg.autoVoorlezen){
+    speakTekst(tekst,true);
+  }
 }
 function _uitlegClearHighlights(){
   Object.values(_uitlegCells).forEach(function(td){td.classList.remove('uitleg-highlight');});
@@ -257,6 +267,12 @@ function _bouwUitlegScherm(def){
     bol.setAttribute('tabindex', '0');
     bol.setAttribute('role', 'button');
     bol.setAttribute('aria-label', 'Stap ' + (si+1) + ': ' + (stap.titel||''));
+    (function(s){
+      bol.addEventListener('focus',function(){
+        var stap2=_uitlegDef.stappen[s];
+        if(stap2) _uitlegSpreekDirect('Stap '+(s+1)+': '+(stap2.titel||''));
+      });
+    })(si);
     bolRij.appendChild(bol);
     bolRij.appendChild(label);
     item.appendChild(bolRij);
@@ -275,6 +291,16 @@ function _bouwUitlegScherm(def){
         var deelBol=document.createElement('div');
         deelBol.className='uitleg-deelbol';
         deelBol.id='uitleg-deelbol-'+si+'-'+di;
+        deelBol.setAttribute('tabindex','0');
+        (function(s,d){
+          deelBol.addEventListener('focus',function(){
+            var stap2=_uitlegDef.stappen[s];
+            var ds=stap2&&stap2.deelstappen?stap2.deelstappen[d]:null;
+            var tekst='Deelstap '+(s+1)+'.'+(d+1);
+            if(ds&&ds.uitleg) tekst+=': '+ds.uitleg.substring(0,60);
+            _uitlegSpreekDirect(tekst);
+          });
+        })(si,di);
         deelBol.textContent=(si+1)+'.'+(di+1);
 
         var deelLabel=document.createElement('div');
@@ -350,6 +376,7 @@ function _bouwUitlegScherm(def){
   uilLinks.setAttribute('aria-label','Vorige deelstap');
   uilLinks.innerHTML='<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl2.png" alt="Vorige deelstap">';
   uilLinks.addEventListener('click',uitlegDeelTerug);
+  uilLinks.addEventListener('focus',function(){_uitlegSpreekDirect('Vorige deelstap');});
   uilLinks.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();uitlegDeelTerug();}});
 
   var kaart=document.createElement('div');
@@ -357,6 +384,12 @@ function _bouwUitlegScherm(def){
   kaart.className='uitleg-stap-kaart';
   kaart.setAttribute('tabindex','0');
   kaart.id='uitleg-stap-kaart';
+  kaart.addEventListener('focus',function(){
+    var t=document.getElementById('uitleg-stap-titel');
+    var k=document.getElementById('uitleg-stap-tekst');
+    var tekst=(t?t.textContent:'')+(k?'. '+k.textContent:'');
+    _uitlegSpreekDirect(tekst);
+  });
   kaart.innerHTML=
     '<span class="uitleg-stap-titel-tekst" id="uitleg-stap-titel"></span>'+
     '<div class="uitleg-stap-uitleg" id="uitleg-stap-tekst"></div>';
@@ -368,6 +401,7 @@ function _bouwUitlegScherm(def){
   uilRechts.setAttribute('aria-label','Volgende deelstap');
   uilRechts.innerHTML='<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl.png" alt="Volgende deelstap">';
   uilRechts.addEventListener('click',uitlegDeelVolgende);
+  uilRechts.addEventListener('focus',function(){_uitlegSpreekDirect('Volgende deelstap');});
   uilRechts.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();uitlegDeelVolgende();}});
 
   tekstSectie.appendChild(uilLinks);
@@ -378,7 +412,9 @@ function _bouwUitlegScherm(def){
   scherm.appendChild(body);
 
   // Events
-  document.getElementById('uitleg-int-terug').addEventListener('click',sluitUitleg);
+  var terugEl=document.getElementById('uitleg-int-terug');
+  terugEl.addEventListener('click',sluitUitleg);
+  terugEl.addEventListener('focus',function(){_uitlegSpreekDirect('Terug naar de som');});
 
   // Toetsenbord op tekstvak
   var tekEl=document.getElementById('uitleg-stap-tekst');
@@ -407,7 +443,7 @@ function _bouwUitlegScherm(def){
     function getEl(id){return document.getElementById(id);}
     function zichtbaar(el){return el&&!el.classList.contains('verborgen');}
 
-    // TAB-volgorde: terugknop → nav(bol-0) → uil-links → kaart → uil-rechts → terugknop
+    // TAB-volgorde: terug → nav → uil-links → kaart → uil-rechts → terug
     if(e.key==='Tab'){
       e.preventDefault();
       var bol0=getEl('uitleg-bol-0');
@@ -416,7 +452,7 @@ function _bouwUitlegScherm(def){
       var uilR=getEl('uitleg-uil-rechts');
       var terug=getEl('uitleg-int-terug');
       if(!e.shiftKey){
-        if(inTerug||(!inNav&&!inKaart&&!inUilL&&!inUilR)){if(bol0)bol0.focus();}
+        if(inTerug||(!inNav&&!inKaart&&!inUilL&&!inUilR&&!inTerug)){if(bol0)bol0.focus();}
         else if(inNav){if(zichtbaar(uilL))uilL.focus();else if(kaart)kaart.focus();}
         else if(inUilL){if(kaart)kaart.focus();}
         else if(inKaart){if(zichtbaar(uilR))uilR.focus();else if(terug)terug.focus();}
