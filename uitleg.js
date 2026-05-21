@@ -139,7 +139,11 @@ function _renderStap(si,di){
   _updateNavKolom(si,di);
   _updateUilPijlen(si,di);
 
-  _uitlegSpreek(titelTekst+'. '+uitlegTekst);
+  // Bij deelstappen alleen de uitlegtekst voorlezen, niet de hoofdstaptitel
+  var spreekTekst = (stap.deelstappen && stap.deelstappen.length > 1)
+    ? uitlegTekst
+    : titelTekst + '. ' + uitlegTekst;
+  _uitlegSpreek(spreekTekst);
   if(!_uitlegFocusInNav){
     var kaartEl=document.getElementById('uitleg-stap-kaart');
     if(kaartEl)setTimeout(function(){kaartEl.focus();},60);
@@ -358,7 +362,7 @@ function _bouwUitlegScherm(def){
   var uilLinks=document.createElement('div');
   uilLinks.className='uitleg-uil-pijl verborgen';
   uilLinks.id='uitleg-uil-links';
-  uilLinks.setAttribute('tabindex','0');
+  uilLinks.setAttribute('tabindex','-1');
   uilLinks.setAttribute('aria-label','Vorige deelstap');
   uilLinks.innerHTML='<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl2.png" alt="Vorige deelstap">';
   uilLinks.addEventListener('click',uitlegDeelTerug);
@@ -376,7 +380,7 @@ function _bouwUitlegScherm(def){
   var uilRechts=document.createElement('div');
   uilRechts.className='uitleg-uil-pijl';
   uilRechts.id='uitleg-uil-rechts';
-  uilRechts.setAttribute('tabindex','0');
+  uilRechts.setAttribute('tabindex','-1');
   uilRechts.setAttribute('aria-label','Volgende deelstap');
   uilRechts.innerHTML='<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl.png" alt="Volgende deelstap">';
   uilRechts.addEventListener('click',uitlegDeelVolgende);
@@ -430,13 +434,11 @@ function _bouwUitlegScherm(def){
         var actieveStap=_uitlegDef.stappen[actieveSi];
         volgorde.push({el:b,tekst:'Navigatiemenu. '+(actieveStap?'Stap '+(actieveSi+1)+': '+actieveStap.titel:'')});
       }
-      var ul=getEl('uitleg-uil-links'); if(ul&&zichtbaar(ul)) volgorde.push({el:ul,tekst:'Vorige deelstap'});
       var kk=getEl('uitleg-stap-kaart'); if(kk){
         var tit=getEl('uitleg-stap-titel');
         var tek=getEl('uitleg-stap-tekst');
         volgorde.push({el:kk,tekst:(tit?tit.textContent:'')+(tek?'. '+tek.textContent:'')});
       }
-      var ur=getEl('uitleg-uil-rechts'); if(ur&&zichtbaar(ur)) volgorde.push({el:ur,tekst:'Volgende deelstap'});
 
       var huidig=document.activeElement;
       var idx=-1;
