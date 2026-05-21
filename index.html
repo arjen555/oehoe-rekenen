@@ -409,18 +409,16 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 /* ── Interactief uitleg-scherm ── */
 
 /* ── Keuzemenu actieknoppen ── */
-.setup-actie-rij{
+.btn-row-twee{
   display:flex;gap:16px;justify-content:center;
-  margin-top:28px;padding-top:20px;
-  border-top:2px solid var(--border);
 }
 .btn-uitleg-eerst{
   background:var(--surface);
   border:2px solid var(--blue-mid);
   color:var(--blue-mid);
   border-radius:var(--radius);
-  padding:14px 24px;
-  font-family:var(--font);font-size:1em;font-weight:700;
+  padding:16px 28px;
+  font-family:var(--font);font-size:calc(var(--font-size)*1.1);font-weight:700;
   cursor:pointer;transition:background 0.15s;
 }
 .btn-uitleg-eerst:hover{background:var(--blue-light);}
@@ -429,8 +427,8 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   border:2px solid var(--blue-mid);
   color:#fff;
   border-radius:var(--radius);
-  padding:14px 24px;
-  font-family:var(--font);font-size:1em;font-weight:700;
+  padding:16px 28px;
+  font-family:var(--font);font-size:calc(var(--font-size)*1.1);font-weight:700;
   cursor:pointer;transition:opacity 0.15s;
 }
 .btn-meteen:hover{opacity:0.88;}
@@ -577,7 +575,10 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     </div>
     <div id="setup-form"></div>
   </div>
-  <div class="btn-row"><button class="btn-primary" id="start-ex">Starten! &#8594;</button></div>
+  <div class="btn-row btn-row-twee">
+    <button class="btn-uitleg-eerst" id="btn-uitleg-eerst">&#128218; Eerst uitleg, dan beginnen</button>
+    <button class="btn-meteen" id="start-ex">&#9654; Meteen aan de slag!</button>
+  </div>
 </div>
 <div class="screen" id="screen-exercise" role="main">
   <div class="app-header"><button class="back-btn" id="back-exercise">&#8592;</button><div><div class="header-main" id="ex-title">Oefening</div><div class="header-sub" id="ex-sub"></div></div></div>
@@ -693,6 +694,8 @@ window.addEventListener('DOMContentLoaded',function(){
   bind('back-setup',goHome);
   bind('back-exercise',backFromExercise);
   bind('start-ex',startExercise);
+  var btnUitlegEerst=document.getElementById('btn-uitleg-eerst');
+  if(btnUitlegEerst)btnUitlegEerst.addEventListener('click',function(){saveForm();openUitlegVanuitKeuzemenu();});
   // Pijltje rechts/links tussen vrij oefenen en inloggen
   document.getElementById('btn-start').addEventListener('keydown',function(e){
     if(e.key==='ArrowRight'||e.key==='Tab'){e.preventDefault();document.getElementById('btn-leerling-login').focus();}
@@ -946,19 +949,7 @@ function buildForm(tid){
   attachFormEvents(el);
   initTipsBtn();
   // Voeg de twee actieknoppen toe onderaan het keuzemenu
-  var actieRij=document.createElement('div');
-  actieRij.className='setup-actie-rij';
-  actieRij.innerHTML=
-    '<button class="btn-uitleg-eerst" id="btn-uitleg-eerst">&#128218; Eerst uitleg, dan beginnen</button>'+
-    '<button class="btn-meteen" id="btn-meteen-start">&#9654; Meteen aan de slag!</button>';
-  el.appendChild(actieRij);
-  document.getElementById('btn-uitleg-eerst').addEventListener('click', function(){
-    saveForm();
-    openUitlegVanuitKeuzemenu();
-  });
-  document.getElementById('btn-meteen-start').addEventListener('click', function(){
-    saveForm(); startExercise();
-  });
+
 }
 function ob(g,v,l){return '<button class="opt-btn" data-group="'+g+'" data-val="'+v+'" aria-pressed="false">'+l+'</button>';}
 function obp(g,i,l){return '<button class="opt-btn" data-place="'+g+'" data-idx="'+i+'" aria-pressed="false">'+l+'</button>';}
