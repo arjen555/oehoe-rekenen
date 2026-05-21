@@ -446,24 +446,23 @@ function _bouwUitlegScherm(def){
     // TAB-volgorde: terug → nav → uil-links → kaart → uil-rechts → terug
     if(e.key==='Tab'){
       e.preventDefault();
-      var bol0=getEl('uitleg-bol-0');
-      var uilL=getEl('uitleg-uil-links');
-      var kaart=getEl('uitleg-stap-kaart');
-      var uilR=getEl('uitleg-uil-rechts');
-      var terug=getEl('uitleg-int-terug');
-      if(!e.shiftKey){
-        if(inTerug||(!inNav&&!inKaart&&!inUilL&&!inUilR&&!inTerug)){if(bol0)bol0.focus();}
-        else if(inNav){if(zichtbaar(uilL))uilL.focus();else if(kaart)kaart.focus();}
-        else if(inUilL){if(kaart)kaart.focus();}
-        else if(inKaart){if(zichtbaar(uilR))uilR.focus();else if(terug)terug.focus();}
-        else if(inUilR){if(terug)terug.focus();}
+      // Bouw de actuele volgorde op basis van wat zichtbaar is
+      var volgorde=[];
+      var t=getEl('uitleg-int-terug'); if(t) volgorde.push(t);
+      var b=getEl('uitleg-bol-0'); if(b) volgorde.push(b);
+      var ul=getEl('uitleg-uil-links'); if(ul&&zichtbaar(ul)) volgorde.push(ul);
+      var kk=getEl('uitleg-stap-kaart'); if(kk) volgorde.push(kk);
+      var ur=getEl('uitleg-uil-rechts'); if(ur&&zichtbaar(ur)) volgorde.push(ur);
+      
+      var huidig=document.activeElement;
+      var idx=volgorde.indexOf(huidig);
+      var nieuwIdx;
+      if(e.shiftKey){
+        nieuwIdx=idx<=0?volgorde.length-1:idx-1;
       } else {
-        if(inNav){if(terug)terug.focus();}
-        else if(inUilL){if(bol0)bol0.focus();}
-        else if(inKaart){if(zichtbaar(uilL))uilL.focus();else if(bol0)bol0.focus();}
-        else if(inUilR){if(kaart)kaart.focus();}
-        else if(inTerug){if(zichtbaar(uilR))uilR.focus();else if(kaart)kaart.focus();}
+        nieuwIdx=idx>=volgorde.length-1?0:idx+1;
       }
+      volgorde[nieuwIdx].focus();
       return;
     }
 
