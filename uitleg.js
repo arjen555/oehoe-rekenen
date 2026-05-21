@@ -595,7 +595,7 @@ var UITLEG_DEFINITIES = {
             highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'],
             animaties: []
           },
-          { uitleg: 'In de H-rij tellen we de honderdtallen van de som bij elkaar en vullen die in, zoals hier.', highlight: ['a-h','b-h'], animaties: [
+          { uitleg: 'In de H-rij tellen we de honderdtallen van de som bij elkaar en vullen die in, zoals hier.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [
             { type:'vulIn', cel:'inv1-h', waarde:'5' },
             { type:'vulIn', cel:'inv1-t', waarde:'0' },
             { type:'vulIn', cel:'inv1-e', waarde:'0' }
@@ -605,10 +605,37 @@ var UITLEG_DEFINITIES = {
             { type:'vulIn', cel:'inv2-e', waarde:'0' }
           ] },
           { uitleg: 'Tenslotte moeten we de eenheden nog optellen. We kijken naar de E-kolom en vullen in op de E-rij. Maar let op:', highlight: ['a-e','b-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
-          { uitleg: '7+6=13. Wat is de 1 in dit getal? Juist, een tiental. Dus de 1 schrijven we in de kolom van de tientallen op de rij van de eenheden. En de 3 komt daar natuurlijk gezellig naast te staan.', highlight: ['inv3-t','inv3-e','a-t','b-t','a-e','b-e'], animaties: [
+          { uitleg: '7+6=13. Wat is de 1 in dit getal? Juist, een tiental. Dus de 1 schrijven we in de kolom van de tientallen op de rij van de eenheden. En de 3 komt daar natuurlijk gezellig naast te staan.', highlight: ['a-e','b-e','inv3-t','inv3-e'], animaties: [
             { type:'vulIn', cel:'inv3-t', waarde:'1' },
             { type:'vulIn', cel:'inv3-e', waarde:'3' }
           ] }
+        ]
+      },
+      {
+        som: null,
+        titel: 'Onze uitkomsten optellen',
+        uitleg: 'Nu gaan we wat we al opgeteld hebben samenvoegen tot één einduitkomst.',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          {
+            uitleg: 'Nu gaan we wat we al opgeteld hebben, samenvoegen tot één einduitkomst.',
+            highlight: ['inv1-h','inv1-t','inv1-e','inv2-h','inv2-t','inv2-e','inv3-h','inv3-t','inv3-e'],
+            animaties: []
+          },
+          {
+            uitleg: 'We hebben in totaal 5 honderdtallen opgeschreven, die mag je dus invullen in de einduitkomst bij de honderdtallen.',
+            highlight: ['inv1-h','ans-h'],
+            animaties: [ { type:'vulIn', cel:'ans-h', waarde:'5' } ]
+          },
+          {
+            uitleg: 'In de T-kolom hebben we 9+1. O jee, dat zijn 10 tientallen en dat is 100: nog een honderdtal! En we hebben daar al een 5 geschreven. Dat moet een 6 worden.',
+            highlight: ['inv2-t','inv3-t','ans-t','ans-h'],
+            animaties: [
+              { type:'vulIn', cel:'ans-h', waarde:'6' },
+              { type:'vulIn', cel:'ans-t', waarde:'0' }
+            ]
+          }
         ]
       },
       {
