@@ -221,9 +221,20 @@ function uitlegDeelTerug(){
 function _handleWheel(e){
   // Ctrl+muiswiel: laat browser zoom werken
   if(e.ctrlKey)return;
-  // Als muis boven de som-container: laat normaal scrollen
+  // Als muis boven de som-container: laat scrollen/zoomen in de som
   var somCont=document.getElementById('uitleg-som-container');
-  if(somCont&&somCont.contains(e.target))return;
+  if(somCont&&somCont.contains(e.target)){
+    // Vergroot/verklein de som via font-size
+    var wrap=somCont.querySelector('.uitleg-som-wrap');
+    if(wrap){
+      var huidig=parseFloat(wrap.style.fontSize)||1;
+      var nieuw=e.deltaY<0?Math.min(huidig+0.1,4):Math.max(huidig-0.1,0.5);
+      wrap.style.fontSize=nieuw+'em';
+      wrap.style.lineHeight='1';
+    }
+    e.preventDefault();
+    return;
+  }
   e.preventDefault();
   if(e.deltaY>0) uitlegDeelVolgende();
   else if(e.deltaY<0) uitlegDeelTerug();
@@ -563,8 +574,8 @@ var UITLEG_DEFINITIES = {
         animaties: [],
         deelstappen: [
           { uitleg: 'Bij kolomsgewijs optellen zetten we de som onder elkaar en tellen we per kolom de getallen op.', highlight: [], animaties: [] },
-          { uitleg: 'De cijfers in iedere kolom hebben een andere waarde. De 3 en de 2, die je in deze kolom ziet, zijn 300 en 200 waard in de getallen van de som.', highlight: ['a-h','b-h','inv1-h','inv2-h','inv3-h','ans-h'], animaties: [] },
-          { uitleg: 'Deelstap 1.3 — komt er nog aan.', highlight: [], animaties: [] },
+          { uitleg: 'De cijfers in iedere kolom hebben een andere waarde. De 3 en de 2, die je in deze kolom ziet, zijn 300 en 200 waard in de getallen van de som. Daarom staat bovenaan de letter H, die staat voor honderdtallen.', highlight: ['a-h','b-h','inv1-h','inv2-h','inv3-h','ans-h'], animaties: [] },
+          { uitleg: 'De 4 en de 5 zijn op diezelfde manier tientallen: 40 en 50. Bovenaan de kolom staat dan ook de T van tientallen.', highlight: ['a-t','b-t','inv1-t','inv2-t','inv3-t','ans-t'], animaties: [] },
           { uitleg: 'Deelstap 1.4 — komt er nog aan.', highlight: [], animaties: [] }
         ]
       },
