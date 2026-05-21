@@ -407,6 +407,49 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .sug-voorlees-btn:hover{background:#0f766e;transform:scale(1.08);}
 
 /* ── Interactief uitleg-scherm ── */
+
+/* ── Keuzemenu actieknoppen ── */
+.setup-actie-rij{
+  display:flex;gap:16px;justify-content:center;
+  margin-top:28px;padding-top:20px;
+  border-top:2px solid var(--border);
+}
+.btn-uitleg-eerst{
+  background:var(--surface);
+  border:2px solid var(--blue-mid);
+  color:var(--blue-mid);
+  border-radius:var(--radius);
+  padding:14px 24px;
+  font-family:var(--font);font-size:1em;font-weight:700;
+  cursor:pointer;transition:background 0.15s;
+}
+.btn-uitleg-eerst:hover{background:var(--blue-light);}
+.btn-meteen{
+  background:var(--blue-mid);
+  border:2px solid var(--blue-mid);
+  color:#fff;
+  border-radius:var(--radius);
+  padding:14px 24px;
+  font-family:var(--font);font-size:1em;font-weight:700;
+  cursor:pointer;transition:opacity 0.15s;
+}
+.btn-meteen:hover{opacity:0.88;}
+/* Knop in uitlegscherm: Nu zelf aan de slag */
+.uitleg-start-knop-wrap{
+  display:flex;justify-content:center;
+  padding:16px 0 8px 0;
+  flex-shrink:0;
+}
+.btn-uitleg-start{
+  background:#16a34a;
+  border:none;color:#fff;
+  border-radius:var(--radius);
+  padding:14px 32px;
+  font-family:var(--font);font-size:1.05em;font-weight:800;
+  cursor:pointer;transition:opacity 0.15s;
+  display:none;
+}
+.btn-uitleg-start:hover{opacity:0.88;}
 </style>
 </head>
 <body>
@@ -902,6 +945,20 @@ function buildForm(tid){
   el.innerHTML=h;
   attachFormEvents(el);
   initTipsBtn();
+  // Voeg de twee actieknoppen toe onderaan het keuzemenu
+  var actieRij=document.createElement('div');
+  actieRij.className='setup-actie-rij';
+  actieRij.innerHTML=
+    '<button class="btn-uitleg-eerst" id="btn-uitleg-eerst">&#128218; Eerst uitleg, dan beginnen</button>'+
+    '<button class="btn-meteen" id="btn-meteen-start">&#9654; Meteen aan de slag!</button>';
+  el.appendChild(actieRij);
+  document.getElementById('btn-uitleg-eerst').addEventListener('click', function(){
+    saveForm();
+    openUitlegVanuitKeuzemenu();
+  });
+  document.getElementById('btn-meteen-start').addEventListener('click', function(){
+    saveForm(); startExercise();
+  });
 }
 function ob(g,v,l){return '<button class="opt-btn" data-group="'+g+'" data-val="'+v+'" aria-pressed="false">'+l+'</button>';}
 function obp(g,i,l){return '<button class="opt-btn" data-place="'+g+'" data-idx="'+i+'" aria-pressed="false">'+l+'</button>';}
@@ -4036,6 +4093,18 @@ var UITLEG={
     ]);},
     stappen:['Zet het grootste getal boven en het kleinste getal onder.','Vermenigvuldig het bovenste getal met het eerste (rechter) cijfer: 345 × 7 = 2415.','Vermenigvuldig daarna met het volgende cijfer: 345 × 20 = 6900.','Tel alle rijen bij elkaar op: 2415 + 6900 = 9315.']}
 };
+
+// ── Uitleg vanuit keuzemenu ──────────────────────────────────────
+var _uitlegVanuitKeuzemenu = false;
+
+function openUitlegVanuitKeuzemenu(){
+  _uitlegVanuitKeuzemenu = true;
+  // Zorg dat er een geldig problem is om terug naar te gaan
+  if(!currentProblem) generateProblem();
+  if(typeof openUitleg === 'function'){
+    openUitleg(cfg.method, cfg.op);
+  }
+}
 
 function showUitlegOud(){
   session.hints++;
