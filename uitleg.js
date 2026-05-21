@@ -310,7 +310,7 @@ function _bouwUitlegScherm(def){
 
         var deelLabel=document.createElement('div');
         deelLabel.className='uitleg-deelstap-label';
-        deelLabel.textContent=ds.uitleg?ds.uitleg.substring(0,30)+'…':'';
+        deelLabel.textContent=ds.titel||(ds.uitleg?ds.uitleg.substring(0,30)+'…':'');
 
         deelItem.appendChild(deelBol);
         deelItem.appendChild(deelLabel);
@@ -577,10 +577,10 @@ var UITLEG_DEFINITIES = {
         highlight: [],
         animaties: [],
         deelstappen: [
-          { uitleg: 'Bij kolomsgewijs optellen zetten we de som onder elkaar en tellen we per kolom de getallen op.', highlight: [], animaties: [] },
-          { uitleg: 'De cijfers in iedere kolom hebben een andere waarde. De 3 en de 2, die je in deze kolom ziet, zijn 300 en 200 waard in de getallen van de som. Daarom staat bovenaan de letter H, die staat voor honderdtallen.', highlight: ['a-h','b-h','inv1-h','inv2-h','inv3-h','ans-h'], animaties: [] },
-          { uitleg: 'De 4 en de 5 zijn op diezelfde manier tientallen: 40 en 50. Bovenaan de kolom staat dan ook de T van tientallen.', highlight: ['a-t','b-t','inv1-t','inv2-t','inv3-t','ans-t'], animaties: [] },
-          { uitleg: 'En tenslotte, de 7 en de 6, dat zijn de losse getallen, die noemen we ook wel eenheden. Vandaar de letter E bovenaan de kolom.', highlight: ['a-e','b-e','inv1-e','inv2-e','inv3-e','ans-e'], animaties: [] }
+          { titel: 'Per kolom', uitleg: 'Bij kolomsgewijs optellen zetten we de som onder elkaar en tellen we per kolom de getallen op.', highlight: [], animaties: [] },
+          { titel: 'Cijferwaardes', uitleg: 'De cijfers in iedere kolom hebben een andere waarde. De 3 en de 2, die je in deze kolom ziet, zijn 300 en 200 waard in de getallen van de som. Daarom staat bovenaan de letter H, die staat voor honderdtallen.', highlight: ['a-h','b-h','inv1-h','inv2-h','inv3-h','ans-h'], animaties: [] },
+          { titel: 'Tientallen', uitleg: 'De 4 en de 5 zijn op diezelfde manier tientallen: 40 en 50. Bovenaan de kolom staat dan ook de T van tientallen.', highlight: ['a-t','b-t','inv1-t','inv2-t','inv3-t','ans-t'], animaties: [] },
+          { titel: 'Eenheden', uitleg: 'En tenslotte, de 7 en de 6, dat zijn de losse getallen, die noemen we ook wel eenheden. Vandaar de letter E bovenaan de kolom.', highlight: ['a-e','b-e','inv1-e','inv2-e','inv3-e','ans-e'], animaties: [] }
         ]
       },
       {
@@ -591,21 +591,22 @@ var UITLEG_DEFINITIES = {
         animaties: [],
         deelstappen: [
           {
+            titel: 'De rijen',
             uitleg: 'Zoals er een kolom van boven naar beneden is voor de honderdtallen, zo is er ook een rij van links naar rechts voor de honderdtallen: de H-rij.',
             highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'],
             animaties: []
           },
-          { uitleg: 'In de H-rij tellen we de honderdtallen van de som bij elkaar en vullen die in, zoals hier.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [
+          { titel: 'De H-rij', uitleg: 'In de H-rij tellen we de honderdtallen van de som bij elkaar en vullen die in, zoals hier.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [
             { type:'vulIn', cel:'inv1-h', waarde:'5' },
             { type:'vulIn', cel:'inv1-t', waarde:'0' },
             { type:'vulIn', cel:'inv1-e', waarde:'0' }
           ] },
-          { uitleg: 'Na de honderdtallen zijn de tientallen aan de beurt, de 4 en de 5. Die optelsom schrijven we in de T-rij. Let er goed op dat je begint in te vullen in de T-kolom, het zijn immers tientallen.', highlight: ['a-t','b-t','inv2-h','inv2-t','inv2-e'], animaties: [
+          { titel: 'De T-rij', uitleg: 'Na de honderdtallen zijn de tientallen aan de beurt, de 4 en de 5. Die optelsom schrijven we in de T-rij. Let er goed op dat je begint in te vullen in de T-kolom, het zijn immers tientallen.', highlight: ['a-t','b-t','inv2-h','inv2-t','inv2-e'], animaties: [
             { type:'vulIn', cel:'inv2-t', waarde:'9' },
             { type:'vulIn', cel:'inv2-e', waarde:'0' }
           ] },
-          { uitleg: 'Tenslotte moeten we de eenheden nog optellen. We kijken naar de E-kolom en vullen in op de E-rij. Maar let op:', highlight: ['a-e','b-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
-          { uitleg: '7+6=13. Wat is de 1 in dit getal? Juist, een tiental. Dus de 1 schrijven we in de kolom van de tientallen op de rij van de eenheden. En de 3 komt daar natuurlijk gezellig naast te staan.', highlight: ['a-e','b-e','inv3-t','inv3-e'], animaties: [
+          { titel: 'De E-rij', uitleg: 'Tenslotte moeten we de eenheden nog optellen. We kijken naar de E-kolom en vullen in op de E-rij. Maar let op:', highlight: ['a-e','b-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
+          { titel: 'Doorschuiven', uitleg: '7+6=13. Wat is de 1 in dit getal? Juist, een tiental. Dus de 1 schrijven we in de kolom van de tientallen op de rij van de eenheden. En de 3 komt daar natuurlijk gezellig naast te staan.', highlight: ['a-e','b-e','inv3-t','inv3-e'], animaties: [
             { type:'vulIn', cel:'inv3-t', waarde:'1' },
             { type:'vulIn', cel:'inv3-e', waarde:'3' }
           ] }
@@ -619,53 +620,35 @@ var UITLEG_DEFINITIES = {
         animaties: [],
         deelstappen: [
           {
+            titel: 'Naar de einduitkomst',
             uitleg: 'Nu gaan we wat we al opgeteld hebben, samenvoegen tot één einduitkomst.',
             highlight: ['inv1-h','inv1-t','inv1-e','inv2-h','inv2-t','inv2-e','inv3-h','inv3-t','inv3-e'],
             animaties: []
           },
           {
+            titel: 'Honderdtallen',
             uitleg: 'We hebben in totaal 5 honderdtallen opgeschreven, die mag je dus invullen in de einduitkomst bij de honderdtallen.',
             highlight: ['inv1-h','ans-h'],
             animaties: [ { type:'vulIn', cel:'ans-h', waarde:'5' } ]
           },
           {
+            titel: 'Tien tientallen',
             uitleg: 'In de T-kolom hebben we 9+1. O jee, dat zijn 10 tientallen en dat is 100: nog een honderdtal! En we hebben daar al een 5 geschreven. Dat moet een 6 worden.',
             highlight: ['inv2-t','inv3-t','ans-t','ans-h'],
             animaties: [
               { type:'vulIn', cel:'ans-h', waarde:'6' },
               { type:'vulIn', cel:'ans-t', waarde:'0' }
             ]
+          },
+          {
+            titel: 'De som is klaar!',
+            uitleg: 'Tenslotte kijken we naar de eenheden. Die hebben we 3 in onze uitkomstrijen bij de E-kolom staan. En dus vullen we een 3 in op de einduitkomst. Totaal: 603. We zijn klaar!',
+            highlight: ['inv3-e','ans-e'],
+            animaties: [ { type:'vulIn', cel:'ans-e', waarde:'3' } ]
           }
         ]
       },
-      {
-        som: null,
-        titel: 'Tel de eenheden op',
-        uitleg: 'We beginnen rechts: 7 plus 6 is 13. We schrijven 3 op in de eenhedenkolom. De 1 onthouden we.',
-        highlight: ['a-e','b-e','ans-e'],
-        animaties: [ { type:'vulIn', cel:'ans-e', waarde:'3' } ]
-      },
-      {
-        som: null,
-        titel: 'Tel de tientallen op',
-        uitleg: '4 plus 5 is 9, plus de 1 die we onthielden is 10. We schrijven 0 op. De 1 onthouden we weer.',
-        highlight: ['a-t','b-t','ans-t'],
-        animaties: [ { type:'vulIn', cel:'ans-t', waarde:'0' } ]
-      },
-      {
-        som: null,
-        titel: 'Tel de honderdtallen op',
-        uitleg: '3 plus 2 is 5, plus de 1 die we onthielden is 6. We schrijven 6 op.',
-        highlight: ['a-h','b-h','ans-h'],
-        animaties: [ { type:'vulIn', cel:'ans-h', waarde:'6' } ]
-      },
-      {
-        som: null,
-        titel: 'Lees het antwoord af',
-        uitleg: '347 plus 256 is 603.',
-        highlight: ['ans-h','ans-t','ans-e'],
-        animaties: []
-      }
+
     ]
   }
 };
