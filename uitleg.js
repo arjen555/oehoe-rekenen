@@ -26,12 +26,26 @@ function _uitlegSpreek(tekst){
   if(typeof speakTekst==='function'&&cfg&&cfg.autoVoorlezen) speakTekst(tekst,true);
 }
 function _uitlegSpreekDirect(tekst){
-  // Spreek altijd voor, ook zonder cfg.autoVoorlezen check (voor focus-events)
   if(!tekst)return;
+  if(!(typeof speakTekst==='function'&&cfg&&cfg.autoVoorlezen))return;
+  // Sla huidig gefocust element op en herstel na speak (sommige browsers
+  // verplaatsen focus bij speechSynthesis.speak naar body)
+  var herstellEl=document.activeElement;
   if(window.speechSynthesis)speechSynthesis.cancel();
-  if(typeof speakTekst==='function'&&cfg&&cfg.autoVoorlezen){
-    speakTekst(tekst,true);
-  }
+  setTimeout(function(){
+    if(window.speechSynthesis&&cfg&&cfg.autoVoorlezen){
+      var u=new SpeechSynthesisUtterance(tekst);
+      u.lang='nl-NL';
+      u.rate=typeof spreekSnelheid!=='undefined'?spreekSnelheid:1;
+      speechSynthesis.speak(u);
+    }
+    // Herstel focus als browser hem heeft verplaatst
+    setTimeout(function(){
+      if(document.activeElement===document.body&&herstellEl&&herstellEl.isConnected){
+        herstellEl.focus();
+      }
+    },50);
+  },30);
 }
 function _uitlegClearHighlights(){
   Object.values(_uitlegCells).forEach(function(td){td.classList.remove('uitleg-highlight');});
