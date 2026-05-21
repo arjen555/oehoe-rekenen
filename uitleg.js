@@ -17,7 +17,8 @@ var _uitlegActief=false, _uitlegDef=null;
 var _uitlegStapIdx=0, _uitlegDeelstapIdx=0;
 var _uitlegAnimTimeout=null, _uitlegCells={};
 var _uitlegOpenStap=-1; // welke hoofdstap heeft deelstappen open
-var _uitlegFocusInNav=false; // voorkomt dat renderStap focus naar kaart stuurt
+var _uitlegFocusInNav=false;
+var _uitlegVanuitKeuzemenu=false; // voorkomt dat renderStap focus naar kaart stuurt
 
 // ── Hulpfuncties ───────────────────────────────────────────────
 function _uitlegSpreek(tekst){
@@ -358,6 +359,19 @@ function _bouwUitlegScherm(def){
     navKolom.appendChild(item);
   });
 
+  // Knop 'Nu zelf aan de slag!' onder navigatiemenu (alleen vanuit keuzemenu)
+  var startKnopWrap=document.createElement('div');
+  startKnopWrap.className='uitleg-start-knop-wrap';
+  var startKnop=document.createElement('button');
+  startKnop.className='btn-uitleg-start';
+  startKnop.id='btn-uitleg-start';
+  startKnop.textContent='Nu zelf aan de slag!';
+  startKnop.addEventListener('click', function(){
+    sluitUitlegNaarSom();
+  });
+  startKnopWrap.appendChild(startKnop);
+  navKolom.appendChild(startKnopWrap);
+
   body.appendChild(navKolom);
 
   // Inhoud rechts
@@ -538,6 +552,11 @@ function openUitleg(methode,bewerking){
 
   _bouwUitlegScherm(def);
   if(typeof showScreen==='function')showScreen('screen-uitleg-interactief');
+  // Toon 'Nu zelf aan de slag!' alleen vanuit keuzemenu
+  var startKnop=document.getElementById('btn-uitleg-start');
+  if(startKnop){
+    startKnop.style.display=_uitlegVanuitKeuzemenu?'block':'none';
+  }
   _bouwSom(_vindSom(0));
   _renderStap(0,0);
   setTimeout(function(){var b=document.getElementById('uitleg-bol-0');if(b)b.focus();},100);
@@ -547,7 +566,24 @@ function sluitUitleg(){
   _uitlegActief=false;
   if(_uitlegAnimTimeout){clearTimeout(_uitlegAnimTimeout);_uitlegAnimTimeout=null;}
   if(window.speechSynthesis)speechSynthesis.cancel();
-  if(typeof showScreen==='function')showScreen('screen-exercise');
+  if(_uitlegVanuitKeuzemenu){
+    // Terug naar keuzemenu
+    _uitlegVanuitKeuzemenu=false;
+    if(typeof showScreen==='function')showScreen('screen-setup');
+  } else {
+    // Terug naar de som
+    if(typeof showScreen==='function')showScreen('screen-exercise');
+  }
+}
+
+function sluitUitlegNaarSom(){
+  // Vanuit keuzemenu: ga direct naar de sommen
+  _uitlegVanuitKeuzemenu=false;
+  _uitlegActief=false;
+  if(_uitlegAnimTimeout){clearTimeout(_uitlegAnimTimeout);_uitlegAnimTimeout=null;}
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  if(typeof startExercise==='function') startExercise();
+  else if(typeof showScreen==='function') showScreen('screen-exercise');
 }
 
 /* ================================================================
@@ -593,7 +629,7 @@ var UITLEG_DEFINITIES = {
           {
             titel: 'De rijen',
             uitleg: 'Zoals er een kolom van boven naar beneden is voor de honderdtallen, zo is er ook een rij van links naar rechts voor de honderdtallen: de H-rij.',
-            highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'],
+            highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e','inv2-h','inv3-h','ans-h'],
             animaties: []
           },
           { titel: 'De H-rij', uitleg: 'In de H-rij tellen we de honderdtallen van de som bij elkaar en vullen die in, zoals hier.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [
