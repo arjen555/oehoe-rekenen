@@ -563,7 +563,7 @@ var UITLEG_DEFINITIES = {
         animaties: [],
         deelstappen: [
           { uitleg: 'Bij kolomsgewijs optellen zetten we de som onder elkaar en tellen we per kolom de getallen op.', highlight: [], animaties: [] },
-          { uitleg: 'Deelstap 1.2 — komt er nog aan.', highlight: [], animaties: [] },
+          { uitleg: 'De cijfers in iedere kolom hebben een andere waarde. De 3 en de 2, die je in deze kolom ziet, zijn 300 en 200 waard in de getallen van de som.', highlight: ['a-h','b-h','inv1-h','inv2-h','inv3-h','ans-h'], animaties: [] },
           { uitleg: 'Deelstap 1.3 — komt er nog aan.', highlight: [], animaties: [] },
           { uitleg: 'Deelstap 1.4 — komt er nog aan.', highlight: [], animaties: [] }
         ]
