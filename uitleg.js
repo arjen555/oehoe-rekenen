@@ -603,6 +603,11 @@ var UITLEG_DEFINITIES = {
           { uitleg: 'Na de honderdtallen zijn de tientallen aan de beurt, de 4 en de 5. Die optelsom schrijven we in de T-rij. Let er goed op dat je begint in te vullen in de T-kolom, het zijn immers tientallen.', highlight: ['a-t','b-t','inv2-h','inv2-t','inv2-e'], animaties: [
             { type:'vulIn', cel:'inv2-t', waarde:'9' },
             { type:'vulIn', cel:'inv2-e', waarde:'0' }
+          ] },
+          { uitleg: 'Tenslotte moeten we de eenheden nog optellen. We kijken naar de E-kolom en vullen in op de E-rij. Maar let op:', highlight: ['a-e','b-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
+          { uitleg: '7+6=13. Wat is de 1 in dit getal? Juist, een tiental. Dus de 1 schrijven we in de kolom van de tientallen op de rij van de eenheden. En de 3 komt daar natuurlijk gezellig naast te staan.', highlight: ['inv3-t','inv3-e','a-t','b-t','a-e','b-e'], animaties: [
+            { type:'vulIn', cel:'inv3-t', waarde:'1' },
+            { type:'vulIn', cel:'inv3-e', waarde:'3' }
           ] }
         ]
       },
