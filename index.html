@@ -4105,11 +4105,10 @@ var UITLEG={
 var _uitlegVanuitKeuzemenu = false;
 
 function openUitlegVanuitKeuzemenu(){
-  _uitlegVanuitKeuzemenu = true;
   // Zorg dat er een geldig problem is om terug naar te gaan
   if(!currentProblem) generateProblem();
   if(typeof openUitleg === 'function'){
-    openUitleg(cfg.method, cfg.op);
+    openUitleg(cfg.method, cfg.op, true); // true = vanuit keuzemenu
   }
 }
 
