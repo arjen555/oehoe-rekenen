@@ -418,10 +418,11 @@ function _bouwUitlegScherm(def){
   uilLinks.className='uitleg-uil-pijl verborgen';
   uilLinks.id='uitleg-uil-links';
   uilLinks.setAttribute('tabindex','-1');
+  uilLinks.setAttribute('aria-hidden','true');
   uilLinks.setAttribute('aria-label','Vorige deelstap');
   uilLinks.innerHTML='<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl2.png" alt="Vorige deelstap">';
   uilLinks.addEventListener('click',uitlegDeelTerug);
-  uilLinks.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();uitlegDeelTerug();}});
+
 
   var kaart=document.createElement('div');
   kaart.id='uitleg-stap-kaart';
@@ -436,10 +437,11 @@ function _bouwUitlegScherm(def){
   uilRechts.className='uitleg-uil-pijl';
   uilRechts.id='uitleg-uil-rechts';
   uilRechts.setAttribute('tabindex','-1');
+  uilRechts.setAttribute('aria-hidden','true');
   uilRechts.setAttribute('aria-label','Volgende deelstap');
   uilRechts.innerHTML='<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl.png" alt="Volgende deelstap">';
   uilRechts.addEventListener('click',uitlegDeelVolgende);
-  uilRechts.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();uitlegDeelVolgende();}});
+
 
   tekstSectie.appendChild(uilLinks);
   tekstSectie.appendChild(kaart);
@@ -471,9 +473,6 @@ function _bouwUitlegScherm(def){
 
     var actief=document.activeElement;
     var inNav=actief&&(actief.classList.contains('uitleg-bol')||actief.classList.contains('uitleg-deelbol'));
-    var inKaart=actief&&actief.id==='uitleg-stap-kaart';
-    var inUilL=actief&&actief.id==='uitleg-uil-links';
-    var inUilR=actief&&actief.id==='uitleg-uil-rechts';
     var inTerug=actief&&actief.id==='uitleg-int-terug';
 
     function getEl(id){return document.getElementById(id);}
@@ -505,24 +504,7 @@ function _bouwUitlegScherm(def){
       return;
     }
 
-    // Pijltjes links/rechts buiten nav: tussen zones
-    if(!inNav&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){
-      e.preventDefault();
-      var uilL2=getEl('uitleg-uil-links');
-      var kaart2=getEl('uitleg-stap-kaart');
-      var uilR2=getEl('uitleg-uil-rechts');
-      var bol02=getEl('uitleg-bol-0');
-      if(e.key==='ArrowRight'){
-        if(inUilL){if(kaart2)kaart2.focus();}
-        else if(inKaart){if(zichtbaar(uilR2))uilR2.focus();}
-        else if(inUilR){uitlegDeelVolgende();}
-      } else {
-        if(inUilR){if(kaart2)kaart2.focus();}
-        else if(inKaart){if(zichtbaar(uilL2))uilL2.focus();else if(bol02)bol02.focus();}
-        else if(inUilL){if(bol02)bol02.focus();}
-      }
-      return;
-    }
+
 
     // Pijltjes omhoog/omlaag in nav: door bolletjes
     if(inNav&&(e.key==='ArrowDown'||e.key==='ArrowUp')){
