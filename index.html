@@ -4125,7 +4125,7 @@ function showUitlegOud(){
 function showUitleg(){
   session.hints++;
   if(typeof openUitleg==='function'){
-    openUitleg(cfg.method,cfg.op);
+    openUitleg(cfg.method,cfg.op,false); // false = vanuit som, niet vanuit keuzemenu
   } else {
     showUitlegOud();
   }
