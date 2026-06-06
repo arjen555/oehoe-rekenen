@@ -331,6 +331,10 @@ function _bouwUitlegScherm(def){
           deelItem.addEventListener('click',function(e){
             e.stopPropagation();
             _gaNaarStap(s,d);
+            setTimeout(function(){
+              var db=document.getElementById('uitleg-deelbol-'+s+'-'+d);
+              if(db){_uitlegFocusInNav=true;db.focus();}
+            },80);
           });
         })(si,di);
 
@@ -358,12 +362,16 @@ function _bouwUitlegScherm(def){
     (function(s){
       bolRij.addEventListener('click',function(){
         if(_uitlegOpenStap===s&&_uitlegStapIdx===s){
-          // Al open en actief: sluit deelstappen
           _uitlegOpenStap=-1;
         } else {
           _uitlegOpenStap=s;
         }
         _gaNaarStap(s,0);
+        // Focus op de bol zodat pijltjesnavigatie werkt
+        setTimeout(function(){
+          var b=document.getElementById('uitleg-bol-'+s);
+          if(b){_uitlegFocusInNav=true;b.focus();}
+        },80);
       });
     })(si);
 
@@ -382,6 +390,14 @@ function _bouwUitlegScherm(def){
   });
   startKnopWrap.appendChild(startKnop);
   navKolom.appendChild(startKnopWrap);
+
+  // Klik in navkolom: focus op actieve bol
+  navKolom.addEventListener('click',function(e){
+    if(e.target===navKolom||e.target.classList.contains('uitleg-nav-kolom')){
+      var actieveBol=document.getElementById('uitleg-bol-'+_uitlegStapIdx);
+      if(actieveBol) actieveBol.focus();
+    }
+  });
 
   body.appendChild(navKolom);
 
@@ -513,15 +529,28 @@ function _bouwUitlegScherm(def){
     // Pijltjes omhoog/omlaag in nav: door bolletjes
     if(inNav&&(e.key==='ArrowDown'||e.key==='ArrowUp')){
       e.preventDefault();
-      var alleBollen=Array.from(scherm.querySelectorAll('[id^="uitleg-bol-"],[id^="uitleg-deelbol-"]'));
-      // Filter alleen zichtbare
-      alleBollen=alleBollen.filter(function(b){
-        var lijst=b.closest('.uitleg-deelstap-lijst');
-        return !lijst||lijst.classList.contains('open');
-      });
+      // Verzamel bollen in DOM-volgorde, alleen zichtbare
+      var alleBollen=[];
+      var navKolom2=document.getElementById('uitleg-nav-kolom');
+      if(navKolom2){
+        var kandidaten=Array.from(navKolom2.querySelectorAll('.uitleg-bol,.uitleg-deelbol'));
+        kandidaten.forEach(function(b){
+          var lijst=b.closest('.uitleg-deelstap-lijst');
+          if(!lijst||lijst.classList.contains('open')) alleBollen.push(b);
+        });
+      }
       var huidigeIdx=alleBollen.indexOf(actief);
       var nieuweIdx=e.key==='ArrowDown'?Math.min(huidigeIdx+1,alleBollen.length-1):Math.max(huidigeIdx-1,0);
-      var doelBol=alleBollen[nieuweIdx];
+      if(nieuweIdx===alleBollen.length&&e.key==='ArrowDown'&&_uitlegVanuitKeuzemenu){
+        // Voorbij laatste bol: focus naar groene knop
+        var sk2=document.getElementById('btn-uitleg-start');
+        if(sk2&&sk2.style.display!=='none'){
+          sk2.focus();
+          _uitlegSpreekDirect('Nu zelf aan de slag!');
+        }
+        return;
+      }
+      var doelBol=alleBollen[Math.min(nieuweIdx,alleBollen.length-1)];
       if(doelBol){
         _uitlegFocusInNav=true;
         var bolId=doelBol.id;
