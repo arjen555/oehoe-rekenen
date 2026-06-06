@@ -550,7 +550,7 @@ function openUitleg(methode,bewerking,vanuitKeuzemenu){
   _uitlegActief=true; _uitlegDef=def;
   _uitlegStapIdx=0; _uitlegDeelstapIdx=0;
   _uitlegOpenStap=0; // eerste stap open bij start
-  _uitlegVanuitKeuzemenu=!!vanuitKeuzemenu;
+  _uitlegVanuitKeuzemenu=(vanuitKeuzemenu===true);
 
   _bouwUitlegScherm(def);
   if(typeof showScreen==='function')showScreen('screen-uitleg-interactief');
