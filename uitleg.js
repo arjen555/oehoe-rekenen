@@ -468,6 +468,7 @@ function _bouwUitlegScherm(def){
         var tek=getEl('uitleg-stap-tekst');
         volgorde.push({el:kk,tekst:(tit?tit.textContent:'')+(tek?'. '+tek.textContent:'')});
       }
+      var sk=getEl('btn-uitleg-start'); if(sk&&sk.style.display!=='none') volgorde.push({el:sk,tekst:'Nu zelf aan de slag!'});
 
       var huidig=document.activeElement;
       var idx=-1;
