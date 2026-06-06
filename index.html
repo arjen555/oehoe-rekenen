@@ -67,16 +67,18 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;color:var(--t
 #screen-leerling-login.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;}
 .screen.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-#screen-role{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.25rem;text-align:center;}
+#screen-role{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:clamp(80px,12vh,120px) 1.25rem clamp(1rem,3vh,2rem) 1.25rem;text-align:center;}
 #screen-role.active{display:flex;}
-.welcome-img{width:min(420px,90vw);height:auto;border-radius:var(--radius-lg);margin-bottom:2rem;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
-.eduvip-logo{position:fixed;top:40px;left:80px;width:200px;height:auto;transform:rotate(-6deg);z-index:50;animation:none!important;}
-.welcome-title{font-size:42px;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.2;}
-.welcome-sub{font-size:22px;color:#93C5FD;margin-bottom:3rem;font-weight:700;}
-.start-card{background:rgba(255,255,255,0.09);border:3px solid rgba(255,255,255,0.25);border-radius:var(--radius-lg);padding:2.5rem 4rem;cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:16px;min-height:320px;transition:border-color 0.2s,background 0.2s,transform 0.15s;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:btnPulse 2.5s ease-in-out infinite;}
+.welcome-img{width:min(420px,min(55vw,40vh));height:auto;border-radius:var(--radius-lg);margin-bottom:clamp(0.5rem,2vh,2rem);box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.eduvip-logo{width:clamp(100px,12vw,200px);height:auto;transform:rotate(-6deg);}
+.logo-links{position:fixed;top:clamp(12px,3vh,40px);left:clamp(12px,4vw,80px);z-index:50;}
+.logo-rechts{position:fixed;top:clamp(12px,3vh,40px);right:clamp(12px,4vw,80px);width:clamp(140px,16vw,300px);height:auto;z-index:50;}
+.welcome-title{font-size:clamp(22px,3.5vw,42px);font-weight:800;color:#fff;margin-bottom:10px;line-height:1.2;}
+.welcome-sub{font-size:clamp(14px,2vw,22px);color:#93C5FD;margin-bottom:clamp(1rem,3vh,3rem);font-weight:700;}
+.start-card{background:rgba(255,255,255,0.09);border:3px solid rgba(255,255,255,0.25);border-radius:var(--radius-lg);padding:clamp(1rem,2.5vh,2.5rem) clamp(1.5rem,4vw,4rem);cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:clamp(8px,1.5vh,16px);min-height:clamp(180px,28vh,320px);transition:border-color 0.2s,background 0.2s,transform 0.15s;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:btnPulse 2.5s ease-in-out infinite;}
 .start-card:hover{border-color:#93C5FD;background:rgba(255,255,255,0.16);transform:translateY(-4px);animation:none;}
 .start-card:focus{outline:4px solid #93C5FD;outline-offset:3px;}
-.start-icon{font-size:64px;} .start-title{font-size:32px;font-weight:800;color:#fff;} .start-sub{font-size:18px;color:#93C5FD;font-weight:600;}
+.start-icon{font-size:clamp(36px,5vw,64px);} .start-title{font-size:clamp(18px,2.5vw,32px);font-weight:800;color:#fff;} .start-sub{font-size:clamp(12px,1.5vw,18px);color:#93C5FD;font-weight:600;}
 .app-header{display:flex;align-items:center;gap:14px;margin-bottom:2rem;}
 .header-main{font-size:26px;font-weight:800;color:var(--text);line-height:1.2;}
 .header-sub{font-size:16px;color:var(--text-muted);margin-top:2px;}
@@ -170,7 +172,7 @@ body.inverted .cell-remember:focus{border-color:#cc0000;box-shadow:0 0 0 2px rgb
 .uitleg-btn-row{display:flex;align-items:flex-end;gap:14px;margin-top:0;padding-top:0;}
 /* Setup form owl */
 .setup-owl-above{display:flex;flex-direction:column;align-items:center;margin-bottom:1.5rem;}
-.setup-owl-img{width:560px;height:auto;border-radius:var(--radius-lg);}
+.setup-owl-img{width:min(560px,38vw);height:auto;border-radius:var(--radius-lg);}
 /* Form section header - same as form-label */
 .form-section-header{font-size:var(--font-size);font-weight:800;color:var(--text);margin:1.5rem 0 0.75rem;display:block;}
 /* Veel hulp inline hint - now inline right of row */
@@ -452,23 +454,23 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 </head>
 <body>
 <div class="app" id="app">
-<a href="https://www.eduvip.nl" target="_blank" rel="noopener" class="logo-vast" style="position:fixed;top:40px;left:80px;z-index:50;display:block;">
-  <img id="eduvip-logo" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/eduvip.png" alt="eduVIP logo" class="eduvip-logo" style="position:static;top:auto;left:auto;">
+<a href="https://www.eduvip.nl" target="_blank" rel="noopener" class="logo-vast logo-links" style="position:fixed;z-index:50;display:block;">
+  <img id="eduvip-logo" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/eduvip.png" alt="eduVIP logo" class="eduvip-logo">
 </a>
-<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/Oehoe_rekenen.png" alt="Oehoe Rekenen logo" class="logo-vast" style="position:fixed;top:40px;right:80px;width:300px;height:auto;z-index:50;">
-<img id="uil-som" src="" alt="Uil" style="position:fixed;bottom:20px;right:20px;width:480px;height:auto;z-index:45;display:none;border-radius:12px;pointer-events:none;">
+<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/Oehoe_rekenen.png" alt="Oehoe Rekenen logo" class="logo-vast logo-rechts">
+<img id="uil-som" src="" alt="Uil" style="position:fixed;bottom:20px;right:20px;width:min(480px,30vw);height:auto;z-index:45;display:none;border-radius:12px;pointer-events:none;">
 <div class="screen" id="screen-role" role="main">
   <img id="owl-welcome" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_start.png" alt="Uil" class="welcome-img">
   <p class="welcome-title">Rekenen met grote getallen</p>
   <p class="welcome-sub" style="font-size:1.15rem;color:#93C5FD;font-weight:600;letter-spacing:0.02em;">Kolomsgewijs en cijferend oefenen</p>
   <div style="display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;">
     <button class="start-card" id="btn-start">
-      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/vrij_oefenen_transparant.png" style="width:160px;height:160px;object-fit:contain;display:block;" alt="Vrij oefenen">
+      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/vrij_oefenen_transparant.png" style="width:min(160px,18vw);height:min(160px,18vw);object-fit:contain;display:block;" alt="Vrij oefenen">
       <span class="start-title">Vrij oefenen</span>
       <span class="start-sub">Kies je opgaven en ga aan de slag</span>
     </button>
     <button class="start-card" id="btn-leerling-login" style="border-color:rgba(147,197,253,0.4);">
-      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/inloggen_transparant.png" style="width:160px;height:160px;object-fit:contain;display:block;" alt="Inloggen">
+      <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/inloggen_transparant.png" style="width:min(160px,18vw);height:min(160px,18vw);object-fit:contain;display:block;" alt="Inloggen">
       <span class="start-title">Inloggen</span>
       <span class="start-sub">Als je leerkracht iets klaar heeft gezet</span>
     </button>
