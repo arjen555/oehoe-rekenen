@@ -391,6 +391,15 @@ function _bouwUitlegScherm(def){
   navKolom.appendChild(startKnopWrap);
 
   // Klik in navkolom: focus op actieve bol
+  // Compacte terugknop bovenin navkolom (zichtbaar als header verdwijnt)
+  var terugCompact=document.createElement('button');
+  terugCompact.className='uitleg-header-terug uitleg-header-terug-compact';
+  terugCompact.setAttribute('aria-label', 'Terug');
+  terugCompact.innerHTML='&#8592;';
+  terugCompact.style.cssText='display:none;margin:8px auto 12px auto;';
+  terugCompact.addEventListener('click',sluitUitleg);
+  navKolom.insertBefore(terugCompact, navKolom.firstChild);
+
   navKolom.addEventListener('click',function(e){
     if(e.target===navKolom||e.target.classList.contains('uitleg-nav-kolom')){
       var actieveBol=document.getElementById('uitleg-bol-'+_uitlegStapIdx);
@@ -454,15 +463,7 @@ function _bouwUitlegScherm(def){
   var terugEl=document.getElementById('uitleg-int-terug');
   terugEl.addEventListener('click',sluitUitleg);
 
-  // Toetsenbord op tekstvak
-  var tekEl=document.getElementById('uitleg-stap-tekst');
-  if(tekEl){
-    tekEl.addEventListener('keydown',function(e){
-      if(e.key==='Escape'){sluitUitleg();return;}
-      if(e.key==='ArrowRight'){e.preventDefault();var ur=document.getElementById('uitleg-uil-rechts');if(ur&&!ur.classList.contains('verborgen'))ur.focus();else uitlegDeelVolgende();}
-      if(e.key==='ArrowLeft'){e.preventDefault();var ul=document.getElementById('uitleg-uil-links');if(ul&&!ul.classList.contains('verborgen'))ul.focus();else uitlegDeelTerug();}
-    });
-  }
+
 
   // Muiswiel
   scherm.addEventListener('wheel',_handleWheel,{passive:false});
@@ -551,20 +552,7 @@ function _bouwUitlegScherm(def){
       return;
     }
 
-    // Pijltjes links in nav: ga naar uil-links of kaart
-    if(inNav&&e.key==='ArrowLeft'){
-      e.preventDefault();
-      var uilL3=getEl('uitleg-uil-links');
-      if(zichtbaar(uilL3))uilL3.focus();else{var k3=getEl('uitleg-stap-kaart');if(k3)k3.focus();}
-      return;
-    }
-    // Pijltjes rechts in nav: ga naar uil-links
-    if(inNav&&e.key==='ArrowRight'){
-      e.preventDefault();
-      var uilL4=getEl('uitleg-uil-links');
-      if(zichtbaar(uilL4))uilL4.focus();else{var k4=getEl('uitleg-stap-kaart');if(k4)k4.focus();}
-      return;
-    }
+
   });
 }
 
