@@ -426,7 +426,7 @@ function _bouwUitlegScherm(def){
   var kaart=document.createElement('div');
   kaart.id='uitleg-stap-kaart';
   kaart.className='uitleg-stap-kaart';
-  kaart.setAttribute('tabindex','0');
+  kaart.setAttribute('tabindex','-1');
   kaart.id='uitleg-stap-kaart';
   kaart.innerHTML=
     '<span class="uitleg-stap-titel-tekst" id="uitleg-stap-titel"></span>'+
@@ -489,11 +489,6 @@ function _bouwUitlegScherm(def){
         var actieveSi=_uitlegStapIdx;
         var actieveStap=_uitlegDef.stappen[actieveSi];
         volgorde.push({el:b,tekst:'Navigatiemenu. '+(actieveStap?'Stap '+(actieveSi+1)+': '+actieveStap.titel:'')});
-      }
-      var kk=getEl('uitleg-stap-kaart'); if(kk){
-        var tit=getEl('uitleg-stap-titel');
-        var tek=getEl('uitleg-stap-tekst');
-        volgorde.push({el:kk,tekst:(tit?tit.textContent:'')+(tek?'. '+tek.textContent:'')});
       }
       var sk=getEl('btn-uitleg-start');
       if(sk&&sk.style.display!=='none'){
