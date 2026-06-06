@@ -544,8 +544,9 @@ function _bouwUitlegScherm(def){
         });
       }
       var huidigeIdx=alleBollen.indexOf(actief);
-      var nieuweIdx=e.key==='ArrowDown'?Math.min(huidigeIdx+1,alleBollen.length-1):Math.max(huidigeIdx-1,0);
-      if(nieuweIdx===alleBollen.length&&e.key==='ArrowDown'){
+      var nieuweIdx=e.key==='ArrowDown'?huidigeIdx+1:Math.max(huidigeIdx-1,0);
+      // Voorbij laatste bol: focus naar actieknop
+      if(nieuweIdx>=alleBollen.length&&e.key==='ArrowDown'){
         var sk2=document.getElementById('btn-uitleg-start');
         if(sk2&&sk2.style.display!=='none'){
           sk2.focus();
@@ -553,7 +554,8 @@ function _bouwUitlegScherm(def){
         }
         return;
       }
-      var doelBol=alleBollen[Math.min(nieuweIdx,alleBollen.length-1)];
+      nieuweIdx=Math.min(nieuweIdx,alleBollen.length-1);
+      var doelBol=alleBollen[nieuweIdx];
       if(doelBol){
         _uitlegFocusInNav=true;
         var bolId=doelBol.id;
