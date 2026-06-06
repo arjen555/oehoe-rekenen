@@ -22,7 +22,7 @@
   --font:'Nunito',sans-serif;
   --radius:14px;--radius-sm:10px;--radius-lg:20px;
   --shadow:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 4px 16px rgba(0,0,0,0.4);
-  --cell-size:62px;--font-size:24px;
+  --cell-size:clamp(40px,5.5vw,62px);--font-size:clamp(16px,2.2vw,24px);
   --calc-bg:#0a1628;
   --cell-static-bg:#1e3a5f;--cell-static-border:#334155;--cell-static-color:#e2e8f0;
   --cell-input-bg:#0f172a;--cell-input-border:#475569;--cell-input-color:#f1f5f9;
@@ -80,8 +80,8 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;color:var(--t
 .start-card:focus{outline:4px solid #93C5FD;outline-offset:3px;}
 .start-icon{font-size:clamp(36px,5vw,64px);} .start-title{font-size:clamp(18px,2.5vw,32px);font-weight:800;color:#fff;} .start-sub{font-size:clamp(12px,1.5vw,18px);color:#93C5FD;font-weight:600;}
 .app-header{display:flex;align-items:center;gap:14px;margin-bottom:2rem;}
-.header-main{font-size:26px;font-weight:800;color:var(--text);line-height:1.2;}
-.header-sub{font-size:16px;color:var(--text-muted);margin-top:2px;}
+.header-main{font-size:clamp(16px,2.2vw,26px);font-weight:800;color:var(--text);line-height:1.2;}
+.header-sub{font-size:clamp(12px,1.4vw,16px);color:var(--text-muted);margin-top:2px;}
 .back-btn{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-sm);width:50px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:var(--text-muted);flex-shrink:0;}
 .back-btn:hover{opacity:0.8;} .back-btn:focus{outline:3px solid var(--blue-mid);outline-offset:2px;}
 .terug-start-btn{margin-left:auto;display:flex;align-items:center;gap:6px;background:none;border:none;padding:0;font-family:var(--font);font-size:16px;font-weight:800;color:var(--text);cursor:pointer;white-space:nowrap;flex-shrink:0;line-height:1.2;}
@@ -134,7 +134,7 @@ body.inverted .btn-opnieuw{background:linear-gradient(135deg,#047857,#10b981);bo
 .step-feedback.fout{background:#450a0a;color:#ffffff;border-color:#EF4444;}
 .feedback-owl{width:180px;height:auto;border-radius:var(--radius);margin:0 auto 18px;display:block;}
 .feedback-text{display:block;font-size:var(--font-size);line-height:1.5;}
-.calc-card{background:var(--calc-bg);border-radius:var(--radius-lg);padding:1.75rem 1.5rem;margin-bottom:1.25rem;overflow-x:auto;width:100%;transition:background 0.2s;}
+.calc-card{background:var(--calc-bg);border-radius:var(--radius-lg);padding:clamp(0.75rem,2vh,1.75rem) clamp(0.75rem,2vw,1.5rem);margin-bottom:1.25rem;overflow-x:auto;width:100%;transition:background 0.2s;}
 .calc-table{border-collapse:separate;border-spacing:4px;white-space:nowrap;}
 .cell-label-col{font-family:var(--font);font-size:12px;color:var(--label-color);font-weight:700;padding:2px 8px;text-align:right;vertical-align:middle;white-space:nowrap;}
 .cell-static{border:2px solid var(--cell-static-border);border-radius:var(--radius-sm);background:var(--cell-static-bg);font-family:var(--font);font-weight:800;color:var(--cell-static-color);text-align:center;vertical-align:middle;width:var(--cell-size);height:var(--cell-size);font-size:var(--font-size);display:table-cell;}
@@ -450,6 +450,20 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   display:none;
 }
 .btn-uitleg-start:hover{opacity:0.88;}
+
+@media (max-width: 1100px){
+  .uitleg-nav-kolom{width:300px;}
+  .uitleg-stap-kaart{min-width:300px!important;width:auto;}
+}
+@media (max-width: 800px){
+  .uitleg-nav-kolom{width:220px;}
+  .uitleg-bol{width:44px;height:44px;font-size:0.85em;}
+  .uitleg-bol.actief{width:56px;height:56px;}
+  .uitleg-deelbol{width:36px;height:36px;}
+  .uitleg-deelbol.actief{width:46px;height:46px;}
+  .uitleg-stap-kaart{min-width:200px!important;}
+  .uitleg-uil-pijl{width:120px;max-width:14vw;}
+}
 </style>
 </head>
 <body>
@@ -458,7 +472,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   <img id="eduvip-logo" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/eduvip.png" alt="eduVIP logo" class="eduvip-logo">
 </a>
 <img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/Oehoe_rekenen.png" alt="Oehoe Rekenen logo" class="logo-vast logo-rechts">
-<img id="uil-som" src="" alt="Uil" style="position:fixed;bottom:20px;right:20px;width:min(480px,30vw);height:auto;z-index:45;display:none;border-radius:12px;pointer-events:none;">
+<img id="uil-som" src="" alt="Uil" style="position:fixed;bottom:20px;right:20px;width:min(480px,25vw);max-height:40vh;object-fit:contain;z-index:45;display:none;border-radius:12px;pointer-events:none;">
 <div class="screen" id="screen-role" role="main">
   <img id="owl-welcome" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_start.png" alt="Uil" class="welcome-img">
   <p class="welcome-title">Rekenen met grote getallen</p>
@@ -582,7 +596,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <button class="btn-meteen" id="start-ex">&#9654; Meteen aan de slag!</button>
   </div>
 </div>
-<div class="screen" id="screen-exercise" role="main">
+<div class="screen" id="screen-exercise" role="main" style="overflow-y:auto;min-height:100vh;padding-bottom:2rem;">
   <div class="app-header"><button class="back-btn" id="back-exercise">&#8592;</button><div><div class="header-main" id="ex-title">Oefening</div><div class="header-sub" id="ex-sub"></div></div></div>
   <div class="a11y-bar">
     <span class="a11y-label">Weergave:</span>
