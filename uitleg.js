@@ -542,7 +542,7 @@ function _bouwUitlegScherm(def){
 }
 
 // ── Openen / Sluiten ───────────────────────────────────────────
-function openUitleg(methode,bewerking){
+function openUitleg(methode,bewerking,vanuitKeuzemenu){
   var key=methode+'-'+bewerking;
   var def=UITLEG_DEFINITIES[key];
   if(!def){if(typeof showUitlegOud==='function')showUitlegOud();return;}
@@ -550,6 +550,7 @@ function openUitleg(methode,bewerking){
   _uitlegActief=true; _uitlegDef=def;
   _uitlegStapIdx=0; _uitlegDeelstapIdx=0;
   _uitlegOpenStap=0; // eerste stap open bij start
+  _uitlegVanuitKeuzemenu=!!vanuitKeuzemenu;
 
   _bouwUitlegScherm(def);
   if(typeof showScreen==='function')showScreen('screen-uitleg-interactief');
