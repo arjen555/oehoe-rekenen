@@ -711,7 +711,7 @@ window.addEventListener('DOMContentLoaded',function(){
   bind('back-exercise',backFromExercise);
   bind('start-ex',startExercise);
   var btnUitlegEerst=document.getElementById('btn-uitleg-eerst');
-  if(btnUitlegEerst)btnUitlegEerst.addEventListener('click',function(){saveForm();openUitlegVanuitKeuzemenu();});
+  if(btnUitlegEerst)btnUitlegEerst.addEventListener('click',function(){openUitlegVanuitKeuzemenu();});
   // Pijltje rechts/links tussen vrij oefenen en inloggen
   document.getElementById('btn-start').addEventListener('keydown',function(e){
     if(e.key==='ArrowRight'||e.key==='Tab'){e.preventDefault();document.getElementById('btn-leerling-login').focus();}
