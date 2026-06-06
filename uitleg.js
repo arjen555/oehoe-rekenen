@@ -207,7 +207,18 @@ function uitlegDeelVolgende(){
   } else if(_uitlegStapIdx<_uitlegDef.stappen.length-1){
     _uitlegOpenStap=_uitlegStapIdx+1;
     _gaNaarStap(_uitlegStapIdx+1,0);
-  } else { sluitUitleg(); }
+  } else {
+    // Laatste deelstap: als vanuit keuzemenu, focus naar startknop
+    if(_uitlegVanuitKeuzemenu){
+      var sk=document.getElementById('btn-uitleg-start');
+      if(sk&&sk.style.display!=='none'){
+        sk.focus();
+        _uitlegSpreekDirect('Nu zelf aan de slag!');
+        return;
+      }
+    }
+    sluitUitleg();
+  }
 }
 
 function uitlegDeelTerug(){
