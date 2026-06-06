@@ -373,13 +373,31 @@
     min-height: auto !important;
   }
 
-  /* Tekstkader */
+  /* Tekstkader met fade onderaan als tekst niet past */
   .uitleg-stap-kaart {
     min-width: 160px !important;
     width: auto !important;
     max-width: 100% !important;
     padding: 12px 14px !important;
-    overflow: visible !important;
+    overflow: hidden !important;
+    position: relative !important;
+    max-height: 35vh !important;
+  }
+  .uitleg-stap-kaart.heeft-overflow {
+    overflow-y: auto !important;
+  }
+  .uitleg-stap-kaart::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 48px;
+    background: linear-gradient(transparent, var(--card));
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.2s;
+  }
+  .uitleg-stap-kaart.heeft-overflow::after {
+    opacity: 0;
   }
 
   /* Uil-pijlen kleiner */
