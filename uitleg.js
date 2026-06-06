@@ -209,13 +209,11 @@ function uitlegDeelVolgende(){
     _gaNaarStap(_uitlegStapIdx+1,0);
   } else {
     // Laatste deelstap: als vanuit keuzemenu, focus naar startknop
-    if(_uitlegVanuitKeuzemenu){
-      var sk=document.getElementById('btn-uitleg-start');
-      if(sk&&sk.style.display!=='none'){
-        sk.focus();
-        _uitlegSpreekDirect('Nu zelf aan de slag!');
-        return;
-      }
+    var sk=document.getElementById('btn-uitleg-start');
+    if(sk&&sk.style.display!=='none'){
+      sk.focus();
+      _uitlegSpreekDirect(sk.textContent);
+      return;
     }
     sluitUitleg();
   }
@@ -264,8 +262,9 @@ function _bouwUitlegScherm(def){
   // Header
   var header=document.createElement('div');
   header.className='uitleg-header';
+  var terugTekst=_uitlegVanuitKeuzemenu?'Terug naar het keuzemenu':'Terug naar de som';
   header.innerHTML=
-    '<button class="uitleg-header-terug" id="uitleg-int-terug" aria-label="Terug naar de som">&#8592;</button>'+
+    '<button class="uitleg-header-terug" id="uitleg-int-terug" aria-label="'+terugTekst+'">&#8592;</button>'+
     '<div class="uitleg-header-titel">'+def.titel+'</div>';
   scherm.appendChild(header);
 
@@ -384,7 +383,7 @@ function _bouwUitlegScherm(def){
   var startKnop=document.createElement('button');
   startKnop.className='btn-uitleg-start';
   startKnop.id='btn-uitleg-start';
-  startKnop.textContent='Nu zelf aan de slag!';
+  startKnop.textContent=_uitlegVanuitKeuzemenu?'Nu zelf aan de slag!':'Verder met de som';
   startKnop.addEventListener('click', function(){
     sluitUitlegNaarSom();
   });
@@ -484,7 +483,8 @@ function _bouwUitlegScherm(def){
     if(e.key==='Tab'){
       e.preventDefault();
       var volgorde=[];
-      var t=getEl('uitleg-int-terug'); if(t) volgorde.push({el:t,tekst:'Terug naar de som'});
+      var t=getEl('uitleg-int-terug');
+      if(t) volgorde.push({el:t,tekst:_uitlegVanuitKeuzemenu?'Terug naar het keuzemenu':'Terug naar de som'});
       var b=getEl('uitleg-bol-0'); if(b){
         var actieveSi=_uitlegStapIdx;
         var actieveStap=_uitlegDef.stappen[actieveSi];
@@ -495,7 +495,10 @@ function _bouwUitlegScherm(def){
         var tek=getEl('uitleg-stap-tekst');
         volgorde.push({el:kk,tekst:(tit?tit.textContent:'')+(tek?'. '+tek.textContent:'')});
       }
-      var sk=getEl('btn-uitleg-start'); if(sk&&sk.style.display!=='none') volgorde.push({el:sk,tekst:'Nu zelf aan de slag!'});
+      var sk=getEl('btn-uitleg-start');
+      if(sk&&sk.style.display!=='none'){
+        volgorde.push({el:sk,tekst:sk.textContent});
+      }
 
       var huidig=document.activeElement;
       var idx=-1;
@@ -541,12 +544,11 @@ function _bouwUitlegScherm(def){
       }
       var huidigeIdx=alleBollen.indexOf(actief);
       var nieuweIdx=e.key==='ArrowDown'?Math.min(huidigeIdx+1,alleBollen.length-1):Math.max(huidigeIdx-1,0);
-      if(nieuweIdx===alleBollen.length&&e.key==='ArrowDown'&&_uitlegVanuitKeuzemenu){
-        // Voorbij laatste bol: focus naar groene knop
+      if(nieuweIdx===alleBollen.length&&e.key==='ArrowDown'){
         var sk2=document.getElementById('btn-uitleg-start');
         if(sk2&&sk2.style.display!=='none'){
           sk2.focus();
-          _uitlegSpreekDirect('Nu zelf aan de slag!');
+          _uitlegSpreekDirect(sk2.textContent);
         }
         return;
       }
@@ -597,7 +599,8 @@ function openUitleg(methode,bewerking,vanuitKeuzemenu){
   // Toon 'Nu zelf aan de slag!' alleen vanuit keuzemenu
   var startKnop=document.getElementById('btn-uitleg-start');
   if(startKnop){
-    startKnop.style.display=_uitlegVanuitKeuzemenu?'block':'none';
+    startKnop.style.display='block';
+    startKnop.textContent=_uitlegVanuitKeuzemenu?'Nu zelf aan de slag!':'Verder met de som';
   }
   _bouwSom(_vindSom(0));
   _renderStap(0,0);
@@ -619,13 +622,17 @@ function sluitUitleg(){
 }
 
 function sluitUitlegNaarSom(){
-  // Vanuit keuzemenu: ga direct naar de sommen
+  var vanuitKeuzemenu=_uitlegVanuitKeuzemenu;
   _uitlegVanuitKeuzemenu=false;
   _uitlegActief=false;
   if(_uitlegAnimTimeout){clearTimeout(_uitlegAnimTimeout);_uitlegAnimTimeout=null;}
   if(window.speechSynthesis)speechSynthesis.cancel();
-  if(typeof startExercise==='function') startExercise();
-  else if(typeof showScreen==='function') showScreen('screen-exercise');
+  if(vanuitKeuzemenu){
+    if(typeof startExercise==='function') startExercise();
+    else if(typeof showScreen==='function') showScreen('screen-exercise');
+  } else {
+    if(typeof showScreen==='function') showScreen('screen-exercise');
+  }
 }
 
 /* ================================================================
