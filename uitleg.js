@@ -147,6 +147,18 @@ function _renderStap(si,di){
     ? uitlegTekst
     : titelTekst + '. ' + uitlegTekst;
   _uitlegSpreek(spreekTekst);
+  // Controleer of tekstkader overloopt → fade weg, schuifbalk aan
+  setTimeout(function(){
+    var kaart=document.getElementById('uitleg-stap-kaart');
+    if(kaart){
+      kaart.scrollTop=0;
+      if(kaart.scrollHeight>kaart.clientHeight+8){
+        kaart.classList.add('heeft-overflow');
+      } else {
+        kaart.classList.remove('heeft-overflow');
+      }
+    }
+  },60);
   if(!_uitlegFocusInNav){
     var kaartEl=document.getElementById('uitleg-stap-kaart');
     if(kaartEl)setTimeout(function(){kaartEl.focus();},60);
@@ -230,13 +242,19 @@ function uitlegDeelTerug(){
 }
 
 // Muiswiel navigatie door stappen
+function _isCompactModus(){
+  return window.innerWidth<=900||window.innerHeight<=700;
+}
+
 function _handleWheel(e){
-  // Ctrl+muiswiel: laat browser zoom werken
+  // Ctrl+muiswiel: altijd browser zoom — nooit afvangen
   if(e.ctrlKey)return;
-  // Als muis boven de som-container: laat scrollen/zoomen in de som
+
   var somCont=document.getElementById('uitleg-som-container');
+  var kaart=document.getElementById('uitleg-stap-kaart');
+
+  // Muis boven som: vergroot/verklein de som
   if(somCont&&somCont.contains(e.target)){
-    // Vergroot/verklein de som via font-size
     var wrap=somCont.querySelector('.uitleg-som-wrap');
     if(wrap){
       var huidig=parseFloat(wrap.dataset.schaal)||1;
@@ -249,6 +267,45 @@ function _handleWheel(e){
     e.preventDefault();
     return;
   }
+
+  // Compacte modus: muis boven tekstkader
+  if(_isCompactModus()&&kaart&&kaart.contains(e.target)){
+    // Laat scrollen als tekst overloopt, anders navigeer
+    var kanScrollen=kaart.scrollHeight>kaart.clientHeight+4;
+    var aanTop=kaart.scrollTop<=0;
+    var aanOnder=kaart.scrollTop+kaart.clientHeight>=kaart.scrollHeight-4;
+    if(kanScrollen){
+      if(e.deltaY>0&&!aanOnder){return;} // laat scrollen omlaag
+      if(e.deltaY<0&&!aanTop){return;}   // laat scrollen omhoog
+    }
+    // Aan het einde of niet scrollbaar: navigeer naar deelstap
+    e.preventDefault();
+    if(e.deltaY>0) uitlegDeelVolgende();
+    else if(e.deltaY<0) uitlegDeelTerug();
+    return;
+  }
+
+  // Compacte modus: muis buiten som en kaart — navigeer
+  if(_isCompactModus()){
+    // Laat de inhoud-kolom normaal scrollen als die scrollbaar is
+    var inhoud=document.getElementById('uitleg-inhoud')||
+               document.querySelector('.uitleg-inhoud');
+    if(inhoud){
+      var inhoudKanScrollen=inhoud.scrollHeight>inhoud.clientHeight+4;
+      var inhoudAanTop=inhoud.scrollTop<=0;
+      var inhoudAanOnder=inhoud.scrollTop+inhoud.clientHeight>=inhoud.scrollHeight-4;
+      if(inhoudKanScrollen){
+        if(e.deltaY>0&&!inhoudAanOnder){return;}
+        if(e.deltaY<0&&!inhoudAanTop){return;}
+      }
+    }
+    e.preventDefault();
+    if(e.deltaY>0) uitlegDeelVolgende();
+    else if(e.deltaY<0) uitlegDeelTerug();
+    return;
+  }
+
+  // Normale modus buiten som: navigeer door deelstappen
   e.preventDefault();
   if(e.deltaY>0) uitlegDeelVolgende();
   else if(e.deltaY<0) uitlegDeelTerug();
