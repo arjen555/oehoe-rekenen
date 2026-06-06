@@ -527,14 +527,20 @@ function _bouwUitlegScherm(def){
     // Pijltjes omhoog/omlaag in nav: door bolletjes
     if(inNav&&(e.key==='ArrowDown'||e.key==='ArrowUp')){
       e.preventDefault();
-      // Verzamel bollen in DOM-volgorde, alleen zichtbare
+      // Verzamel bollen in DOM-volgorde:
+      // - hoofdbollen altijd zichtbaar
+      // - deelbolletjes alleen als hun lijst open is
       var alleBollen=[];
       var navKolom2=document.getElementById('uitleg-nav-kolom');
       if(navKolom2){
         var kandidaten=Array.from(navKolom2.querySelectorAll('.uitleg-bol,.uitleg-deelbol'));
         kandidaten.forEach(function(b){
-          var lijst=b.closest('.uitleg-deelstap-lijst');
-          if(!lijst||lijst.classList.contains('open')) alleBollen.push(b);
+          if(b.classList.contains('uitleg-bol')){
+            alleBollen.push(b); // hoofdbol altijd meenemen
+          } else {
+            var lijst=b.closest('.uitleg-deelstap-lijst');
+            if(lijst&&lijst.classList.contains('open')) alleBollen.push(b);
+          }
         });
       }
       var huidigeIdx=alleBollen.indexOf(actief);
