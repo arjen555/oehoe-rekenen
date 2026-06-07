@@ -423,3 +423,50 @@
 .uitleg-stap-kaart::-webkit-scrollbar-thumb:hover {
   background: #f59e0b;
 }
+
+/* ================================================================
+   ULTRACOMPACTE MODUS — 175%+ zoom (viewport < 730px breed)
+   Nav volledig verborgen, actieknop in topbalk
+   ================================================================ */
+
+@media (max-width: 730px) {
+  /* Nav volledig verborgen */
+  .uitleg-nav-kolom { display: none !important; }
+
+  /* Actieknop en terugknop komen in de header */
+  .uitleg-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    padding: 8px 12px !important;
+    gap: 8px !important;
+    flex-wrap: wrap;
+  }
+  .uitleg-header-terug {
+    position: static !important;
+    width: 36px !important; height: 36px !important;
+    font-size: 1.1em !important;
+    flex-shrink: 0;
+  }
+  .uitleg-header-titel {
+    flex: 1;
+    font-size: calc(var(--font-size) * 1.0) !important;
+    text-align: center;
+  }
+  /* Actieknop compact in header */
+  .btn-uitleg-start {
+    position: static !important;
+    display: block !important;
+    padding: 6px 14px !important;
+    font-size: 0.85em !important;
+    flex-shrink: 0;
+  }
+  /* Verberg de aparte startknop-wrap (nu in header) */
+  .uitleg-start-knop-wrap { display: none !important; }
+
+  /* Inhoud neemt volle breedte */
+  .uitleg-inhoud { width: 100% !important; }
+
+  /* Som en tekst: 65/35 */
+  .uitleg-som-container { flex: 0 0 65% !important; }
+  .uitleg-tekst-sectie { flex: 0 0 35% !important; }
+}
