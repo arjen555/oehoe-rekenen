@@ -1,755 +1,489 @@
-// ── CSS laden ──────────────────────────────────────────────────
-(function(){
-  if(document.getElementById('uitleg-css-link')) return;
-  function injecteer(){
-    var link=document.createElement('link');
-    link.id='uitleg-css-link';link.rel='stylesheet';link.href='uitleg.css';
-    (document.head||document.documentElement).appendChild(link);
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',injecteer);
-  else injecteer();
-})();
+/* ================================================================
+   uitleg.css  —  Interactief uitleg-scherm voor Oehoe Rekenen
+   ================================================================ */
 
-'use strict';
+/* ── Hoofd-scherm layout ── */
+#screen-uitleg-interactief {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg);
+  flex-direction: column;
+  overflow: hidden;
+}
+#screen-uitleg-interactief.active { display: flex; }
 
-// ── Toestand ───────────────────────────────────────────────────
-var _uitlegActief=false, _uitlegDef=null;
-var _uitlegStapIdx=0, _uitlegDeelstapIdx=0;
-var _uitlegAnimTimeout=null, _uitlegCells={};
-var _uitlegOpenStap=-1; // welke hoofdstap heeft deelstappen open
-var _uitlegFocusInNav=false;
-var _uitlegVanuitKeuzemenu=false; // voorkomt dat renderStap focus naar kaart stuurt
-
-// ── Hulpfuncties ───────────────────────────────────────────────
-function _uitlegSpreek(tekst){
-  if(!tekst)return;
-  if(window.speechSynthesis)speechSynthesis.cancel();
-  if(typeof speakTekst==='function'&&cfg&&cfg.autoVoorlezen) speakTekst(tekst,true);
+/* ── Header ── */
+.uitleg-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  background: var(--card);
+  border-bottom: 2px solid var(--border);
+  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
-function _uitlegSpreekDirect(tekst){
-  if(!tekst||!cfg||!cfg.autoVoorlezen||!window.speechSynthesis)return;
-  speechSynthesis.cancel();
-  var u=new SpeechSynthesisUtterance(tekst);
-  u.lang='nl-NL';
-  u.rate=typeof spreekSnelheid!=='undefined'?spreekSnelheid:1;
-  speechSynthesis.speak(u);
+.uitleg-header-terug {
+  position: absolute;
+  left: 16px;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.4em;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
 }
-function _uitlegClearHighlights(){
-  Object.values(_uitlegCells).forEach(function(td){td.classList.remove('uitleg-highlight');});
-}
-function _uitlegHighlight(sleutels){
-  _uitlegClearHighlights();
-  (sleutels||[]).forEach(function(s){if(_uitlegCells[s])_uitlegCells[s].classList.add('uitleg-highlight');});
-}
-function _uitlegVulIn(sleutel,waarde,klasse){
-  var td=_uitlegCells[sleutel]; if(!td)return;
-  td.textContent=waarde; td.className=klasse?('uitleg-input '+klasse):'uitleg-input';
-}
-function _uitlegWis(sleutel){
-  var td=_uitlegCells[sleutel]; if(!td)return;
-  td.textContent=''; td.className='uitleg-input';
+.uitleg-header-terug:hover { background: var(--blue-light); }
+.uitleg-header-titel {
+  font-size: calc(var(--font-size) * 1.3);
+  font-weight: 800;
+  color: var(--text);
+  text-align: center;
 }
 
-function _bouwTabel(tabelDef){
-  _uitlegCells={};
-  var tbl=document.createElement('table');
-  tbl.className='uitleg-table uitleg-interactief';
-  tabelDef.forEach(function(rij,ri){
-    var tr=tbl.insertRow();
-    if(rij.type==='hr'){tr.className='uitleg-hr';var td=tr.insertCell();td.colSpan=rij.colspan||10;return;}
-    rij.cellen.forEach(function(cel,ci){
-      var td=tr.insertCell(); td.textContent=cel.tekst||'';
-      switch(cel.type){
-        case 'op': td.className='uitleg-op'; break;
-        case 'lbl': td.className='uitleg-lbl'; break;
-        case 'input': td.className='uitleg-input'; break;
-        default: td.className='';
-      }
-      if(cel.cls)td.classList.add(cel.cls);
-      _uitlegCells['r'+ri+'c'+ci]=td;
-      if(cel.id)_uitlegCells[cel.id]=td;
-    });
-  });
-  return tbl;
+/* ── Hoofd-body: bolletjeskolom + inhoud ── */
+.uitleg-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
 }
 
-function _vindSom(si){
-  for(var i=si;i>=0;i--) if(_uitlegDef.stappen[i].som)return _uitlegDef.stappen[i].som;
-  return null;
-}
-function _aantalDeelstappen(si){
-  var s=_uitlegDef.stappen[si]; return s&&s.deelstappen?s.deelstappen.length:1;
-}
-function _isLaatsteDeelstap(si,di){
-  return si===_uitlegDef.stappen.length-1 && di===_aantalDeelstappen(si)-1;
-}
-
-function _voerActieUit(a){
-  switch(a.type){
-    case 'vulIn': _uitlegVulIn(a.cel,a.waarde,a.cls); break;
-    case 'wis': _uitlegWis(a.cel); break;
-    case 'highlight': _uitlegHighlight(a.cellen); break;
-    case 'clearHighlight': _uitlegClearHighlights(); break;
-  }
+/* ── Bolletjeskolom links ── */
+.uitleg-nav-kolom {
+  width: min(440px, 28vw);
+  max-width: min(440px, 28vw);
+  min-width: 60px;
+  flex-shrink: 1;
+  background: var(--card);
+  border-right: 2px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-function _herstelToestand(totStap,totDeelstap){
-  Object.values(_uitlegCells).forEach(function(td){if(td.classList.contains('uitleg-input'))td.textContent='';});
-  _uitlegClearHighlights();
-  for(var si=0;si<=totStap;si++){
-    var stap=_uitlegDef.stappen[si]; if(!stap)break;
-    var maxDs=si<totStap?_aantalDeelstappen(si)-1:totDeelstap;
-    if(stap.deelstappen){
-      for(var di=0;di<=maxDs;di++){var ds=stap.deelstappen[di];if(ds)(ds.animaties||[]).forEach(function(a){_voerActieUit(a);});}
-    } else {
-      if(si<totStap||totDeelstap===0)(stap.animaties||[]).forEach(function(a){_voerActieUit(a);});
-    }
-  }
+/* Hoofdstap-item */
+.uitleg-stap-item {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  user-select: none;
 }
 
-function _bouwSom(somDef){
-  var c=document.getElementById('uitleg-som-container'); if(!c||!somDef||!somDef.tabel)return;
-  c.innerHTML='';
-  var wrap=document.createElement('div'); wrap.className='uitleg-som-wrap';
-  wrap.appendChild(_bouwTabel(somDef.tabel)); c.appendChild(wrap);
+.uitleg-stap-bol-rij {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.uitleg-stap-bol-rij:hover { background: var(--surface); }
+
+.uitleg-bol {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  color: #1e293b;
+  font-weight: 900;
+  font-size: 1.1em;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #94a3b8;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  line-height: 1;
+  outline: none;
+}
+.uitleg-bol:focus { box-shadow: 0 0 0 3px #FCD34D; }
+.uitleg-bol.actief {
+  width: 80px; height: 80px;
+  font-size: 1.3em;
+  background: #FCD34D;
+  color: #1e293b;
+  border: 3px solid #f59e0b;
+  box-shadow: 0 0 0 3px rgba(252,211,77,0.3);
 }
 
-// ── Render stap ────────────────────────────────────────────────
-function _renderStap(si,di){
-  if(_uitlegAnimTimeout){clearTimeout(_uitlegAnimTimeout);_uitlegAnimTimeout=null;}
-  var def=_uitlegDef; var stap=def.stappen[si]; if(!stap)return;
-
-  // Som bijwerken indien nodig
-  var huidigeSom=_vindSom(si);
-  var vorigeSom=si>0?_vindSom(si-1):null;
-  if(huidigeSom!==vorigeSom||si===0) _bouwSom(huidigeSom);
-
-  _herstelToestand(si,di);
-
-  var deelstap=stap.deelstappen?stap.deelstappen[di]:null;
-  var titelTekst=stap.titel||('Stap '+(si+1));
-  var uitlegTekst=(deelstap?deelstap.uitleg:stap.uitleg)||'';
-  var highlights=deelstap?deelstap.highlight:stap.highlight;
-
-  var titEl=document.getElementById('uitleg-stap-titel');
-  var tekEl=document.getElementById('uitleg-stap-tekst');
-  // Titel alleen tonen bij eerste deelstap of stap zonder deelstappen
-  var toonTitel=(di===0||!stap.deelstappen||stap.deelstappen.length<=1);
-  if(titEl){titEl.textContent=titelTekst;titEl.style.display=toonTitel?'':'none';}
-  if(tekEl)tekEl.textContent=uitlegTekst;
-
-  _uitlegHighlight(highlights||[]);
-  _updateNavKolom(si,di);
-  _updateUilPijlen(si,di);
-
-  // Bij deelstappen alleen de uitlegtekst voorlezen, niet de hoofdstaptitel
-  var spreekTekst = (stap.deelstappen && stap.deelstappen.length > 1)
-    ? uitlegTekst
-    : titelTekst + '. ' + uitlegTekst;
-  _uitlegSpreek(spreekTekst);
-  // Scroll altijd naar boven bij nieuwe stap — eerste zin altijd zichtbaar
-  setTimeout(function(){
-    var kaart=document.getElementById('uitleg-stap-kaart');
-    if(kaart){ kaart.scrollTop=0; kaart.setAttribute('tabindex','0'); }
-    var somCont=document.getElementById('uitleg-som-container');
-    if(somCont){ somCont.scrollTop=0; somCont.setAttribute('tabindex','0'); }
-  },60);
-  if(!_uitlegFocusInNav){
-    var kaartEl=document.getElementById('uitleg-stap-kaart');
-    if(kaartEl)setTimeout(function(){kaartEl.focus();},60);
-  }
-  _uitlegFocusInNav=false;
+.uitleg-stap-label {
+  font-size: 1.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+  line-height: 1.3;
+  flex: 1;
+}
+.uitleg-stap-item.actief .uitleg-stap-label {
+  color: var(--text);
+  font-weight: 800;
 }
 
-// ── Navigatiekolom bijwerken ───────────────────────────────────
-function _updateNavKolom(activeSi,activeDi){
-  var def=_uitlegDef;
-  def.stappen.forEach(function(stap,si){
-    var item=document.getElementById('uitleg-stap-item-'+si);
-    var bol=document.getElementById('uitleg-bol-'+si);
-    var deelLijst=document.getElementById('uitleg-deel-lijst-'+si);
-    if(!item||!bol)return;
+/* Deelstappen uitgeklapt */
+.uitleg-deelstap-lijst {
+  display: none;
+  flex-direction: column;
+  padding: 4px 0 4px 30px;
+  gap: 3px;
+}
+.uitleg-deelstap-lijst.open { display: flex; }
 
-    var isActief=(si===activeSi);
-    item.classList.toggle('actief',isActief);
-    bol.classList.toggle('actief',isActief);
+.uitleg-deelstap-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.uitleg-deelstap-item:hover { background: var(--surface); }
 
-    // Deelstappen tonen/verbergen
-    if(deelLijst){
-      var isOpen=(si===_uitlegOpenStap);
-      deelLijst.classList.toggle('open',isOpen);
-
-      // Deelbol-stijlen bijwerken
-      if(stap.deelstappen){
-        stap.deelstappen.forEach(function(ds,di2){
-          var deelItem=document.getElementById('uitleg-deel-item-'+si+'-'+di2);
-          var deelBol=document.getElementById('uitleg-deelbol-'+si+'-'+di2);
-          if(deelItem)deelItem.classList.toggle('actief',isActief&&di2===activeDi);
-          if(deelBol)deelBol.classList.toggle('actief',isActief&&di2===activeDi);
-        });
-      }
-    }
-  });
+.uitleg-deelbol {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #1e293b;
+  font-weight: 900;
+  font-size: 0.85em;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #94a3b8;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  outline: none;
+}
+.uitleg-deelbol:focus { box-shadow: 0 0 0 3px #FCD34D; }
+.uitleg-deelbol.actief {
+  width: 62px; height: 62px;
+  font-size: 1.0em;
+  background: #FCD34D;
+  color: #1e293b;
+  border: 3px solid #f59e0b;
+  box-shadow: 0 0 0 2px rgba(252,211,77,0.3);
+}
+.uitleg-deelstap-label {
+  font-size: 0.95em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.uitleg-deelstap-item.actief .uitleg-deelstap-label {
+  color: var(--text);
+  font-weight: 800;
 }
 
-function _updateUilPijlen(si,di){
-  var isEerste=(si===0&&di===0);
-  var isLaatste=_isLaatsteDeelstap(si,di);
-  var uilL=document.getElementById('uitleg-uil-links');
-  var uilR=document.getElementById('uitleg-uil-rechts');
-  if(uilL)uilL.className='uitleg-uil-pijl'+(isEerste?' verborgen':'');
-  if(uilR)uilR.className='uitleg-uil-pijl'+(isLaatste?' verborgen':'');
+/* ── Inhoud rechts ── */
+.uitleg-inhoud {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  cursor: default;
 }
 
-// ── Navigatie ──────────────────────────────────────────────────
-function _gaNaarStap(si,di){
-  _uitlegStapIdx=si; _uitlegDeelstapIdx=di;
-  _renderStap(si,di);
+/* Som-gebied: 67% van de inhoud-hoogte */
+.uitleg-som-container {
+  flex: 0 0 67%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 28px 20px 16px 20px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.uitleg-som-wrap {
+  display: inline-block;
+}
+.uitleg-som-wrap .uitleg-table {
+  border-spacing: 4px;
+}
+.uitleg-som-wrap .uitleg-table td,
+.uitleg-som-wrap .uitleg-table th {
+  width: 80px;
+  height: 80px;
+  font-size: 2.4em;
+  text-align: center;
+  vertical-align: middle;
 }
 
-function uitlegDeelVolgende(){
-  var aantalDs=_aantalDeelstappen(_uitlegStapIdx);
-  if(_uitlegDeelstapIdx<aantalDs-1){
-    _gaNaarStap(_uitlegStapIdx,_uitlegDeelstapIdx+1);
-  } else if(_uitlegStapIdx<_uitlegDef.stappen.length-1){
-    _uitlegOpenStap=_uitlegStapIdx+1;
-    _gaNaarStap(_uitlegStapIdx+1,0);
-  } else {
-    // Laatste deelstap: als vanuit keuzemenu, focus naar startknop
-    var sk=document.getElementById('btn-uitleg-start');
-    if(sk&&sk.style.display!=='none'){
-      sk.focus();
-      _uitlegSpreekDirect(sk.textContent);
-      return;
-    }
-    sluitUitleg();
-  }
+/* Tabel cel-stijlen */
+.uitleg-interactief td { color: var(--text)!important; background: var(--cell-static-bg)!important; }
+.uitleg-interactief th,
+.uitleg-interactief td.uitleg-lbl { color: var(--blue-mid)!important; background: transparent!important; border: none!important; font-weight: 800; }
+.uitleg-interactief td.uitleg-op { color: #FCD34D!important; background: transparent!important; border: none!important; font-weight: 800; }
+.uitleg-interactief td.uitleg-input { background: var(--cell-input-bg)!important; color: var(--cell-input-color)!important; border: 2px solid var(--border)!important; }
+.uitleg-interactief tr.uitleg-hr td { border: none!important; border-top: 3px solid var(--calc-line)!important; background: transparent!important; height: 4px; padding: 0; }
+.uitleg-interactief td.uitleg-highlight { border-color: #FCD34D!important; box-shadow: 0 0 0 3px #FCD34D!important; background: #3d3200!important; color: #FCD34D!important; }
+
+/* Tekst + uil-pijlen: 33% van de inhoud-hoogte */
+.uitleg-tekst-sectie {
+  flex: 0 0 33%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 20px 16px 20px;
+  min-height: 0;
+  overflow: visible;
 }
 
-function uitlegDeelTerug(){
-  if(_uitlegDeelstapIdx>0){
-    _gaNaarStap(_uitlegStapIdx,_uitlegDeelstapIdx-1);
-  } else if(_uitlegStapIdx>0){
-    var vorigeSi=_uitlegStapIdx-1;
-    _uitlegOpenStap=vorigeSi;
-    _gaNaarStap(vorigeSi,_aantalDeelstappen(vorigeSi)-1);
-  }
+.uitleg-uil-pijl {
+  flex-shrink: 0;
+  width: 220px;
+  max-width: 20vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+  align-self: stretch;
 }
+.uitleg-uil-pijl:hover { opacity: 1; }
+.uitleg-uil-pijl.verborgen { visibility: hidden; }
+.uitleg-uil-pijl:focus { outline: 3px solid #FCD34D; border-radius: 8px; }
+.uitleg-uil-pijl img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-// Muiswiel navigatie door stappen
-function _handleWheel(e){
-  // Ctrl+muiswiel: browser zoom, nooit afvangen
-  if(e.ctrlKey)return;
-  // Muiswiel altijd: navigeer door deelstappen
-  e.preventDefault();
-  if(e.deltaY>0) uitlegDeelVolgende();
-  else if(e.deltaY<0) uitlegDeelTerug();
+.uitleg-stap-kaart {
+  flex: 1 1 auto;
+  width: clamp(300px, 45vw, 860px);
+  max-width: 860px;
+  min-width: 0;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  min-height: 80px;
 }
-
-// ── Scherm bouwen ──────────────────────────────────────────────
-function _bouwUitlegScherm(def){
-  var scherm=document.getElementById('screen-uitleg-interactief');
-  scherm.innerHTML='';
-
-  // Header
-  var header=document.createElement('div');
-  header.className='uitleg-header';
-  var terugTekst=_uitlegVanuitKeuzemenu?'Terug naar het keuzemenu':'Terug naar de som';
-  var actieKnopTekst=_uitlegVanuitKeuzemenu?'Nu zelf aan de slag!':'Verder met de som';
-  header.innerHTML=
-    '<button class="uitleg-header-terug" id="uitleg-int-terug" aria-label="'+terugTekst+'">&#8592;</button>'+
-    '<div class="uitleg-header-titel">'+def.titel+'</div>'+
-    '<button class="btn-uitleg-start" id="btn-uitleg-start-header" style="display:block;">'+actieKnopTekst+'</button>';
-  scherm.appendChild(header);
-
-  // Body
-  var body=document.createElement('div');
-  body.className='uitleg-body';
-
-  // Navigatiekolom links
-  var navKolom=document.createElement('div');
-  navKolom.className='uitleg-nav-kolom';
-  navKolom.id='uitleg-nav-kolom';
-
-  def.stappen.forEach(function(stap,si){
-    var item=document.createElement('div');
-    item.className='uitleg-stap-item';
-    item.id='uitleg-stap-item-'+si;
-
-    var bolRij=document.createElement('div');
-    bolRij.className='uitleg-stap-bol-rij';
-
-    var bol=document.createElement('div');
-    bol.className='uitleg-bol';
-    bol.id='uitleg-bol-'+si;
-    bol.textContent=''+(si+1);
-
-    var label=document.createElement('div');
-    label.className='uitleg-stap-label';
-    label.textContent=stap.titel||('Stap '+(si+1));
-
-    bol.setAttribute('tabindex', '0');
-    bol.setAttribute('role', 'button');
-    bol.setAttribute('aria-label', 'Stap ' + (si+1) + ': ' + (stap.titel||''));
-
-    bolRij.appendChild(bol);
-    bolRij.appendChild(label);
-    item.appendChild(bolRij);
-
-    // Deelstappen
-    if(stap.deelstappen&&stap.deelstappen.length>1){
-      var deelLijst=document.createElement('div');
-      deelLijst.className='uitleg-deelstap-lijst';
-      deelLijst.id='uitleg-deel-lijst-'+si;
-
-      stap.deelstappen.forEach(function(ds,di){
-        var deelItem=document.createElement('div');
-        deelItem.className='uitleg-deelstap-item';
-        deelItem.id='uitleg-deel-item-'+si+'-'+di;
-
-        var deelBol=document.createElement('div');
-        deelBol.className='uitleg-deelbol';
-        deelBol.id='uitleg-deelbol-'+si+'-'+di;
-        deelBol.setAttribute('tabindex','0');
-        deelBol.textContent=(si+1)+'.'+(di+1);
-
-        var deelLabel=document.createElement('div');
-        deelLabel.className='uitleg-deelstap-label';
-        deelLabel.textContent=ds.titel||(ds.uitleg?ds.uitleg.substring(0,30)+'…':'');
-
-        deelItem.appendChild(deelBol);
-        deelItem.appendChild(deelLabel);
-
-        (function(s,d){
-          deelItem.addEventListener('click',function(e){
-            e.stopPropagation();
-            _gaNaarStap(s,d);
-            setTimeout(function(){
-              var db=document.getElementById('uitleg-deelbol-'+s+'-'+d);
-              if(db){_uitlegFocusInNav=true;db.focus();}
-            },80);
-          });
-        })(si,di);
-
-        deelLijst.appendChild(deelItem);
-      });
-      item.appendChild(deelLijst);
-    }
-
-    // Enter op bol → navigeer naar stap en focus naar kaart
-    (function(s){
-      bol.addEventListener('keydown',function(e){
-        if(e.key==='Enter'||e.key===' '){
-          e.preventDefault();
-          _uitlegFocusInNav=false;
-          bolRij.click();
-          setTimeout(function(){
-            var k=document.getElementById('uitleg-stap-kaart');
-            if(k)k.focus();
-          },120);
-        }
-      });
-    })(si);
-
-    // Klik op hoofdstap-rij
-    (function(s){
-      bolRij.addEventListener('click',function(){
-        if(_uitlegOpenStap===s&&_uitlegStapIdx===s){
-          _uitlegOpenStap=-1;
-        } else {
-          _uitlegOpenStap=s;
-        }
-        _gaNaarStap(s,0);
-        // Focus op de bol zodat pijltjesnavigatie werkt
-        setTimeout(function(){
-          var b=document.getElementById('uitleg-bol-'+s);
-          if(b){_uitlegFocusInNav=true;b.focus();}
-        },80);
-      });
-    })(si);
-
-    navKolom.appendChild(item);
-  });
-
-  // Knop 'Nu zelf aan de slag!' onder navigatiemenu (alleen vanuit keuzemenu)
-  var startKnopWrap=document.createElement('div');
-  startKnopWrap.className='uitleg-start-knop-wrap';
-  var startKnop=document.createElement('button');
-  startKnop.className='btn-uitleg-start';
-  startKnop.id='btn-uitleg-start';
-  startKnop.textContent=_uitlegVanuitKeuzemenu?'Nu zelf aan de slag!':'Verder met de som';
-  startKnop.addEventListener('click', function(){
-    sluitUitlegNaarSom();
-  });
-  startKnopWrap.appendChild(startKnop);
-  navKolom.appendChild(startKnopWrap);
-
-  // Klik in navkolom: focus op actieve bol
-  // Compacte terugknop bovenin navkolom (zichtbaar als header verdwijnt)
-  var terugCompact=document.createElement('button');
-  terugCompact.className='uitleg-header-terug uitleg-header-terug-compact';
-  terugCompact.setAttribute('aria-label', 'Terug');
-  terugCompact.innerHTML='&#8592;';
-  terugCompact.style.cssText='display:none;margin:8px auto 12px auto;';
-  terugCompact.addEventListener('click',sluitUitleg);
-  navKolom.insertBefore(terugCompact, navKolom.firstChild);
-
-  navKolom.addEventListener('click',function(e){
-    if(e.target===navKolom||e.target.classList.contains('uitleg-nav-kolom')){
-      var actieveBol=document.getElementById('uitleg-bol-'+_uitlegStapIdx);
-      if(actieveBol) actieveBol.focus();
-    }
-  });
-
-  body.appendChild(navKolom);
-
-  // Inhoud rechts
-  var inhoud=document.createElement('div');
-  inhoud.className='uitleg-inhoud';
-
-  // Som-container
-  var somCont=document.createElement('div');
-  somCont.id='uitleg-som-container';
-  somCont.className='uitleg-som-container';
-  somCont.setAttribute('tabindex','0');
-  somCont.style.outline='none';
-  somCont.addEventListener('click',function(){somCont.focus();});
-  inhoud.appendChild(somCont);
-
-  // Tekst-sectie met uil-pijlen
-  var tekstSectie=document.createElement('div');
-  tekstSectie.className='uitleg-tekst-sectie';
-
-  var uilLinks=document.createElement('div');
-  uilLinks.className='uitleg-uil-pijl verborgen';
-  uilLinks.id='uitleg-uil-links';
-  uilLinks.setAttribute('tabindex','-1');
-  uilLinks.setAttribute('aria-hidden','true');
-  uilLinks.setAttribute('aria-label','Vorige deelstap');
-  uilLinks.innerHTML='<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl2.png" alt="Vorige deelstap">';
-  uilLinks.addEventListener('click',uitlegDeelTerug);
-
-
-  var kaart=document.createElement('div');
-  kaart.id='uitleg-stap-kaart';
-  kaart.className='uitleg-stap-kaart';
-  kaart.setAttribute('tabindex','0');
-  kaart.id='uitleg-stap-kaart';
-  kaart.style.outline='none';
-  kaart.addEventListener('click',function(){kaart.focus();});
-  kaart.innerHTML=
-    '<span class="uitleg-stap-titel-tekst" id="uitleg-stap-titel"></span>'+
-    '<div class="uitleg-stap-uitleg" id="uitleg-stap-tekst"></div>';
-
-  var uilRechts=document.createElement('div');
-  uilRechts.className='uitleg-uil-pijl';
-  uilRechts.id='uitleg-uil-rechts';
-  uilRechts.setAttribute('tabindex','-1');
-  uilRechts.setAttribute('aria-hidden','true');
-  uilRechts.setAttribute('aria-label','Volgende deelstap');
-  uilRechts.innerHTML='<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_pijl.png" alt="Volgende deelstap">';
-  uilRechts.addEventListener('click',uitlegDeelVolgende);
-
-
-  tekstSectie.appendChild(uilLinks);
-  tekstSectie.appendChild(kaart);
-  tekstSectie.appendChild(uilRechts);
-  inhoud.appendChild(tekstSectie);
-  // Klik op het rechtergebied (buiten tekstvak) → focus op somvak
-  inhoud.addEventListener('click', function(e){
-    var kaart=document.getElementById('uitleg-stap-kaart');
-    var somCont=document.getElementById('uitleg-som-container');
-    // Als klik NIET op de kaart was: focus naar somvak
-    if(kaart&&!kaart.contains(e.target)&&somCont){
-      somCont.focus();
-    }
-  });
-
-  body.appendChild(inhoud);
-  scherm.appendChild(body);
-
-  // Events
-  var terugEl=document.getElementById('uitleg-int-terug');
-  terugEl.addEventListener('click',sluitUitleg);
-  var headerStartKnop=document.getElementById('btn-uitleg-start-header');
-  if(headerStartKnop) headerStartKnop.addEventListener('click',sluitUitlegNaarSom);
-
-
-
-  // Muiswiel
-  scherm.addEventListener('wheel',_handleWheel,{passive:false});
-
-  // Focus trap, TAB en pijltjestoetsen
-  scherm.addEventListener('keydown',function(e){
-    if(e.key==='Escape'){sluitUitleg();return;}
-
-    // Pijltjes omhoog/omlaag
-    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
-      var actief2=document.activeElement;
-      var kaart2=document.getElementById('uitleg-stap-kaart');
-      var somCont2=document.getElementById('uitleg-som-container');
-
-      // Focus op tekstvak en tekst overloopt: scroll door tekst
-      if(actief2&&kaart2&&(actief2===kaart2||kaart2.contains(actief2))){
-        if(kaart2.scrollHeight>kaart2.clientHeight+4){
-          var aanTop2=kaart2.scrollTop<=0;
-          var aanOnder2=kaart2.scrollTop+kaart2.clientHeight>=kaart2.scrollHeight-4;
-          if(e.key==='ArrowDown'&&!aanOnder2){return;}
-          if(e.key==='ArrowUp'&&!aanTop2){return;}
-        }
-      }
-      // Focus op somvak: scroll door som, blijf altijd op som
-      if(actief2&&somCont2&&(actief2===somCont2||somCont2.contains(actief2))){
-        e.preventDefault();
-        var scrollStap=60;
-        if(e.key==='ArrowDown') somCont2.scrollTop+=scrollStap;
-        else somCont2.scrollTop-=scrollStap;
-        return;
-      }
-      e.preventDefault();
-      if(e.key==='ArrowDown') uitlegDeelVolgende();
-      else uitlegDeelTerug();
-      return;
-    }
-
-    var actief=document.activeElement;
-    var inNav=actief&&(actief.classList.contains('uitleg-bol')||actief.classList.contains('uitleg-deelbol'));
-    var inTerug=actief&&actief.id==='uitleg-int-terug';
-
-    function getEl(id){return document.getElementById(id);}
-    function zichtbaar(el){return el&&!el.classList.contains('verborgen');}
-
-    // TAB-volgorde: terug → nav → uil-links → kaart → uil-rechts → terug
-    if(e.key==='Tab'){
-      e.preventDefault();
-      var volgorde=[];
-      var t=getEl('uitleg-int-terug');
-      if(t) volgorde.push({el:t,tekst:_uitlegVanuitKeuzemenu?'Terug naar het keuzemenu':'Terug naar de som'});
-      // Som en tekst altijd in TAB-volgorde
-      var sc=getEl('uitleg-som-container'); if(sc) volgorde.push({el:sc,tekst:'Voorbeeldsom. Gebruik pijltjestoetsen om te scrollen.'});
-      var kk2=getEl('uitleg-stap-kaart'); if(kk2) volgorde.push({el:kk2,tekst:'Uitlegtekst. Gebruik pijltjestoetsen om te scrollen.'});
-      var b=getEl('uitleg-bol-0'); if(b){
-        var actieveSi=_uitlegStapIdx;
-        var actieveStap=_uitlegDef.stappen[actieveSi];
-        volgorde.push({el:b,tekst:'Navigatiemenu. '+(actieveStap?'Stap '+(actieveSi+1)+': '+actieveStap.titel:'')});
-      }
-      var sk=getEl('btn-uitleg-start');
-      if(sk&&sk.style.display!=='none'){
-        volgorde.push({el:sk,tekst:sk.textContent});
-      }
-
-      var huidig=document.activeElement;
-      var idx=-1;
-      for(var vi=0;vi<volgorde.length;vi++){if(volgorde[vi].el===huidig){idx=vi;break;}}
-      var nieuwIdx=e.shiftKey?(idx<=0?volgorde.length-1:idx-1):(idx>=volgorde.length-1?0:idx+1);
-      var doel=volgorde[nieuwIdx];
-      doel.el.focus();
-      _uitlegSpreekDirect(doel.tekst);
-      return;
-    }
-
-
-
-    // Pijltjes omhoog/omlaag in nav: door bolletjes
-    if(inNav&&(e.key==='ArrowDown'||e.key==='ArrowUp')){
-      e.preventDefault();
-      // Verzamel bollen in DOM-volgorde:
-      // - hoofdbollen altijd zichtbaar
-      // - deelbolletjes alleen als hun lijst open is
-      var alleBollen=[];
-      var navKolom2=document.getElementById('uitleg-nav-kolom');
-      if(navKolom2){
-        var kandidaten=Array.from(navKolom2.querySelectorAll('.uitleg-bol,.uitleg-deelbol'));
-        kandidaten.forEach(function(b){
-          if(b.classList.contains('uitleg-bol')){
-            alleBollen.push(b); // hoofdbol altijd meenemen
-          } else {
-            var lijst=b.closest('.uitleg-deelstap-lijst');
-            if(lijst&&lijst.classList.contains('open')) alleBollen.push(b);
-          }
-        });
-      }
-      var huidigeIdx=alleBollen.indexOf(actief);
-      var nieuweIdx=e.key==='ArrowDown'?huidigeIdx+1:Math.max(huidigeIdx-1,0);
-      // Voorbij laatste bol: focus naar actieknop
-      if(nieuweIdx>=alleBollen.length&&e.key==='ArrowDown'){
-        var sk2=document.getElementById('btn-uitleg-start');
-        if(sk2&&sk2.style.display!=='none'){
-          sk2.focus();
-          _uitlegSpreekDirect(sk2.textContent);
-        }
-        return;
-      }
-      nieuweIdx=Math.min(nieuweIdx,alleBollen.length-1);
-      var doelBol=alleBollen[nieuweIdx];
-      if(doelBol){
-        _uitlegFocusInNav=true;
-        var bolId=doelBol.id;
-        var mH=/^uitleg-bol-(\d+)$/.exec(bolId);
-        var mD=/^uitleg-deelbol-(\d+)-(\d+)$/.exec(bolId);
-        if(mH){_uitlegOpenStap=parseInt(mH[1]);_gaNaarStap(parseInt(mH[1]),0);}
-        else if(mD){_gaNaarStap(parseInt(mD[1]),parseInt(mD[2]));}
-        doelBol.scrollIntoView({block:'nearest'});
-        setTimeout(function(){doelBol.focus();},80);
-      }
-      return;
-    }
-
-
-  });
+.uitleg-stap-titel-tekst {
+  font-size: calc(var(--font-size) * 1.15);
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 10px;
+  display: block;
 }
-
-// ── Openen / Sluiten ───────────────────────────────────────────
-function openUitleg(methode,bewerking,vanuitKeuzemenu){
-  var key=methode+'-'+bewerking;
-  var def=UITLEG_DEFINITIES[key];
-  if(!def){if(typeof showUitlegOud==='function')showUitlegOud();return;}
-
-  _uitlegActief=true; _uitlegDef=def;
-  _uitlegStapIdx=0; _uitlegDeelstapIdx=0;
-  _uitlegOpenStap=0; // eerste stap open bij start
-  _uitlegVanuitKeuzemenu=(vanuitKeuzemenu===true);
-
-  _bouwUitlegScherm(def);
-  if(typeof showScreen==='function')showScreen('screen-uitleg-interactief');
-  // Toon 'Nu zelf aan de slag!' alleen vanuit keuzemenu
-  var startKnop=document.getElementById('btn-uitleg-start');
-  if(startKnop){
-    startKnop.style.display='block';
-    startKnop.textContent=_uitlegVanuitKeuzemenu?'Nu zelf aan de slag!':'Verder met de som';
-  }
-  _bouwSom(_vindSom(0));
-  _renderStap(0,0);
-  setTimeout(function(){var b=document.getElementById('uitleg-bol-0');if(b)b.focus();},100);
-}
-
-function sluitUitleg(){
-  _uitlegActief=false;
-  if(_uitlegAnimTimeout){clearTimeout(_uitlegAnimTimeout);_uitlegAnimTimeout=null;}
-  if(window.speechSynthesis)speechSynthesis.cancel();
-  if(_uitlegVanuitKeuzemenu){
-    // Terug naar keuzemenu
-    _uitlegVanuitKeuzemenu=false;
-    if(typeof showScreen==='function')showScreen('screen-setup');
-  } else {
-    // Terug naar de som
-    if(typeof showScreen==='function')showScreen('screen-exercise');
-  }
-}
-
-function sluitUitlegNaarSom(){
-  var vanuitKeuzemenu=_uitlegVanuitKeuzemenu;
-  _uitlegVanuitKeuzemenu=false;
-  _uitlegActief=false;
-  if(_uitlegAnimTimeout){clearTimeout(_uitlegAnimTimeout);_uitlegAnimTimeout=null;}
-  if(window.speechSynthesis)speechSynthesis.cancel();
-  if(vanuitKeuzemenu){
-    if(typeof startExercise==='function') startExercise();
-    else if(typeof showScreen==='function') showScreen('screen-exercise');
-  } else {
-    if(typeof showScreen==='function') showScreen('screen-exercise');
-  }
+.uitleg-stap-uitleg {
+  font-size: calc(var(--font-size) * 1.05);
+  color: var(--text);
+  line-height: 1.6;
 }
 
 /* ================================================================
-   UITLEG-DEFINITIES
+   RESPONSIVE — kleine schermen (laptops, tablets)
    ================================================================ */
-var UITLEG_DEFINITIES = {
 
-  'kolomsgewijs-optellen': {
-    titel: 'Kolomsgewijs optellen',
-    stappen: [
-      {
-        som: {
-          tabel: [
-            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
-            { cellen: [ {type:'op',tekst:''},  {id:'a-h',tekst:'3'}, {id:'a-t',tekst:'4'}, {id:'a-e',tekst:'7'} ] },
-            { cellen: [ {type:'op',tekst:'+'}, {id:'b-h',tekst:'2'}, {id:'b-t',tekst:'5'}, {id:'b-e',tekst:'6'} ] },
-            { type:'hr', colspan:4 },
-            { cellen: [ {type:'lbl',tekst:'H'}, {id:'inv1-h',type:'input',tekst:''}, {id:'inv1-t',type:'input',tekst:''}, {id:'inv1-e',type:'input',tekst:''} ] },
-            { cellen: [ {type:'lbl',tekst:'T'}, {id:'inv2-h',type:'input',tekst:''}, {id:'inv2-t',type:'input',tekst:''}, {id:'inv2-e',type:'input',tekst:''} ] },
-            { cellen: [ {type:'lbl',tekst:'E'}, {id:'inv3-h',type:'input',tekst:''}, {id:'inv3-t',type:'input',tekst:''}, {id:'inv3-e',type:'input',tekst:''} ] },
-            { type:'hr', colspan:4 },
-            { cellen: [ {type:'op',tekst:''}, {id:'ans-h',type:'input',tekst:''}, {id:'ans-t',type:'input',tekst:''}, {id:'ans-e',type:'input',tekst:''} ] }
-          ]
-        },
-        titel: 'Hoe moet je zo\'n optelling lezen?',
-        uitleg: 'Bij kolomsgewijs optellen zetten we de som onder elkaar en tellen we per kolom de getallen op.',
-        highlight: [],
-        animaties: [],
-        deelstappen: [
-          { titel: 'Per kolom', uitleg: 'Bij kolomsgewijs optellen zetten we de som onder elkaar en tellen we per kolom de getallen op.', highlight: [], animaties: [] },
-          { titel: 'Cijferwaardes', uitleg: 'De cijfers in iedere kolom hebben een andere waarde. De 3 en de 2, die je in deze kolom ziet, zijn 300 en 200 waard in de getallen van de som. Daarom staat bovenaan de letter H, die staat voor honderdtallen.', highlight: ['a-h','b-h','inv1-h','inv2-h','inv3-h','ans-h'], animaties: [] },
-          { titel: 'Tientallen', uitleg: 'De 4 en de 5 zijn op diezelfde manier tientallen: 40 en 50. Bovenaan de kolom staat dan ook de T van tientallen.', highlight: ['a-t','b-t','inv1-t','inv2-t','inv3-t','ans-t'], animaties: [] },
-          { titel: 'Eenheden', uitleg: 'En tenslotte, de 7 en de 6, dat zijn de losse getallen, die noemen we ook wel eenheden. Vandaar de letter E bovenaan de kolom.', highlight: ['a-e','b-e','inv1-e','inv2-e','inv3-e','ans-e'], animaties: [] }
-        ]
-      },
-      {
-        som: null,
-        titel: 'Per kolom optellen',
-        uitleg: 'Nu gaan we per kolom de getallen optellen.',
-        highlight: [],
-        animaties: [],
-        deelstappen: [
-          {
-            titel: 'De rijen',
-            uitleg: 'Zoals er een kolom van boven naar beneden is voor de honderdtallen, zo is er ook een rij van links naar rechts voor de honderdtallen: de H-rij.',
-            highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e','inv2-h','inv3-h','ans-h'],
-            animaties: []
-          },
-          { titel: 'De H-rij', uitleg: 'In de H-rij tellen we de honderdtallen van de som bij elkaar en vullen die in, zoals hier.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [
-            { type:'vulIn', cel:'inv1-h', waarde:'5' },
-            { type:'vulIn', cel:'inv1-t', waarde:'0' },
-            { type:'vulIn', cel:'inv1-e', waarde:'0' }
-          ] },
-          { titel: 'De T-rij', uitleg: 'Na de honderdtallen zijn de tientallen aan de beurt, de 4 en de 5. Die optelsom schrijven we in de T-rij. Let er goed op dat je begint in te vullen in de T-kolom, het zijn immers tientallen.', highlight: ['a-t','b-t','inv2-h','inv2-t','inv2-e'], animaties: [
-            { type:'vulIn', cel:'inv2-t', waarde:'9' },
-            { type:'vulIn', cel:'inv2-e', waarde:'0' }
-          ] },
-          { titel: 'De E-rij', uitleg: 'Tenslotte moeten we de eenheden nog optellen. We kijken naar de E-kolom en vullen in op de E-rij. Maar let op:', highlight: ['a-e','b-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
-          { titel: 'Doorschuiven', uitleg: '7+6=13. Wat is de 1 in dit getal? Juist, een tiental. Dus de 1 schrijven we in de kolom van de tientallen op de rij van de eenheden. En de 3 komt daar natuurlijk gezellig naast te staan.', highlight: ['a-e','b-e','inv3-t','inv3-e'], animaties: [
-            { type:'vulIn', cel:'inv3-t', waarde:'1' },
-            { type:'vulIn', cel:'inv3-e', waarde:'3' }
-          ] }
-        ]
-      },
-      {
-        som: null,
-        titel: 'Onze uitkomsten optellen',
-        uitleg: 'Nu gaan we wat we al opgeteld hebben samenvoegen tot één einduitkomst.',
-        highlight: [],
-        animaties: [],
-        deelstappen: [
-          {
-            titel: 'Naar de einduitkomst',
-            uitleg: 'Nu gaan we wat we al opgeteld hebben, samenvoegen tot één einduitkomst.',
-            highlight: ['inv1-h','inv1-t','inv1-e','inv2-h','inv2-t','inv2-e','inv3-h','inv3-t','inv3-e'],
-            animaties: []
-          },
-          {
-            titel: 'Honderdtallen',
-            uitleg: 'We hebben in totaal 5 honderdtallen opgeschreven, die mag je dus invullen in de einduitkomst bij de honderdtallen.',
-            highlight: ['inv1-h','ans-h'],
-            animaties: [ { type:'vulIn', cel:'ans-h', waarde:'5' } ]
-          },
-          {
-            titel: 'Tien tientallen',
-            uitleg: 'In de T-kolom hebben we 9+1. O jee, dat zijn 10 tientallen en dat is 100: nog een honderdtal! En we hebben daar al een 5 geschreven. Dat moet een 6 worden.',
-            highlight: ['inv2-t','inv3-t','ans-t','ans-h'],
-            animaties: [
-              { type:'vulIn', cel:'ans-h', waarde:'6' },
-              { type:'vulIn', cel:'ans-t', waarde:'0' }
-            ]
-          },
-          {
-            titel: 'De som is klaar!',
-            uitleg: 'Tenslotte kijken we naar de eenheden. Die hebben we 3 in onze uitkomstrijen bij de E-kolom staan. En dus vullen we een 3 in op de einduitkomst. Totaal: 603. We zijn klaar!',
-            highlight: ['inv3-e','ans-e'],
-            animaties: [ { type:'vulIn', cel:'ans-e', waarde:'3' } ]
-          }
-        ]
-      },
+@media (max-width: 1300px) {
+  .uitleg-nav-kolom { width: min(320px, 26vw); max-width: min(320px, 26vw); min-width: 60px; flex-shrink: 1; }
+  .uitleg-bol { width: 50px; height: 50px; font-size: 0.95em; }
+  .uitleg-bol.actief { width: 66px; height: 66px; font-size: 1.1em; }
+  .uitleg-deelbol { width: 40px; height: 40px; font-size: 0.78em; }
+  .uitleg-deelbol.actief { width: 52px; height: 52px; font-size: 0.9em; }
+  .uitleg-stap-label { font-size: 0.92em; }
+  .uitleg-som-wrap .uitleg-table td,
+  .uitleg-som-wrap .uitleg-table th { width: 62px; height: 62px; font-size: 1.9em; }
+  .uitleg-stap-kaart { min-width: 300px !important; width: auto; padding: 18px 20px; }
+  .uitleg-uil-pijl { width: 140px; max-width: 13vw; }
+}
 
-    ]
+@media (max-width: 1100px) {
+  .uitleg-nav-kolom { width: min(240px, 24vw); max-width: min(240px, 24vw); min-width: 60px; flex-shrink: 1; }
+  .uitleg-bol { width: 42px; height: 42px; font-size: 0.82em; }
+  .uitleg-bol.actief { width: 56px; height: 56px; font-size: 0.95em; }
+  .uitleg-deelbol { width: 34px; height: 34px; font-size: 0.7em; }
+  .uitleg-deelbol.actief { width: 44px; height: 44px; font-size: 0.82em; }
+  .uitleg-stap-label { font-size: 0.82em; }
+  .uitleg-deelstap-label { font-size: 0.82em; }
+  .uitleg-som-wrap .uitleg-table td,
+  .uitleg-som-wrap .uitleg-table th { width: 50px; height: 50px; font-size: 1.5em; }
+  .uitleg-som-container { max-height: 38vh; padding: 16px 12px 10px 12px; }
+  .uitleg-stap-kaart { min-width: 220px !important; padding: 14px 16px; }
+  .uitleg-stap-titel-tekst { font-size: calc(var(--font-size) * 1.0); }
+  .uitleg-stap-uitleg { font-size: calc(var(--font-size) * 0.95); }
+  .uitleg-uil-pijl { width: 100px; max-width: 10vw; }
+  .uitleg-header-titel { font-size: calc(var(--font-size) * 1.1); }
+  .btn-uitleg-start { padding: 10px 20px; font-size: 0.95em; }
+}
+
+@media (max-width: 860px) {
+  .uitleg-nav-kolom { width: 180px; }
+  .uitleg-bol { width: 36px; height: 36px; font-size: 0.72em; }
+  .uitleg-bol.actief { width: 48px; height: 48px; font-size: 0.85em; }
+  .uitleg-deelbol { width: 28px; height: 28px; font-size: 0.62em; }
+  .uitleg-deelbol.actief { width: 38px; height: 38px; font-size: 0.72em; }
+  .uitleg-stap-label { font-size: 0.74em; }
+  .uitleg-deelstap-label { font-size: 0.72em; }
+  .uitleg-som-wrap .uitleg-table td,
+  .uitleg-som-wrap .uitleg-table th { width: 40px; height: 40px; font-size: 1.2em; }
+  .uitleg-som-container { max-height: 32vh; }
+  .uitleg-uil-pijl { width: 70px; max-width: 8vw; }
+  .uitleg-stap-kaart { min-width: 160px !important; padding: 10px 12px; }
+}
+
+/* ================================================================
+   COMPACTE MODUS — hoge zoom of kleine viewport
+   ================================================================ */
+
+@media (max-height: 700px), (max-width: 900px) {
+
+  /* Header verbergen */
+  .uitleg-header { display: none !important; }
+
+  /* Navkolom smal: alleen bolletjes */
+  .uitleg-nav-kolom {
+    width: 80px !important;
+    padding: 8px 0 !important;
+    flex-shrink: 0;
   }
-};
+  .uitleg-header-terug-compact { display: flex !important; }
+  .uitleg-stap-label { display: none !important; }
+  .uitleg-deelstap-label { display: none !important; }
+  .uitleg-stap-bol-rij { justify-content: center; padding: 4px 4px !important; gap: 0 !important; }
+  .uitleg-deelstap-item { justify-content: center; padding: 3px 2px !important; }
+  .uitleg-deelstap-lijst { padding: 2px 0 !important; }
+
+  /* Bolletjes */
+  .uitleg-bol { width: 44px !important; height: 44px !important; font-size: 0.85em !important; }
+  .uitleg-bol.actief { width: 56px !important; height: 56px !important; font-size: 0.95em !important; }
+  .uitleg-deelbol { width: 34px !important; height: 34px !important; font-size: 0.7em !important; }
+  .uitleg-deelbol.actief { width: 44px !important; height: 44px !important; font-size: 0.8em !important; }
+
+  /* Inhoud rechts: alles scrollbaar in één kolom */
+  .uitleg-inhoud {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex-direction: column !important;
+  }
+
+  /* Som: 67% hoogte */
+  .uitleg-som-container {
+    flex: 0 0 67% !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    padding: 12px 8px 8px 8px !important;
+  }
+
+  /* Tekst-sectie: 33% hoogte */
+  .uitleg-tekst-sectie {
+    flex: 0 0 33% !important;
+    padding: 8px 8px 12px 8px !important;
+    gap: 6px !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Tekstkader */
+  .uitleg-stap-kaart {
+    min-width: 160px !important;
+    width: auto !important;
+    max-width: 100% !important;
+    padding: 12px 14px !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+  }
+
+  /* Uil-pijlen kleiner */
+  .uitleg-uil-pijl { width: 70px !important; max-width: 9vw !important; }
+
+  /* Actieknop */
+  .uitleg-start-knop-wrap { padding: 8px 0 4px 0 !important; }
+  .btn-uitleg-start { padding: 8px 16px !important; font-size: 0.9em !important; }
+}
+
+/* ── Mooie scrollbalken ── */
+.uitleg-som-container::-webkit-scrollbar,
+.uitleg-stap-kaart::-webkit-scrollbar {
+  width: 12px;
+}
+.uitleg-som-container::-webkit-scrollbar-track,
+.uitleg-stap-kaart::-webkit-scrollbar-track {
+  background: var(--surface);
+  border-radius: 6px;
+  margin: 6px;
+}
+.uitleg-som-container::-webkit-scrollbar-thumb,
+.uitleg-stap-kaart::-webkit-scrollbar-thumb {
+  background: #FCD34D;
+  border-radius: 6px;
+  border: 3px solid var(--surface);
+  min-height: 40px;
+}
+.uitleg-som-container::-webkit-scrollbar-thumb:hover,
+.uitleg-stap-kaart::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
+
+/* ================================================================
+   ULTRACOMPACTE MODUS — 175%+ zoom (viewport < 730px breed)
+   Nav volledig verborgen, zwevende actieknop rechtsonder
+   ================================================================ */
+
+@media (max-width: 730px) {
+  /* Nav volledig verborgen */
+  .uitleg-nav-kolom { display: none !important; }
+
+  /* Header verborgen */
+  .uitleg-header { display: none !important; }
+
+  /* Inhoud neemt volle breedte */
+  .uitleg-inhoud { width: 100% !important; }
+
+  /* Som en tekst */
+  .uitleg-som-container { flex: 0 0 65% !important; }
+  .uitleg-tekst-sectie { flex: 0 0 35% !important; }
+
+  /* Verberg normale startknop-wrap */
+  .uitleg-start-knop-wrap { display: none !important; }
+
+  /* Zwevende knoppen rechtsonder */
+  .uitleg-zweef-knoppen { display: flex !important; }
+}
+
+/* Zwevende knoppen: standaard verborgen */
+.uitleg-zweef-knoppen {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 200;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+.uitleg-zweef-terug {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  color: var(--text);
+  border-radius: 50%;
+  width: 48px; height: 48px;
+  font-size: 1.3em;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.uitleg-zweef-terug:hover { background: var(--blue-light); }
+.uitleg-zweef-actie {
+  background: #16a34a;
+  border: none;
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 10px 18px;
+  font-family: var(--font);
+  font-size: 0.95em;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  white-space: nowrap;
+}
+.uitleg-zweef-actie:hover { opacity: 0.88; }
+.uitleg-zweef-actie:focus,
+.uitleg-zweef-terug:focus {
+  outline: 3px solid #FCD34D;
+}
