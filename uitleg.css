@@ -58,6 +58,7 @@
 /* ── Bolletjeskolom links ── */
 .uitleg-nav-kolom {
   width: 440px;
+  max-width: 440px;
   flex-shrink: 0;
   background: var(--card);
   border-right: 2px solid var(--border);
@@ -183,9 +184,9 @@
   min-width: 0;
 }
 
-/* Som-gebied: 60% van de inhoud-hoogte */
+/* Som-gebied: 67% van de inhoud-hoogte */
 .uitleg-som-container {
-  flex: 0 0 60%;
+  flex: 0 0 67%;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -217,9 +218,9 @@
 .uitleg-interactief tr.uitleg-hr td { border: none!important; border-top: 3px solid var(--calc-line)!important; background: transparent!important; height: 4px; padding: 0; }
 .uitleg-interactief td.uitleg-highlight { border-color: #FCD34D!important; box-shadow: 0 0 0 3px #FCD34D!important; background: #3d3200!important; color: #FCD34D!important; }
 
-/* Tekst + uil-pijlen: 40% van de inhoud-hoogte */
+/* Tekst + uil-pijlen: 33% van de inhoud-hoogte */
 .uitleg-tekst-sectie {
-  flex: 0 0 40%;
+  flex: 0 0 33%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -277,7 +278,7 @@
    ================================================================ */
 
 @media (max-width: 1300px) {
-  .uitleg-nav-kolom { width: 320px; }
+  .uitleg-nav-kolom { width: 320px; max-width: 320px; }
   .uitleg-bol { width: 50px; height: 50px; font-size: 0.95em; }
   .uitleg-bol.actief { width: 66px; height: 66px; font-size: 1.1em; }
   .uitleg-deelbol { width: 40px; height: 40px; font-size: 0.78em; }
@@ -290,7 +291,7 @@
 }
 
 @media (max-width: 1100px) {
-  .uitleg-nav-kolom { width: 240px; }
+  .uitleg-nav-kolom { width: 240px; max-width: 240px; }
   .uitleg-bol { width: 42px; height: 42px; font-size: 0.82em; }
   .uitleg-bol.actief { width: 56px; height: 56px; font-size: 0.95em; }
   .uitleg-deelbol { width: 34px; height: 34px; font-size: 0.7em; }
@@ -358,17 +359,17 @@
     flex-direction: column !important;
   }
 
-  /* Som: 60% hoogte */
+  /* Som: 67% hoogte */
   .uitleg-som-container {
-    flex: 0 0 60% !important;
+    flex: 0 0 67% !important;
     max-height: none !important;
     overflow-y: auto !important;
     padding: 12px 8px 8px 8px !important;
   }
 
-  /* Tekst-sectie: 40% hoogte */
+  /* Tekst-sectie: 33% hoogte */
   .uitleg-tekst-sectie {
-    flex: 0 0 40% !important;
+    flex: 0 0 33% !important;
     padding: 8px 8px 12px 8px !important;
     gap: 6px !important;
     min-height: 0 !important;
@@ -391,4 +392,27 @@
   /* Actieknop */
   .uitleg-start-knop-wrap { padding: 8px 0 4px 0 !important; }
   .btn-uitleg-start { padding: 8px 16px !important; font-size: 0.9em !important; }
+}
+
+/* ── Mooie scrollbalken ── */
+.uitleg-som-container::-webkit-scrollbar,
+.uitleg-stap-kaart::-webkit-scrollbar {
+  width: 12px;
+}
+.uitleg-som-container::-webkit-scrollbar-track,
+.uitleg-stap-kaart::-webkit-scrollbar-track {
+  background: var(--surface);
+  border-radius: 6px;
+  margin: 6px;
+}
+.uitleg-som-container::-webkit-scrollbar-thumb,
+.uitleg-stap-kaart::-webkit-scrollbar-thumb {
+  background: #FCD34D;
+  border-radius: 6px;
+  border: 3px solid var(--surface);
+  min-height: 40px;
+}
+.uitleg-som-container::-webkit-scrollbar-thumb:hover,
+.uitleg-stap-kaart::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
 }
