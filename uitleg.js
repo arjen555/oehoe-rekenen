@@ -242,77 +242,10 @@ function uitlegDeelTerug(){
 }
 
 // Muiswiel navigatie door stappen
-function _isCompactModus(){
-  return window.innerWidth<=900||window.innerHeight<=700;
-}
-
 function _handleWheel(e){
-  // Ctrl+muiswiel: altijd browser zoom — nooit afvangen
+  // Ctrl+muiswiel: browser zoom, nooit afvangen
   if(e.ctrlKey)return;
-
-  var somCont=document.getElementById('uitleg-som-container');
-  var kaart=document.getElementById('uitleg-stap-kaart');
-
-  // Muis boven som: vergroot/verklein de som
-  if(somCont&&somCont.contains(e.target)){
-    var wrap=somCont.querySelector('.uitleg-som-wrap');
-    if(wrap){
-      // Bereken maximale schaal zodat tekst altijd zichtbaar blijft
-      var tekst=document.getElementById('uitleg-tekst-sectie')||
-                document.querySelector('.uitleg-tekst-sectie');
-      var minTekstHoogte=120; // pixels tekst die altijd zichtbaar moet blijven
-      var beschikbaar=window.innerHeight-somCont.getBoundingClientRect().top-minTekstHoogte;
-      var maxSchaal=beschikbaar>0?Math.max(0.5,beschikbaar/wrap.offsetHeight):2;
-
-      var huidig=parseFloat(wrap.dataset.schaal)||1;
-      var nieuw=e.deltaY<0?Math.min(huidig+0.1,maxSchaal):Math.max(huidig-0.1,0.5);
-      wrap.dataset.schaal=nieuw;
-      wrap.style.transform='scale('+nieuw+')';
-      wrap.style.transformOrigin='top center';
-      wrap.style.marginBottom=((nieuw-1)*wrap.offsetHeight)+'px';
-    }
-    e.preventDefault();
-    return;
-  }
-
-  // Compacte modus: muis boven tekstkader
-  if(_isCompactModus()&&kaart&&kaart.contains(e.target)){
-    // Laat scrollen als tekst overloopt, anders navigeer
-    var kanScrollen=kaart.scrollHeight>kaart.clientHeight+4;
-    var aanTop=kaart.scrollTop<=0;
-    var aanOnder=kaart.scrollTop+kaart.clientHeight>=kaart.scrollHeight-4;
-    if(kanScrollen){
-      if(e.deltaY>0&&!aanOnder){return;} // laat scrollen omlaag
-      if(e.deltaY<0&&!aanTop){return;}   // laat scrollen omhoog
-    }
-    // Aan het einde of niet scrollbaar: navigeer naar deelstap
-    e.preventDefault();
-    if(e.deltaY>0) uitlegDeelVolgende();
-    else if(e.deltaY<0) uitlegDeelTerug();
-    return;
-  }
-
-  // Compacte modus: muis buiten som en kaart — navigeer
-  if(_isCompactModus()){
-    // Laat de inhoud-kolom normaal scrollen als die scrollbaar is
-    var inhoud=document.getElementById('uitleg-inhoud')||
-               document.querySelector('.uitleg-inhoud');
-    if(inhoud){
-      var inhoudKanScrollen=inhoud.scrollHeight>inhoud.clientHeight+4;
-      var inhoudAanTop=inhoud.scrollTop<=0;
-      var inhoudAanOnder=inhoud.scrollTop+inhoud.clientHeight>=inhoud.scrollHeight-4;
-      if(inhoudKanScrollen){
-        if(e.deltaY>0&&!inhoudAanOnder){return;}
-        if(e.deltaY<0&&!inhoudAanTop){return;}
-      }
-    }
-    e.preventDefault();
-    if(e.deltaY>0) uitlegDeelVolgende();
-    else if(e.deltaY<0) uitlegDeelTerug();
-    return;
-  }
-
-  // Normale modus buiten som: navigeer door deelstappen
+  // Muiswiel altijd: navigeer door deelstappen
   e.preventDefault();
   if(e.deltaY>0) uitlegDeelVolgende();
   else if(e.deltaY<0) uitlegDeelTerug();
@@ -535,6 +468,25 @@ function _bouwUitlegScherm(def){
   // Focus trap, TAB en pijltjestoetsen
   scherm.addEventListener('keydown',function(e){
     if(e.key==='Escape'){sluitUitleg();return;}
+
+    // Pijltjes omhoog/omlaag: altijd navigeren, behalve als tekst focus heeft en overloopt
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      var kaartFocus=document.activeElement&&document.getElementById('uitleg-stap-kaart')&&
+                     document.getElementById('uitleg-stap-kaart').contains(document.activeElement);
+      var kaart2=document.getElementById('uitleg-stap-kaart');
+      if(kaartFocus&&kaart2&&kaart2.scrollHeight>kaart2.clientHeight+4){
+        // Tekst heeft focus en overloopt: scroll door tekst
+        // Aan einde? Dan toch navigeren
+        var aanTop2=kaart2.scrollTop<=0;
+        var aanOnder2=kaart2.scrollTop+kaart2.clientHeight>=kaart2.scrollHeight-4;
+        if(e.key==='ArrowDown'&&!aanOnder2){return;}
+        if(e.key==='ArrowUp'&&!aanTop2){return;}
+      }
+      e.preventDefault();
+      if(e.key==='ArrowDown') uitlegDeelVolgende();
+      else uitlegDeelTerug();
+      return;
+    }
 
     var actief=document.activeElement;
     var inNav=actief&&(actief.classList.contains('uitleg-bol')||actief.classList.contains('uitleg-deelbol'));
