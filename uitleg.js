@@ -257,8 +257,15 @@ function _handleWheel(e){
   if(somCont&&somCont.contains(e.target)){
     var wrap=somCont.querySelector('.uitleg-som-wrap');
     if(wrap){
+      // Bereken maximale schaal zodat tekst altijd zichtbaar blijft
+      var tekst=document.getElementById('uitleg-tekst-sectie')||
+                document.querySelector('.uitleg-tekst-sectie');
+      var minTekstHoogte=120; // pixels tekst die altijd zichtbaar moet blijven
+      var beschikbaar=window.innerHeight-somCont.getBoundingClientRect().top-minTekstHoogte;
+      var maxSchaal=beschikbaar>0?Math.max(0.5,beschikbaar/wrap.offsetHeight):2;
+
       var huidig=parseFloat(wrap.dataset.schaal)||1;
-      var nieuw=e.deltaY<0?Math.min(huidig+0.1,4):Math.max(huidig-0.1,0.5);
+      var nieuw=e.deltaY<0?Math.min(huidig+0.1,maxSchaal):Math.max(huidig-0.1,0.5);
       wrap.dataset.schaal=nieuw;
       wrap.style.transform='scale('+nieuw+')';
       wrap.style.transformOrigin='top center';
