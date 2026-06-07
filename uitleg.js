@@ -147,15 +147,12 @@ function _renderStap(si,di){
     ? uitlegTekst
     : titelTekst + '. ' + uitlegTekst;
   _uitlegSpreek(spreekTekst);
-  // Scroll tekst terug naar boven bij nieuwe stap
+  // Scroll altijd naar boven bij nieuwe stap — eerste zin altijd zichtbaar
   setTimeout(function(){
     var kaart=document.getElementById('uitleg-stap-kaart');
-    if(kaart) kaart.scrollTop=0;
+    if(kaart){ kaart.scrollTop=0; kaart.setAttribute('tabindex','0'); }
     var somCont=document.getElementById('uitleg-som-container');
-    if(somCont) somCont.scrollTop=0;
-    // Som en tekst altijd focusbaar
-    if(kaart) kaart.setAttribute('tabindex','0');
-    if(somCont) somCont.setAttribute('tabindex','0');
+    if(somCont){ somCont.scrollTop=0; somCont.setAttribute('tabindex','0'); }
   },60);
   if(!_uitlegFocusInNav){
     var kaartEl=document.getElementById('uitleg-stap-kaart');
