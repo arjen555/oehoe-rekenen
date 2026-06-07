@@ -57,9 +57,9 @@
 
 /* ── Bolletjeskolom links ── */
 .uitleg-nav-kolom {
-  width: 440px;
-  max-width: 440px;
-  min-width: 0;
+  width: min(440px, 28vw);
+  max-width: min(440px, 28vw);
+  min-width: 60px;
   flex-shrink: 1;
   background: var(--card);
   border-right: 2px solid var(--border);
@@ -229,7 +229,7 @@
   gap: 12px;
   padding: 12px 20px 16px 20px;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .uitleg-uil-pijl {
@@ -260,7 +260,12 @@
   padding: 24px 28px;
   overflow-y: auto;
   box-sizing: border-box;
-  min-height: 0;
+  min-height: 80px;
+  max-height: 100%;
+  scroll-snap-type: y mandatory;
+}
+.uitleg-stap-uitleg {
+  scroll-snap-align: start;
 }
 .uitleg-stap-titel-tekst {
   font-size: calc(var(--font-size) * 1.15);
@@ -280,7 +285,7 @@
    ================================================================ */
 
 @media (max-width: 1300px) {
-  .uitleg-nav-kolom { width: 320px; max-width: 320px; min-width: 0; flex-shrink: 1; }
+  .uitleg-nav-kolom { width: min(320px, 26vw); max-width: min(320px, 26vw); min-width: 60px; flex-shrink: 1; }
   .uitleg-bol { width: 50px; height: 50px; font-size: 0.95em; }
   .uitleg-bol.actief { width: 66px; height: 66px; font-size: 1.1em; }
   .uitleg-deelbol { width: 40px; height: 40px; font-size: 0.78em; }
@@ -293,7 +298,7 @@
 }
 
 @media (max-width: 1100px) {
-  .uitleg-nav-kolom { width: 240px; max-width: 240px; min-width: 0; flex-shrink: 1; }
+  .uitleg-nav-kolom { width: min(240px, 24vw); max-width: min(240px, 24vw); min-width: 60px; flex-shrink: 1; }
   .uitleg-bol { width: 42px; height: 42px; font-size: 0.82em; }
   .uitleg-bol.actief { width: 56px; height: 56px; font-size: 0.95em; }
   .uitleg-deelbol { width: 34px; height: 34px; font-size: 0.7em; }
