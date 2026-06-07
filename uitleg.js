@@ -147,17 +147,16 @@ function _renderStap(si,di){
     ? uitlegTekst
     : titelTekst + '. ' + uitlegTekst;
   _uitlegSpreek(spreekTekst);
-  // Controleer of tekstkader overloopt → fade weg, schuifbalk aan
+  // Scroll tekst terug naar boven bij nieuwe stap
   setTimeout(function(){
     var kaart=document.getElementById('uitleg-stap-kaart');
-    if(kaart){
-      kaart.scrollTop=0;
-      if(kaart.scrollHeight>kaart.clientHeight+8){
-        kaart.classList.add('heeft-overflow');
-      } else {
-        kaart.classList.remove('heeft-overflow');
-      }
-    }
+    if(kaart) kaart.scrollTop=0;
+    var somCont=document.getElementById('uitleg-som-container');
+    if(somCont) somCont.scrollTop=0;
+    // In compacte modus: som en tekst focusbaar maken
+    var compact=window.innerWidth<=900||window.innerHeight<=700;
+    if(kaart) kaart.setAttribute('tabindex', compact?'0':'-1');
+    if(somCont) somCont.setAttribute('tabindex', compact?'0':'-1');
   },60);
   if(!_uitlegFocusInNav){
     var kaartEl=document.getElementById('uitleg-stap-kaart');
@@ -469,18 +468,29 @@ function _bouwUitlegScherm(def){
   scherm.addEventListener('keydown',function(e){
     if(e.key==='Escape'){sluitUitleg();return;}
 
-    // Pijltjes omhoog/omlaag: altijd navigeren, behalve als tekst focus heeft en overloopt
+    // Pijltjes omhoog/omlaag
     if(e.key==='ArrowDown'||e.key==='ArrowUp'){
-      var kaartFocus=document.activeElement&&document.getElementById('uitleg-stap-kaart')&&
-                     document.getElementById('uitleg-stap-kaart').contains(document.activeElement);
+      var actief2=document.activeElement;
       var kaart2=document.getElementById('uitleg-stap-kaart');
-      if(kaartFocus&&kaart2&&kaart2.scrollHeight>kaart2.clientHeight+4){
-        // Tekst heeft focus en overloopt: scroll door tekst
-        // Aan einde? Dan toch navigeren
-        var aanTop2=kaart2.scrollTop<=0;
-        var aanOnder2=kaart2.scrollTop+kaart2.clientHeight>=kaart2.scrollHeight-4;
-        if(e.key==='ArrowDown'&&!aanOnder2){return;}
-        if(e.key==='ArrowUp'&&!aanTop2){return;}
+      var somCont2=document.getElementById('uitleg-som-container');
+
+      // Focus op tekstvak en tekst overloopt: scroll door tekst
+      if(actief2&&kaart2&&(actief2===kaart2||kaart2.contains(actief2))){
+        if(kaart2.scrollHeight>kaart2.clientHeight+4){
+          var aanTop2=kaart2.scrollTop<=0;
+          var aanOnder2=kaart2.scrollTop+kaart2.clientHeight>=kaart2.scrollHeight-4;
+          if(e.key==='ArrowDown'&&!aanOnder2){return;}
+          if(e.key==='ArrowUp'&&!aanTop2){return;}
+        }
+      }
+      // Focus op somvak en som overloopt: scroll door som
+      if(actief2&&somCont2&&(actief2===somCont2||somCont2.contains(actief2))){
+        if(somCont2.scrollHeight>somCont2.clientHeight+4){
+          var aanTopS=somCont2.scrollTop<=0;
+          var aanOnderS=somCont2.scrollTop+somCont2.clientHeight>=somCont2.scrollHeight-4;
+          if(e.key==='ArrowDown'&&!aanOnderS){return;}
+          if(e.key==='ArrowUp'&&!aanTopS){return;}
+        }
       }
       e.preventDefault();
       if(e.key==='ArrowDown') uitlegDeelVolgende();
@@ -501,6 +511,12 @@ function _bouwUitlegScherm(def){
       var volgorde=[];
       var t=getEl('uitleg-int-terug');
       if(t) volgorde.push({el:t,tekst:_uitlegVanuitKeuzemenu?'Terug naar het keuzemenu':'Terug naar de som'});
+      // In compacte modus: som en tekst toevoegen aan TAB-volgorde
+      var compact2=window.innerWidth<=900||window.innerHeight<=700;
+      if(compact2){
+        var sc=getEl('uitleg-som-container'); if(sc) volgorde.push({el:sc,tekst:'Voorbeeldsom. Gebruik pijltjestoetsen om te scrollen.'});
+        var kk2=getEl('uitleg-stap-kaart'); if(kk2) volgorde.push({el:kk2,tekst:'Uitlegtekst. Gebruik pijltjestoetsen om te scrollen.'});
+      }
       var b=getEl('uitleg-bol-0'); if(b){
         var actieveSi=_uitlegStapIdx;
         var actieveStap=_uitlegDef.stappen[actieveSi];
