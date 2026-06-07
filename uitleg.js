@@ -255,9 +255,11 @@ function _bouwUitlegScherm(def){
   var header=document.createElement('div');
   header.className='uitleg-header';
   var terugTekst=_uitlegVanuitKeuzemenu?'Terug naar het keuzemenu':'Terug naar de som';
+  var actieKnopTekst=_uitlegVanuitKeuzemenu?'Nu zelf aan de slag!':'Verder met de som';
   header.innerHTML=
     '<button class="uitleg-header-terug" id="uitleg-int-terug" aria-label="'+terugTekst+'">&#8592;</button>'+
-    '<div class="uitleg-header-titel">'+def.titel+'</div>';
+    '<div class="uitleg-header-titel">'+def.titel+'</div>'+
+    '<button class="btn-uitleg-start" id="btn-uitleg-start-header" style="display:block;">'+actieKnopTekst+'</button>';
   scherm.appendChild(header);
 
   // Body
@@ -469,6 +471,8 @@ function _bouwUitlegScherm(def){
   // Events
   var terugEl=document.getElementById('uitleg-int-terug');
   terugEl.addEventListener('click',sluitUitleg);
+  var headerStartKnop=document.getElementById('btn-uitleg-start-header');
+  if(headerStartKnop) headerStartKnop.addEventListener('click',sluitUitlegNaarSom);
 
 
 
@@ -494,14 +498,13 @@ function _bouwUitlegScherm(def){
           if(e.key==='ArrowUp'&&!aanTop2){return;}
         }
       }
-      // Focus op somvak en som overloopt: scroll door som
+      // Focus op somvak: scroll door som, blijf altijd op som
       if(actief2&&somCont2&&(actief2===somCont2||somCont2.contains(actief2))){
-        if(somCont2.scrollHeight>somCont2.clientHeight+4){
-          var aanTopS=somCont2.scrollTop<=0;
-          var aanOnderS=somCont2.scrollTop+somCont2.clientHeight>=somCont2.scrollHeight-4;
-          if(e.key==='ArrowDown'&&!aanOnderS){return;}
-          if(e.key==='ArrowUp'&&!aanTopS){return;}
-        }
+        e.preventDefault();
+        var scrollStap=60;
+        if(e.key==='ArrowDown') somCont2.scrollTop+=scrollStap;
+        else somCont2.scrollTop-=scrollStap;
+        return;
       }
       e.preventDefault();
       if(e.key==='ArrowDown') uitlegDeelVolgende();
