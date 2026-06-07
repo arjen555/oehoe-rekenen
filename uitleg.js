@@ -153,10 +153,9 @@ function _renderStap(si,di){
     if(kaart) kaart.scrollTop=0;
     var somCont=document.getElementById('uitleg-som-container');
     if(somCont) somCont.scrollTop=0;
-    // In compacte modus: som en tekst focusbaar maken
-    var compact=window.innerWidth<=900||window.innerHeight<=700;
-    if(kaart) kaart.setAttribute('tabindex', compact?'0':'-1');
-    if(somCont) somCont.setAttribute('tabindex', compact?'0':'-1');
+    // Som en tekst altijd focusbaar
+    if(kaart) kaart.setAttribute('tabindex','0');
+    if(somCont) somCont.setAttribute('tabindex','0');
   },60);
   if(!_uitlegFocusInNav){
     var kaartEl=document.getElementById('uitleg-stap-kaart');
@@ -413,6 +412,9 @@ function _bouwUitlegScherm(def){
   var somCont=document.createElement('div');
   somCont.id='uitleg-som-container';
   somCont.className='uitleg-som-container';
+  somCont.setAttribute('tabindex','0');
+  somCont.style.outline='none';
+  somCont.addEventListener('click',function(){somCont.focus();});
   inhoud.appendChild(somCont);
 
   // Tekst-sectie met uil-pijlen
@@ -432,8 +434,10 @@ function _bouwUitlegScherm(def){
   var kaart=document.createElement('div');
   kaart.id='uitleg-stap-kaart';
   kaart.className='uitleg-stap-kaart';
-  kaart.setAttribute('tabindex','-1');
+  kaart.setAttribute('tabindex','0');
   kaart.id='uitleg-stap-kaart';
+  kaart.style.outline='none';
+  kaart.addEventListener('click',function(){kaart.focus();});
   kaart.innerHTML=
     '<span class="uitleg-stap-titel-tekst" id="uitleg-stap-titel"></span>'+
     '<div class="uitleg-stap-uitleg" id="uitleg-stap-tekst"></div>';
@@ -452,6 +456,16 @@ function _bouwUitlegScherm(def){
   tekstSectie.appendChild(kaart);
   tekstSectie.appendChild(uilRechts);
   inhoud.appendChild(tekstSectie);
+  // Klik op het rechtergebied (buiten tekstvak) → focus op somvak
+  inhoud.addEventListener('click', function(e){
+    var kaart=document.getElementById('uitleg-stap-kaart');
+    var somCont=document.getElementById('uitleg-som-container');
+    // Als klik NIET op de kaart was: focus naar somvak
+    if(kaart&&!kaart.contains(e.target)&&somCont){
+      somCont.focus();
+    }
+  });
+
   body.appendChild(inhoud);
   scherm.appendChild(body);
 
@@ -511,12 +525,9 @@ function _bouwUitlegScherm(def){
       var volgorde=[];
       var t=getEl('uitleg-int-terug');
       if(t) volgorde.push({el:t,tekst:_uitlegVanuitKeuzemenu?'Terug naar het keuzemenu':'Terug naar de som'});
-      // In compacte modus: som en tekst toevoegen aan TAB-volgorde
-      var compact2=window.innerWidth<=900||window.innerHeight<=700;
-      if(compact2){
-        var sc=getEl('uitleg-som-container'); if(sc) volgorde.push({el:sc,tekst:'Voorbeeldsom. Gebruik pijltjestoetsen om te scrollen.'});
-        var kk2=getEl('uitleg-stap-kaart'); if(kk2) volgorde.push({el:kk2,tekst:'Uitlegtekst. Gebruik pijltjestoetsen om te scrollen.'});
-      }
+      // Som en tekst altijd in TAB-volgorde
+      var sc=getEl('uitleg-som-container'); if(sc) volgorde.push({el:sc,tekst:'Voorbeeldsom. Gebruik pijltjestoetsen om te scrollen.'});
+      var kk2=getEl('uitleg-stap-kaart'); if(kk2) volgorde.push({el:kk2,tekst:'Uitlegtekst. Gebruik pijltjestoetsen om te scrollen.'});
       var b=getEl('uitleg-bol-0'); if(b){
         var actieveSi=_uitlegStapIdx;
         var actieveStap=_uitlegDef.stappen[actieveSi];
