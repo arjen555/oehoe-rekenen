@@ -623,6 +623,12 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .uitleg-som-container::-webkit-scrollbar-thumb:hover,
 .uitleg-stap-kaart::-webkit-scrollbar-thumb:hover{background:#f59e0b;}
 
+/* ── Scrollbalk navigatiekolom: zelfde stijl, standaardbreedte ── */
+.uitleg-nav-kolom::-webkit-scrollbar{width:8px;}
+.uitleg-nav-kolom::-webkit-scrollbar-track{background:var(--surface);border-radius:6px;margin:4px;}
+.uitleg-nav-kolom::-webkit-scrollbar-thumb{background:#FCD34D;border-radius:6px;border:2px solid var(--surface);min-height:36px;}
+.uitleg-nav-kolom::-webkit-scrollbar-thumb:hover{background:#f59e0b;}
+
 /* ── Ultracompact: nav + uil-pijlen weg, zweef-knoppen zichtbaar ── */
 @media(max-width:680px){
   .uitleg-nav-kolom{display:none!important;}
@@ -5241,9 +5247,10 @@ function _bouwUitlegScherm(def){
       // Som-container heeft focus: scroll door som
       if(actief2&&somCont2&&(actief2===somCont2||somCont2.contains(actief2))){
         e.preventDefault();
-        var scrollStap2=60;
-        if(e.key==='ArrowDown') somCont2.scrollTop+=scrollStap2;
-        else somCont2.scrollTop-=scrollStap2;
+        var regelHoogte2=parseFloat(window.getComputedStyle(somCont2).fontSize)||20;
+        var scrollStap2=Math.round(regelHoogte2/3);
+        if(e.key==='ArrowDown') somCont2.scrollBy({top:scrollStap2,behavior:'smooth'});
+        else somCont2.scrollBy({top:-scrollStap2,behavior:'smooth'});
         return;
       }
       e.preventDefault();
