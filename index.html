@@ -522,9 +522,9 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 /* Tabelcel-grootte: vloeiend via clamp, geen sprongen door breakpoints */
 .uitleg-som-wrap .uitleg-table td,
 .uitleg-som-wrap .uitleg-table th{
-  width:clamp(36px,6vw,80px);
-  height:clamp(36px,6vw,80px);
-  font-size:clamp(1.1em,2.2vw,2.4em);
+  width:clamp(52px,7vw,90px);
+  height:clamp(52px,7vw,90px);
+  font-size:clamp(1.5em,2.8vw,2.8em);
   text-align:center;
   vertical-align:middle;
 }
@@ -611,29 +611,65 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 }
 
 /* ── Ultracompact: nav volledig weg, zweef-knoppen zichtbaar ── */
+/* ── Scrollbalken (geel, dik voor slechtzienden) ── */
+.uitleg-som-container::-webkit-scrollbar,
+.uitleg-stap-kaart::-webkit-scrollbar{width:20px;}
+.uitleg-som-container::-webkit-scrollbar-track,
+.uitleg-stap-kaart::-webkit-scrollbar-track{background:var(--surface);border-radius:10px;margin:4px;}
+.uitleg-som-container::-webkit-scrollbar-thumb,
+.uitleg-stap-kaart::-webkit-scrollbar-thumb{background:#FCD34D;border-radius:10px;border:3px solid var(--surface);min-height:36px;}
+.uitleg-som-container::-webkit-scrollbar-thumb:hover,
+.uitleg-stap-kaart::-webkit-scrollbar-thumb:hover{background:#f59e0b;}
+
+/* ── Ultracompact: nav + uil-pijlen weg, zweef-knoppen zichtbaar ── */
 @media(max-width:680px){
   .uitleg-nav-kolom{display:none!important;}
   .uitleg-header{display:none!important;}
   .uitleg-inhoud{width:100%!important;}
   .uitleg-start-knop-wrap{display:none!important;}
+  /* Uil-pijlen verdwijnen samen met de navigatiekolom */
+  .uitleg-uil-pijl{display:none!important;}
   .uitleg-zweef-knoppen{display:flex!important;}
 }
 
-/* ── Scrollbalken (geel, beide containers) ── */
-.uitleg-som-container::-webkit-scrollbar,
-.uitleg-stap-kaart::-webkit-scrollbar{width:10px;}
-.uitleg-som-container::-webkit-scrollbar-track,
-.uitleg-stap-kaart::-webkit-scrollbar-track{background:var(--surface);border-radius:6px;margin:4px;}
-.uitleg-som-container::-webkit-scrollbar-thumb,
-.uitleg-stap-kaart::-webkit-scrollbar-thumb{background:#FCD34D;border-radius:6px;border:2px solid var(--surface);min-height:36px;}
-.uitleg-som-container::-webkit-scrollbar-thumb:hover,
-.uitleg-stap-kaart::-webkit-scrollbar-thumb:hover{background:#f59e0b;}
-
-/* ── Zweef-knoppen: rechtsboven (niet rechtsonder) ── */
-.uitleg-zweef-knoppen{display:none;position:fixed;top:16px;right:16px;z-index:200;flex-direction:row;gap:10px;align-items:center;}
-.uitleg-zweef-terug{background:var(--surface);border:2px solid var(--border);color:var(--text);border-radius:50%;width:44px;height:44px;font-size:1.2em;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.4);}
+/* ── Zweef-knoppen: terug linksboven, actie rechtsboven ── */
+.uitleg-zweef-knoppen{
+  display:none;
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:200;
+  pointer-events:none; /* container zelf niet klikbaar */
+}
+.uitleg-zweef-terug{
+  position:fixed;
+  top:12px; left:12px;
+  pointer-events:all;
+  background:var(--surface);
+  border:2px solid var(--border);
+  color:var(--text);
+  border-radius:50%;
+  width:48px; height:48px;
+  font-size:1.3em; font-weight:900;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 16px rgba(0,0,0,0.5);
+}
 .uitleg-zweef-terug:hover{background:var(--blue-light);}
-.uitleg-zweef-actie{background:#16a34a;border:none;color:#fff;border-radius:var(--radius);padding:9px 16px;font-family:var(--font);font-size:0.9em;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.4);white-space:nowrap;}
+.uitleg-zweef-actie{
+  position:fixed;
+  top:12px; right:12px;
+  pointer-events:all;
+  background:#16a34a;
+  border:none;
+  color:#fff;
+  border-radius:50%;
+  width:48px; height:48px;
+  font-size:1.5em;
+  font-weight:900;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 16px rgba(0,0,0,0.5);
+}
 .uitleg-zweef-actie:hover{opacity:0.88;}
 .uitleg-zweef-actie:focus,.uitleg-zweef-terug:focus{outline:3px solid #FCD34D;}
 </style>
@@ -5149,7 +5185,8 @@ function _bouwUitlegScherm(def){
   var zweefActie=document.createElement('button');
   zweefActie.className='uitleg-zweef-actie';
   zweefActie.id='uitleg-zweef-actie';
-  zweefActie.textContent=_uitlegVanuitKeuzemenu?'Nu zelf aan de slag!':'Verder met de som';
+  zweefActie.innerHTML='&#8594;';
+  zweefActie.setAttribute('aria-label',_uitlegVanuitKeuzemenu?'Nu zelf aan de slag!':'Verder met de som');
   zweefActie.addEventListener('click',sluitUitlegNaarSom);
   zweefWrap.appendChild(zweefTerug);
   zweefWrap.appendChild(zweefActie);
