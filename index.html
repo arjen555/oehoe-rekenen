@@ -980,7 +980,7 @@ window.addEventListener('DOMContentLoaded',function(){
 function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
 // ── LOGO ZOOM VERGRENDELING ──
 (function(){
-  function checkLogoZoom(){
+  window.checkLogoZoom=function(){
     var ratio=window.devicePixelRatio||1;
     var teGroot=(ratio>=1.75);
     var huidigScherm=document.querySelector('.screen.active');
@@ -997,17 +997,17 @@ function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
     // Som-uil ook verbergen bij te grote zoom
     var somUil=document.getElementById('uil-som');
     if(somUil&&somUil.src)somUil.style.visibility=teGroot?'hidden':'visible';
-  }
+  };
   window._basePixelRatio=window.devicePixelRatio||1;
   // Controleer bij resize én bij wheel+ctrl
-  window.addEventListener('resize',checkLogoZoom);
+  window.addEventListener('resize',window.checkLogoZoom);
   window.addEventListener('wheel',function(e){
-    if(e.ctrlKey)setTimeout(checkLogoZoom,100);
+    if(e.ctrlKey)setTimeout(window.checkLogoZoom,100);
   },{passive:true});
   window.addEventListener('keyup',function(e){
-    if(e.key==='+' || e.key==='-' || e.key==='0')setTimeout(checkLogoZoom,100);
+    if(e.key==='+' || e.key==='-' || e.key==='0')setTimeout(window.checkLogoZoom,100);
   });
-  checkLogoZoom();
+  window.checkLogoZoom();
 })();
 
 // ── LEERLING LOGIN ──
@@ -4913,18 +4913,20 @@ function _renderStap(si,di){
   if(tekEl)tekEl.textContent=uitlegTekst;
 
   // Pas tekst-sectie dynamisch aan op werkelijke teksthoogte
-  // Som krijgt altijd minimaal 65%, tekst maximaal 35%
   setTimeout(function(){
-    var kaart=document.getElementById('uitleg-stap-kaart');
     var tekstSectie=document.querySelector('.uitleg-tekst-sectie');
     var inhoud=document.querySelector('.uitleg-inhoud');
-    if(kaart&&tekstSectie&&inhoud){
+    var titEl2=document.getElementById('uitleg-stap-titel');
+    var tekEl2=document.getElementById('uitleg-stap-tekst');
+    if(tekstSectie&&inhoud&&tekEl2){
       var beschikbaar=inhoud.clientHeight;
-      // Meet hoe hoog de tekst werkelijk is (padding inbegrepen)
-      var tekstHoogte=kaart.scrollHeight+32; // +32 voor padding tekst-sectie
-      // Clamp: minimaal 60px, maximaal 35% van de beschikbare hoogte
-      var maxTekst=Math.floor(beschikbaar*0.35);
-      var doelHoogte=Math.min(Math.max(tekstHoogte,60),maxTekst);
+      // Meet de werkelijke hoogte van titel + tekst
+      var titHoogte=(titEl2&&titEl2.style.display!=='none')?titEl2.scrollHeight:0;
+      var tekHoogte=tekEl2.scrollHeight;
+      var inhoudsHoogte=titHoogte+tekHoogte+56; // +56 voor padding kaart + tekst-sectie
+      // Clamp: minimaal 60px, maximaal 35% van beschikbare hoogte
+      var maxHoogte=Math.floor(beschikbaar*0.35);
+      var doelHoogte=Math.min(Math.max(inhoudsHoogte,60),maxHoogte);
       var pct=Math.round((doelHoogte/beschikbaar)*100);
       tekstSectie.style.flexBasis=pct+'%';
       tekstSectie.style.maxHeight=pct+'%';
