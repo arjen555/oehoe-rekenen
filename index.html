@@ -5204,11 +5204,13 @@ function _bouwUitlegScherm(def){
       // Kaart heeft focus: scroll door tekst met pijltjestoetsen
       if(actief2&&kaart2&&(actief2===kaart2||kaart2.contains(actief2))){
         e.preventDefault();
-        var scrollStap=60;
-        var aanTop2=kaart2.scrollTop<=0;
+        // Scroll een derde regelafstand per druk — fijn genoeg om nooit tekst te missen
+        var regelHoogte=parseFloat(window.getComputedStyle(kaart2).lineHeight)||28;
+        var scrollStap=Math.round(regelHoogte/3);
+        var aanTop2=kaart2.scrollTop<=2;
         var aanOnder2=kaart2.scrollTop+kaart2.clientHeight>=kaart2.scrollHeight-4;
-        if(e.key==='ArrowDown'&&!aanOnder2){kaart2.scrollTop+=scrollStap;return;}
-        if(e.key==='ArrowUp'&&!aanTop2){kaart2.scrollTop-=scrollStap;return;}
+        if(e.key==='ArrowDown'&&!aanOnder2){kaart2.scrollBy({top:scrollStap,behavior:'smooth'});return;}
+        if(e.key==='ArrowUp'&&!aanTop2){kaart2.scrollBy({top:-scrollStap,behavior:'smooth'});return;}
         // Aan het einde/begin van tekst: ga naar volgende/vorige deelstap
         if(e.key==='ArrowDown') uitlegDeelVolgende();
         else uitlegDeelTerug();
