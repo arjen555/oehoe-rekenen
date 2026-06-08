@@ -5179,6 +5179,7 @@ function _bouwUitlegScherm(def){
   var zweefTerugTekst=_uitlegVanuitKeuzemenu?'Terug naar het keuzemenu':'Terug naar de som';
   var zweefTerug=document.createElement('button');
   zweefTerug.className='uitleg-zweef-terug';
+  zweefTerug.id='uitleg-zweef-terug';
   zweefTerug.innerHTML='&#8592;';
   zweefTerug.setAttribute('aria-label',zweefTerugTekst);
   zweefTerug.addEventListener('click',sluitUitleg);
@@ -5232,18 +5233,49 @@ function _bouwUitlegScherm(def){
 
     if(e.key==='Tab'){
       e.preventDefault();
+
+      // Hulpfunctie: is een element zichtbaar op het scherm?
+      function isZichtbaar(el){
+        if(!el) return false;
+        var r=el.getBoundingClientRect();
+        return r.width>0 && r.height>0;
+      }
+
       var volgorde=[];
+      var terugTekst=_uitlegVanuitKeuzemenu?'Terug naar het keuzemenu':'Terug naar de som';
+
+      // Gewone terugknop (header) — alleen als zichtbaar
       var t=document.getElementById('uitleg-int-terug');
-      if(t) volgorde.push({el:t,tekst:_uitlegVanuitKeuzemenu?'Terug naar het keuzemenu':'Terug naar de som'});
-      var sc=document.getElementById('uitleg-som-container'); if(sc) volgorde.push({el:sc,tekst:'Voorbeeldsom. Gebruik pijltjestoetsen om te scrollen.'});
-      var kk2=document.getElementById('uitleg-stap-kaart'); if(kk2) volgorde.push({el:kk2,tekst:'Uitlegtekst. Gebruik pijltjestoetsen om te scrollen.'});
-      var b=document.getElementById('uitleg-bol-0'); if(b){
+      if(t&&isZichtbaar(t)) volgorde.push({el:t,tekst:terugTekst});
+
+      // Zweef-terugknop — alleen als zichtbaar (ultracompacte modus)
+      var zt=document.getElementById('uitleg-zweef-terug');
+      if(zt&&isZichtbaar(zt)) volgorde.push({el:zt,tekst:terugTekst});
+
+      // Som-container
+      var sc=document.getElementById('uitleg-som-container');
+      if(sc&&isZichtbaar(sc)) volgorde.push({el:sc,tekst:'Voorbeeldsom. Gebruik pijltjestoetsen om te scrollen.'});
+
+      // Tekstkaart
+      var kk2=document.getElementById('uitleg-stap-kaart');
+      if(kk2&&isZichtbaar(kk2)) volgorde.push({el:kk2,tekst:'Uitlegtekst. Gebruik pijltjestoetsen om te scrollen.'});
+
+      // Navigatiebol (eerste bol) — alleen als nav-kolom zichtbaar
+      var b=document.getElementById('uitleg-bol-0');
+      if(b&&isZichtbaar(b)){
         var actieveSi=_uitlegStapIdx;
         var actieveStap=_uitlegDef.stappen[actieveSi];
         volgorde.push({el:b,tekst:'Navigatiemenu. '+(actieveStap?'Stap '+(actieveSi+1)+': '+actieveStap.titel:'')});
       }
+
+      // Knop 'Nu zelf aan de slag!' in navigatiekolom — alleen als zichtbaar
       var sk=document.getElementById('btn-uitleg-start');
-      if(sk&&sk.style.display!=='none') volgorde.push({el:sk,tekst:sk.textContent});
+      if(sk&&isZichtbaar(sk)) volgorde.push({el:sk,tekst:sk.textContent});
+
+      // Zweef-actieknop (groene pijl) — alleen als zichtbaar
+      var za=document.getElementById('uitleg-zweef-actie');
+      if(za&&isZichtbaar(za)) volgorde.push({el:za,tekst:za.getAttribute('aria-label')||'Doorgaan'});
+
       var huidig=document.activeElement;
       var idx=-1;
       for(var vi=0;vi<volgorde.length;vi++){if(volgorde[vi].el===huidig){idx=vi;break;}}
