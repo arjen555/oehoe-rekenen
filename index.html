@@ -509,8 +509,8 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 
 /* Som-gebied: 62% van de beschikbare hoogte, scrollbaar */
 .uitleg-som-container{
-  flex:0 0 62%;
-  min-height:0;
+  flex:1 1 65%;
+  min-height:65%;
   display:flex;
   justify-content:center;
   align-items:flex-start;
@@ -537,16 +537,18 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .uitleg-interactief tr.uitleg-hr td{border:none!important;border-top:3px solid var(--calc-line)!important;background:transparent!important;height:4px;padding:0;}
 .uitleg-interactief td.uitleg-highlight{border-color:#FCD34D!important;box-shadow:0 0 0 3px #FCD34D!important;background:#3d3200!important;color:#FCD34D!important;}
 
-/* Tekst-sectie: 38% van de hoogte */
+/* Tekst-sectie: maximaal 35%, krimpt als tekst klein is */
 .uitleg-tekst-sectie{
-  flex:0 0 38%;
-  min-height:0;
+  flex:0 1 35%;
+  min-height:60px;
+  max-height:35%;
   display:flex;
   align-items:stretch;
   justify-content:center;
   gap:12px;
   padding:8px 20px 12px 20px;
   overflow:hidden;
+  transition:flex-basis 0.3s ease;
 }
 
 /* Uil-pijlen */
@@ -1056,14 +1058,13 @@ async function leerlingInloggen(){
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   document.getElementById(id).classList.add('active');
-  // Zorg dat tips-paneel altijd gesloten is bij schermwissel
   if(typeof sluitTips==='function') sluitTips();
-
-  document.querySelectorAll('.suggesties-btn').forEach(function(b){b.style.display=(id==='screen-role')?'flex':'none';});
   if(id!=='screen-exercise')verbergSomUil();
   var logoZichtbaar=(id==='screen-role'||id==='screen-setup');
   document.querySelectorAll('.logo-vast').forEach(function(el){el.style.display=logoZichtbaar?'block':'none';});
-  // Hercheck zoom zodat logo bij te grote zoom alsnog verborgen blijft
+  // Suggesties-knoppen: eerst instellen op basis van scherm
+  document.querySelectorAll('.suggesties-btn').forEach(function(b){b.style.display=(id==='screen-role')?'flex':'none';});
+  // checkLogoZoom als allerlaatste: overschrijft bovenstaande als zoom te groot is
   if(typeof checkLogoZoom==='function') checkLogoZoom();
 }
 function goHome(){
@@ -4910,6 +4911,25 @@ function _renderStap(si,di){
   var toonTitel=(di===0||!stap.deelstappen||stap.deelstappen.length<=1);
   if(titEl){titEl.textContent=titelTekst;titEl.style.display=toonTitel?'':'none';}
   if(tekEl)tekEl.textContent=uitlegTekst;
+
+  // Pas tekst-sectie dynamisch aan op werkelijke teksthoogte
+  // Som krijgt altijd minimaal 65%, tekst maximaal 35%
+  setTimeout(function(){
+    var kaart=document.getElementById('uitleg-stap-kaart');
+    var tekstSectie=document.querySelector('.uitleg-tekst-sectie');
+    var inhoud=document.querySelector('.uitleg-inhoud');
+    if(kaart&&tekstSectie&&inhoud){
+      var beschikbaar=inhoud.clientHeight;
+      // Meet hoe hoog de tekst werkelijk is (padding inbegrepen)
+      var tekstHoogte=kaart.scrollHeight+32; // +32 voor padding tekst-sectie
+      // Clamp: minimaal 60px, maximaal 35% van de beschikbare hoogte
+      var maxTekst=Math.floor(beschikbaar*0.35);
+      var doelHoogte=Math.min(Math.max(tekstHoogte,60),maxTekst);
+      var pct=Math.round((doelHoogte/beschikbaar)*100);
+      tekstSectie.style.flexBasis=pct+'%';
+      tekstSectie.style.maxHeight=pct+'%';
+    }
+  },30);
   _uitlegHighlight(highlights||[]);
   _updateNavKolom(si,di);
   _updateUilPijlen(si,di);
