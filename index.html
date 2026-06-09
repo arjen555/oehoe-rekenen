@@ -535,6 +535,8 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .uitleg-interactief td.uitleg-op{color:#FCD34D!important;background:transparent!important;border:none!important;font-weight:800;}
 .uitleg-interactief td.uitleg-input{background:var(--cell-input-bg)!important;color:var(--cell-input-color)!important;border:2px solid var(--border)!important;}
 .uitleg-interactief tr.uitleg-hr td{border:none!important;border-top:3px solid var(--calc-line)!important;background:transparent!important;height:4px;padding:0;}
+.uitleg-interactief td.uitleg-leeg{background:transparent!important;border:none!important;}
+.uitleg-interactief td.uitleg-leeg.uitleg-highlight{border-color:#FCD34D!important;box-shadow:0 0 0 3px #FCD34D!important;background:#3d3200!important;color:#FCD34D!important;}
 .uitleg-interactief td.uitleg-highlight{border-color:#FCD34D!important;box-shadow:0 0 0 3px #FCD34D!important;background:#3d3200!important;color:#FCD34D!important;}
 
 /* Tekst-sectie: maximaal 35%, krimpt als tekst klein is */
@@ -4890,6 +4892,7 @@ function _bouwTabel(tabelDef){
         case 'op': td.className='uitleg-op'; break;
         case 'lbl': td.className='uitleg-lbl'; break;
         case 'input': td.className='uitleg-input'; break;
+        case 'leeg': td.className='uitleg-leeg'; break;
         default: td.className='';
       }
       if(cel.cls)td.classList.add(cel.cls);
@@ -5704,14 +5707,14 @@ var UITLEG_DEFINITIES = {
         som: {
           tabel: [
             { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
-            { cellen: [ {type:'op',tekst:''},  {tekst:''}, {id:'g1-h',tekst:'3'}, {id:'g1-t',tekst:'4'}, {id:'g1-e',tekst:'5'} ] },
-            { cellen: [ {type:'op',tekst:'\u00d7'}, {tekst:''}, {tekst:''}, {id:'g2-t',tekst:'2'}, {id:'g2-e',tekst:'7'} ] },
+            { cellen: [ {type:'op',tekst:''},  {type:'leeg',tekst:''}, {id:'g1-h',tekst:'3'}, {id:'g1-t',tekst:'4'}, {id:'g1-e',tekst:'5'} ] },
+            { cellen: [ {type:'op',tekst:'\u00d7'}, {type:'leeg',tekst:''}, {type:'leeg',tekst:''}, {id:'g2-t',tekst:'2'}, {id:'g2-e',tekst:'7'} ] },
             { type:'hr', colspan:5 },
-            { cellen: [ {type:'lbl',tekst:''}, {tekst:''}, {tekst:''}, {id:'r1-t',type:'input',tekst:''}, {id:'r1-e',type:'input',tekst:''} ] },
-            { cellen: [ {type:'lbl',tekst:''}, {tekst:''}, {id:'r2-h',type:'input',tekst:''}, {id:'r2-t',type:'input',tekst:''}, {id:'r2-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:''}, {type:'leeg',tekst:''}, {type:'leeg',tekst:''}, {id:'r1-t',type:'input',tekst:''}, {id:'r1-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:''}, {type:'leeg',tekst:''}, {id:'r2-h',type:'input',tekst:''}, {id:'r2-t',type:'input',tekst:''}, {id:'r2-e',type:'input',tekst:''} ] },
             { cellen: [ {type:'lbl',tekst:''}, {id:'r3-d',type:'input',tekst:''}, {id:'r3-h',type:'input',tekst:''}, {id:'r3-t',type:'input',tekst:''}, {id:'r3-e',type:'input',tekst:''} ] },
-            { cellen: [ {type:'lbl',tekst:''}, {tekst:''}, {id:'r4-h',type:'input',tekst:''}, {id:'r4-t',type:'input',tekst:''}, {id:'r4-e',type:'input',tekst:''} ] },
-            { cellen: [ {type:'lbl',tekst:''}, {tekst:''}, {id:'r5-h',type:'input',tekst:''}, {id:'r5-t',type:'input',tekst:''}, {id:'r5-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:''}, {type:'leeg',tekst:''}, {id:'r4-h',type:'input',tekst:''}, {id:'r4-t',type:'input',tekst:''}, {id:'r4-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:''}, {type:'leeg',tekst:''}, {id:'r5-h',type:'input',tekst:''}, {id:'r5-t',type:'input',tekst:''}, {id:'r5-e',type:'input',tekst:''} ] },
             { cellen: [ {type:'lbl',tekst:''}, {id:'r6-d',type:'input',tekst:''}, {id:'r6-h',type:'input',tekst:''}, {id:'r6-t',type:'input',tekst:''}, {id:'r6-e',type:'input',tekst:''} ] },
             { type:'hr', colspan:5 },
             { cellen: [ {type:'lbl',tekst:''}, {id:'op1-d',type:'input',tekst:''}, {id:'op1-h',type:'input',tekst:''}, {id:'op1-t',type:'input',tekst:''}, {id:'op1-e',type:'input',tekst:''} ] },
@@ -5727,7 +5730,7 @@ var UITLEG_DEFINITIES = {
         highlight: [], animaties: [],
         deelstappen: [
           { titel: 'De opbouw', uitleg: 'Als voorbeeld hebben we de som 345 x 27 netjes onder elkaar gezet. Ieder getal gaan we zo meteen met een ander getal vermenigvuldigen.', highlight: [], animaties: [] },
-          { titel: 'Duizendtallen', uitleg: 'Er zijn 4 kolommen. De meest linkse kolom is van de duizendtallen, vandaar de letter D. Deze kolom is nu nog leeg.', highlight: ['r3-d','r6-d','op1-d','op1-h','op1-t','op1-e','op2-d','op3-d','op4-d','ans-d'], animaties: [] },
+          { titel: 'Duizendtallen', uitleg: 'Er zijn 4 kolommen. De meest linkse kolom is van de duizendtallen, vandaar de letter D. Deze kolom is nu nog leeg.', highlight: ['r3-d','r6-d','op1-d','op2-d','op3-d','op4-d','ans-d'], animaties: [] },
           { titel: 'Honderdtallen', uitleg: 'Hierboven staat de letter H. Je raadt het vast al, dat zijn de honderdtallen.', highlight: ['g1-h','r2-h','r3-h','r4-h','r5-h','r6-h','op1-h','op2-h','op2-d','op2-t','op2-e','op3-h','op4-h','ans-h'], animaties: [] },
           { titel: 'Tientallen', uitleg: 'De letter T staat voor de tientallen, in dit geval de 4 en de 2. Die zijn dus 40 en 20 waard.', highlight: ['g1-t','g2-t','r1-t','r2-t','r3-t','r4-t','r5-t','r6-t','op1-t','op2-t','op3-t','op3-h','op3-e','op4-t','ans-t'], animaties: [] },
           { titel: 'Eenheden', uitleg: 'En tenslotte de losse getallen, ook wel eenheden genoemd, vandaar de letter E.', highlight: ['g1-e','g2-e','r1-e','r2-e','r3-e','r4-e','r5-e','r6-e','op1-e','op2-e','op3-e','op4-e','op4-d','op4-h','op4-t','ans-e'], animaties: [] }
