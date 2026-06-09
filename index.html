@@ -5419,10 +5419,14 @@ function _toggleUitlegTekst(){
   var uitgeschakeld=sectie.classList.toggle('verborgen');
   knop.classList.toggle('tekst-uit',uitgeschakeld);
   knop.setAttribute('aria-label',uitgeschakeld?'Uitlegtekst tonen':'Uitlegtekst verbergen');
-  knop.innerHTML=uitgeschakeld?'&#128065;&#x20D7;':'&#128065;'; // oog met streep vs gewoon oog
+  knop.innerHTML=uitgeschakeld?'&#128065;&#x20D7;':'&#128065;';
   if(uitgeschakeld){
     _uitlegSpreekDirect('Uitlegtekst verborgen');
   } else {
+    // Reset inline stijlen zodat de herberekening correct kan meten
+    sectie.style.flexBasis='';
+    sectie.style.maxHeight='';
+    setTimeout(_herberekeningTekstHoogte, 80);
     _uitlegSpreekDirect('Uitlegtekst zichtbaar');
   }
 }
@@ -5670,7 +5674,7 @@ var UITLEG_DEFINITIES = {
             { type:'vulIn', cel:'s2ans-t', waarde:'0' },
             { type:'vulIn', cel:'s2ans-e', waarde:'0' }
           ] },
-          { titel: 'Tientallen', uitleg: 'Nu de tientallen, we hebben 30 tekort. Die kunnen we van 400 aftrekken. 400 - 30 = 370.', highlight: ['s2inv2-h','s2inv2-t','s2ans-h','s2ans-t','s2ans-e'], animaties: [
+          { titel: 'Tientallen', uitleg: 'Nu de tientallen, we hebben 30 tekort. Die kunnen we van 400 aftrekken. 400 - 30 = 370.', highlight: ['s2inv2-h','s2inv2-t','s2inv2-e','s2ans-h','s2ans-t','s2ans-e'], animaties: [
             { type:'vulIn', cel:'s2ans-h', waarde:'3' },
             { type:'vulIn', cel:'s2ans-t', waarde:'7' },
             { type:'vulIn', cel:'s2ans-e', waarde:'0' }
