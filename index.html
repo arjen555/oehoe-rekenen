@@ -4892,7 +4892,6 @@ function _bouwTabel(tabelDef){
         case 'op': td.className='uitleg-op'; break;
         case 'lbl': td.className='uitleg-lbl'; break;
         case 'input': td.className='uitleg-input'; break;
-        case 'leeg': td.className='uitleg-leeg'; break;
         default: td.className='';
       }
       if(cel.cls)td.classList.add(cel.cls);
@@ -4950,7 +4949,6 @@ function _herberekeningTekstHoogte(){
   var titEl2=document.getElementById('uitleg-stap-titel');
   var tekEl2=document.getElementById('uitleg-stap-tekst');
   if(!tekstSectie||!inhoud||!tekEl2)return;
-  // Niet aanpassen als tekst verborgen is door de toggle
   if(tekstSectie.classList.contains('verborgen'))return;
   var beschikbaar=inhoud.clientHeight;
   if(beschikbaar<=0)return;
@@ -4958,7 +4956,9 @@ function _herberekeningTekstHoogte(){
   var tekHoogte=tekEl2.scrollHeight;
   var inhoudsHoogte=titHoogte+tekHoogte+56;
   var maxHoogte=Math.floor(beschikbaar*0.52);
-  var doelHoogte=Math.min(Math.max(inhoudsHoogte,60),maxHoogte);
+  // Op grote schermen (viewport > 800px hoog) een royaler minimum
+  var minHoogte=window.innerHeight>800?Math.floor(beschikbaar*0.22):60;
+  var doelHoogte=Math.min(Math.max(inhoudsHoogte,minHoogte),maxHoogte);
   var pct=Math.round((doelHoogte/beschikbaar)*100);
   tekstSectie.style.flexBasis=pct+'%';
   tekstSectie.style.maxHeight=pct+'%';
@@ -4992,7 +4992,7 @@ function _renderStap(si,di){
     var kaart=document.getElementById('uitleg-stap-kaart');
     if(kaart){kaart.scrollTop=0;kaart.setAttribute('tabindex','0');}
     var somCont=document.getElementById('uitleg-som-container');
-    if(somCont){somCont.scrollTop=0;somCont.setAttribute('tabindex','0');}
+    if(somCont){somCont.setAttribute('tabindex','0');}
   },60);
   if(!_uitlegFocusInNav){
     var kaartEl=document.getElementById('uitleg-stap-kaart');
@@ -5702,27 +5702,26 @@ var UITLEG_DEFINITIES = {
     titel: 'Kolomsgewijs vermenigvuldigen',
     stappen: [
 
-      /* ── Stap 1: Hoe lees je zo'n vermenigvuldigsom? ── */
       {
         som: {
           tabel: [
-            { cellen: [ {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
-            { cellen: [ {id:'g1-d',tekst:''}, {id:'g1-h',tekst:'3'}, {id:'g1-t',tekst:'4'}, {id:'g1-e',tekst:'5'} ] },
-            { cellen: [ {id:'g2-d',tekst:''}, {id:'g2-h',tekst:''}, {id:'g2-t',tekst:'2'}, {id:'g2-e',tekst:'7'} ] },
-            { type:'hr', colspan:4 },
-            { cellen: [ {id:'r1-d',tekst:''}, {id:'r1-h',tekst:''}, {id:'r1-t',type:'input',tekst:''}, {id:'r1-e',type:'input',tekst:''} ] },
-            { cellen: [ {id:'r2-d',tekst:''}, {id:'r2-h',type:'input',tekst:''}, {id:'r2-t',type:'input',tekst:''}, {id:'r2-e',type:'input',tekst:''} ] },
-            { cellen: [ {id:'r3-d',type:'input',tekst:''}, {id:'r3-h',type:'input',tekst:''}, {id:'r3-t',type:'input',tekst:''}, {id:'r3-e',type:'input',tekst:''} ] },
-            { cellen: [ {id:'r4-d',tekst:''}, {id:'r4-h',type:'input',tekst:''}, {id:'r4-t',type:'input',tekst:''}, {id:'r4-e',type:'input',tekst:''} ] },
-            { cellen: [ {id:'r5-d',tekst:''}, {id:'r5-h',type:'input',tekst:''}, {id:'r5-t',type:'input',tekst:''}, {id:'r5-e',type:'input',tekst:''} ] },
-            { cellen: [ {id:'r6-d',type:'input',tekst:''}, {id:'r6-h',type:'input',tekst:''}, {id:'r6-t',type:'input',tekst:''}, {id:'r6-e',type:'input',tekst:''} ] },
-            { type:'hr', colspan:4 },
-            { cellen: [ {id:'op1-d',type:'input',tekst:''}, {id:'op1-h',type:'input',tekst:''}, {id:'op1-t',type:'input',tekst:''}, {id:'op1-e',type:'input',tekst:''} ] },
-            { cellen: [ {id:'op2-d',type:'input',tekst:''}, {id:'op2-h',type:'input',tekst:''}, {id:'op2-t',type:'input',tekst:''}, {id:'op2-e',type:'input',tekst:''} ] },
-            { cellen: [ {id:'op3-d',type:'input',tekst:''}, {id:'op3-h',type:'input',tekst:''}, {id:'op3-t',type:'input',tekst:''}, {id:'op3-e',type:'input',tekst:''} ] },
-            { cellen: [ {id:'op4-d',type:'input',tekst:''}, {id:'op4-h',type:'input',tekst:''}, {id:'op4-t',type:'input',tekst:''}, {id:'op4-e',type:'input',tekst:''} ] },
-            { type:'hr', colspan:4 },
-            { cellen: [ {id:'ans-d',type:'input',tekst:''}, {id:'ans-h',type:'input',tekst:''}, {id:'ans-t',type:'input',tekst:''}, {id:'ans-e',type:'input',tekst:''} ] }
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'g1-d',type:'input',tekst:''}, {id:'g1-h',tekst:'3'}, {id:'g1-t',tekst:'4'}, {id:'g1-e',tekst:'5'} ] },
+            { cellen: [ {type:'op',tekst:'×'}, {id:'g2-d',type:'input',tekst:''}, {id:'g2-h',type:'input',tekst:''}, {id:'g2-t',tekst:'2'}, {id:'g2-e',tekst:'7'} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''},  {id:'r1-d',type:'input',tekst:''}, {id:'r1-h',type:'input',tekst:''}, {id:'r1-t',type:'input',tekst:''}, {id:'r1-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'r2-d',type:'input',tekst:''}, {id:'r2-h',type:'input',tekst:''}, {id:'r2-t',type:'input',tekst:''}, {id:'r2-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'r3-d',type:'input',tekst:''}, {id:'r3-h',type:'input',tekst:''}, {id:'r3-t',type:'input',tekst:''}, {id:'r3-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'r4-d',type:'input',tekst:''}, {id:'r4-h',type:'input',tekst:''}, {id:'r4-t',type:'input',tekst:''}, {id:'r4-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'r5-d',type:'input',tekst:''}, {id:'r5-h',type:'input',tekst:''}, {id:'r5-t',type:'input',tekst:''}, {id:'r5-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:'+'},  {id:'r6-d',type:'input',tekst:''}, {id:'r6-h',type:'input',tekst:''}, {id:'r6-t',type:'input',tekst:''}, {id:'r6-e',type:'input',tekst:''} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''},  {id:'op1-d',type:'input',tekst:''}, {id:'op1-h',type:'input',tekst:''}, {id:'op1-t',type:'input',tekst:''}, {id:'op1-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'op2-d',type:'input',tekst:''}, {id:'op2-h',type:'input',tekst:''}, {id:'op2-t',type:'input',tekst:''}, {id:'op2-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'op3-d',type:'input',tekst:''}, {id:'op3-h',type:'input',tekst:''}, {id:'op3-t',type:'input',tekst:''}, {id:'op3-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'op4-d',type:'input',tekst:''}, {id:'op4-h',type:'input',tekst:''}, {id:'op4-t',type:'input',tekst:''}, {id:'op4-e',type:'input',tekst:''} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''},  {id:'ans-d',type:'input',tekst:''}, {id:'ans-h',type:'input',tekst:''}, {id:'ans-t',type:'input',tekst:''}, {id:'ans-e',type:'input',tekst:''} ] }
           ]
         },
         titel: "Hoe lees je zo'n vermenigvuldigsom?",
@@ -5737,7 +5736,6 @@ var UITLEG_DEFINITIES = {
         ]
       },
 
-      /* ── Stap 2: Vermenigvuldigen met de eenheden (x7) ── */
       {
         som: null,
         titel: 'Vermenigvuldigen met de eenheden',
@@ -5763,7 +5761,6 @@ var UITLEG_DEFINITIES = {
         ]
       },
 
-      /* ── Stap 3: Vermenigvuldigen met de tientallen (x20) ── */
       {
         som: null,
         titel: 'Vermenigvuldigen met de tientallen',
@@ -5789,49 +5786,58 @@ var UITLEG_DEFINITIES = {
         ]
       },
 
-      /* ── Stap 4: Tussenoptelrijen per kolom ── */
       {
         som: null,
         titel: 'Per kolom optellen',
-        uitleg: '[PLACEHOLDER: intro tussenoptelling per kolom]',
+        uitleg: 'Nu we alle vermenigvuldigingen gedaan hebben, is het tijd om alles op te tellen.',
         highlight: [], animaties: [],
         deelstappen: [
-          { titel: 'D-kolom', uitleg: '[PLACEHOLDER: duizendtallen optellen: 2000]', highlight: ['r3-d','r6-d','op1-d','op1-h','op1-t','op1-e'], animaties: [
-            { type:'vulIn', cel:'op1-d', waarde:'2' },
+          { titel: 'Duizendtallen', uitleg: 'Nu we alle vermenigvuldigingen gedaan hebben, is het tijd om alles op te tellen. Eerst de duizendtallen: 2 + 6 = 8000.', highlight: ['r3-d','r6-d','op1-d','op1-h','op1-t','op1-e'], animaties: [
+            { type:'vulIn', cel:'op1-d', waarde:'8' },
             { type:'vulIn', cel:'op1-h', waarde:'0' },
             { type:'vulIn', cel:'op1-t', waarde:'0' },
             { type:'vulIn', cel:'op1-e', waarde:'0' }
           ] },
-          { titel: 'H-kolom', uitleg: '[PLACEHOLDER: honderdtallen optellen: 1200]', highlight: ['r2-h','r3-h','r4-h','r5-h','r6-h','op2-d','op2-h','op2-t','op2-e'], animaties: [
-            { type:'vulIn', cel:'op2-d', waarde:'0' },
-            { type:'vulIn', cel:'op2-h', waarde:'1' },
-            { type:'vulIn', cel:'op2-t', waarde:'2' },
+          { titel: 'Honderdtallen', uitleg: 'Nu zijn de honderdtallen aan de beurt: 2+1+1+8 = 12 honderdtallen. Op de volgende rij vullen we dus in 1200.', highlight: ['r2-h','r3-h','r4-h','r5-h','r6-h','op2-d','op2-h','op2-t','op2-e'], animaties: [
+            { type:'vulIn', cel:'op2-d', waarde:'1' },
+            { type:'vulIn', cel:'op2-h', waarde:'2' },
+            { type:'vulIn', cel:'op2-t', waarde:'0' },
             { type:'vulIn', cel:'op2-e', waarde:'0' }
           ] },
-          { titel: 'T-kolom', uitleg: '[PLACEHOLDER: tientallen optellen: 110]', highlight: ['r1-t','r2-t','r3-t','r4-t','r5-t','r6-t','op3-d','op3-h','op3-t','op3-e'], animaties: [
-            { type:'vulIn', cel:'op3-d', waarde:'0' },
-            { type:'vulIn', cel:'op3-h', waarde:'0' },
+          { titel: 'Tientallen', uitleg: 'Tientallen hebben we 3+8=11, dus 110. Dit schrijven we op de nieuwe regel.', highlight: ['r1-t','r2-t','r3-t','r4-t','r5-t','r6-t','op3-d','op3-h','op3-t','op3-e'], animaties: [
+            { type:'vulIn', cel:'op3-d', waarde:'' },
+            { type:'vulIn', cel:'op3-h', waarde:'1' },
             { type:'vulIn', cel:'op3-t', waarde:'1' },
-            { type:'vulIn', cel:'op3-e', waarde:'1' }
+            { type:'vulIn', cel:'op3-e', waarde:'0' }
           ] },
-          { titel: 'E-kolom', uitleg: '[PLACEHOLDER: eenheden optellen: 5]', highlight: ['r1-e','r2-e','r3-e','r4-e','r5-e','r6-e','op4-d','op4-h','op4-t','op4-e'], animaties: [
-            { type:'vulIn', cel:'op4-d', waarde:'0' },
-            { type:'vulIn', cel:'op4-h', waarde:'0' },
-            { type:'vulIn', cel:'op4-t', waarde:'0' },
+          { titel: 'Eenheden', uitleg: 'En ook nog 5 eenheden, die we weer opschrijven.', highlight: ['r1-e','r2-e','r3-e','r4-e','r5-e','r6-e','op4-d','op4-h','op4-t','op4-e'], animaties: [
+            { type:'vulIn', cel:'op4-d', waarde:'' },
+            { type:'vulIn', cel:'op4-h', waarde:'' },
+            { type:'vulIn', cel:'op4-t', waarde:'' },
             { type:'vulIn', cel:'op4-e', waarde:'5' }
           ] }
         ]
       },
 
-      /* ── Stap 5: Einduitkomst ── */
       {
         som: null,
         titel: 'Alles optellen',
-        uitleg: '[PLACEHOLDER: intro eindoptelling]',
+        uitleg: 'En nu nog de eindoptelling.',
         highlight: [], animaties: [],
         deelstappen: [
-          { titel: 'Alle rijen', uitleg: '[PLACEHOLDER: uitleg alle tussenoptelrijen optellen]', highlight: ['op1-d','op1-h','op1-t','op1-e','op2-d','op2-h','op2-t','op2-e','op3-d','op3-h','op3-t','op3-e','op4-d','op4-h','op4-t','op4-e'], animaties: [] },
-          { titel: 'De uitkomst', uitleg: '[PLACEHOLDER: 2000+1200+110+5=9315]', highlight: ['ans-d','ans-h','ans-t','ans-e'], animaties: [
+          { titel: 'Duizendtallen', uitleg: 'En nu alles bij elkaar tellen: Eerst de kolom van de duizendtallen: 8 + 1 = 9.', highlight: ['op1-d','op2-d','op3-d','op4-d','ans-d'], animaties: [
+            { type:'vulIn', cel:'ans-d', waarde:'9' }
+          ] },
+          { titel: 'Honderdtallen', uitleg: 'Nu de honderdtallen: 2 + 1 = 3.', highlight: ['op1-h','op2-h','op3-h','op4-h','ans-h'], animaties: [
+            { type:'vulIn', cel:'ans-d', waarde:'9' },
+            { type:'vulIn', cel:'ans-h', waarde:'3' }
+          ] },
+          { titel: 'Tientallen', uitleg: 'Nu de tientallen: er is er maar 1, die schrijven we op.', highlight: ['op1-t','op2-t','op3-t','op4-t','ans-t'], animaties: [
+            { type:'vulIn', cel:'ans-d', waarde:'9' },
+            { type:'vulIn', cel:'ans-h', waarde:'3' },
+            { type:'vulIn', cel:'ans-t', waarde:'1' }
+          ] },
+          { titel: 'De som is klaar!', uitleg: 'En tenslotte de eenheden: 5. En dan zijn we er: 9315, we zijn klaar!', highlight: ['op1-e','op2-e','op3-e','op4-e','ans-e'], animaties: [
             { type:'vulIn', cel:'ans-d', waarde:'9' },
             { type:'vulIn', cel:'ans-h', waarde:'3' },
             { type:'vulIn', cel:'ans-t', waarde:'1' },
