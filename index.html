@@ -5512,7 +5512,7 @@ var UITLEG_DEFINITIES = {
         highlight: [],
         animaties: [],
         deelstappen: [
-          { titel: 'De rijen', uitleg: 'Zoals er een kolom van boven naar beneden is voor de honderdtallen, zo is er ook een rij van links naar rechts voor de honderdtallen: de H-rij.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e','inv2-h','inv3-h','ans-h'], animaties: [] },
+          { titel: 'De rijen', uitleg: 'Zoals er een kolom van boven naar beneden is voor de honderdtallen, zo is er ook een rij van links naar rechts voor de honderdtallen: de H-rij.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [] },
           { titel: 'De H-rij', uitleg: 'In de H-rij tellen we de honderdtallen van de som bij elkaar en vullen die in, zoals hier.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [
             { type:'vulIn', cel:'inv1-h', waarde:'5' },
             { type:'vulIn', cel:'inv1-t', waarde:'0' },
@@ -5587,7 +5587,7 @@ var UITLEG_DEFINITIES = {
         highlight: [],
         animaties: [],
         deelstappen: [
-          { titel: 'De rijen', uitleg: 'Zoals er een kolom van boven naar beneden is voor de honderdtallen, zo is er ook een rij van links naar rechts voor de honderdtallen: de H-rij.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e','inv2-h','inv3-h','ans-h'], animaties: [] },
+          { titel: 'De rijen', uitleg: 'Zoals er een kolom van boven naar beneden is voor de honderdtallen, zo is er ook een rij van links naar rechts voor de honderdtallen: de H-rij.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [] },
           { titel: 'De H-rij', uitleg: 'In de H-rij trekken we de honderdtallen van de som van elkaar af en vullen die in, zoals hier.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [
             { type:'vulIn', cel:'inv1-h', waarde:'4' },
             { type:'vulIn', cel:'inv1-t', waarde:'0' },
@@ -5607,14 +5607,14 @@ var UITLEG_DEFINITIES = {
       {
         som: null,
         titel: 'Uitkomsten samenvoegen',
-        uitleg: '[PLACEHOLDER: intro samenvoegen Som 1]',
+        uitleg: 'Nu hoeven we alleen nog maar de uitkomsten bij elkaar op te tellen. Dat klinkt verwarrend, we zijn immers met een aftreksom bezig. Maar het aftrekken hebben we al gedaan, we tellen nu op wat over is gebleven.',
         highlight: [],
         animaties: [],
         deelstappen: [
-          { titel: 'Naar de einduitkomst', uitleg: '[PLACEHOLDER: uitleg samenvoegen]', highlight: ['inv1-h','inv1-t','inv1-e','inv2-h','inv2-t','inv2-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
-          { titel: 'Honderdtallen', uitleg: '[PLACEHOLDER: 4 honderdtallen invullen]', highlight: ['inv1-h','ans-h'], animaties: [ { type:'vulIn', cel:'ans-h', waarde:'4' } ] },
-          { titel: 'Tientallen', uitleg: '[PLACEHOLDER: 3 tientallen invullen]', highlight: ['inv2-t','ans-t'], animaties: [ { type:'vulIn', cel:'ans-t', waarde:'3' } ] },
-          { titel: 'De som is klaar!', uitleg: '[PLACEHOLDER: 4 eenheden invullen, uitkomst 434]', highlight: ['inv3-e','ans-e'], animaties: [ { type:'vulIn', cel:'ans-e', waarde:'4' } ] }
+          { titel: 'Naar de einduitkomst', uitleg: 'Nu hoeven we alleen nog maar de uitkomsten bij elkaar op te tellen. Dat klinkt verwarrend, we zijn immers met een aftreksom bezig. Maar het aftrekken hebben we al gedaan, we tellen nu op wat over is gebleven.', highlight: ['inv1-h','inv1-t','inv1-e','inv2-h','inv2-t','inv2-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
+          { titel: 'Honderdtallen', uitleg: 'We hebben 4 honderdtallen en schrijven op de einduitkomstrij dus een 4 in de H-kolom.', highlight: ['inv1-h','ans-h'], animaties: [ { type:'vulIn', cel:'ans-h', waarde:'4' } ] },
+          { titel: 'Tientallen', uitleg: 'We hebben 3 tientallen en schrijven dus een 3 in de T-kolom.', highlight: ['inv2-t','ans-t'], animaties: [ { type:'vulIn', cel:'ans-t', waarde:'3' } ] },
+          { titel: 'De som is klaar!', uitleg: 'We hebben 4 eenheden en schrijven dus een 4 in de E-kolom. En dan zeggen we: Klaar!', highlight: ['inv3-e','ans-e'], animaties: [ { type:'vulIn', cel:'ans-e', waarde:'4' } ] }
         ]
       },
 
@@ -5634,22 +5634,23 @@ var UITLEG_DEFINITIES = {
           ]
         },
         titel: 'Aftrekken met een tekort',
-        uitleg: '[PLACEHOLDER: intro Som 2 — wat is een tekort?]',
+        uitleg: 'Maar vaak zijn er sommen waarbij je meer moet aftrekken dan je eigenlijk hebt. Dan heb je een TEKORT.',
         highlight: [],
         animaties: [],
         deelstappen: [
-          { titel: 'Het tekort', uitleg: '[PLACEHOLDER: uitleg wat er mis gaat bij E-kolom: 2-5 kan niet]', highlight: ['s2a-e','s2b-e'], animaties: [] },
-          { titel: 'De H-rij', uitleg: '[PLACEHOLDER: honderdtallen: 6-2=4]', highlight: ['s2a-h','s2b-h','s2inv1-h','s2inv1-t','s2inv1-e'], animaties: [
+          { titel: 'Het tekort', uitleg: 'Maar vaak zijn er sommen waarbij je meer moet aftrekken dan je eigenlijk hebt. Dan heb je een TEKORT. Kijk maar eens mee.', highlight: [], animaties: [] },
+          { titel: 'De H-rij', uitleg: 'Hier nog niets bijzonders: We hebben 6 honderdtallen en halen er 2 vanaf, dus we vullen 400 in bij de H-rij, maar dan...!', highlight: ['s2a-h','s2b-h','s2inv1-h','s2inv1-t','s2inv1-e'], animaties: [
             { type:'vulIn', cel:'s2inv1-h', waarde:'4' },
             { type:'vulIn', cel:'s2inv1-t', waarde:'0' },
             { type:'vulIn', cel:'s2inv1-e', waarde:'0' }
           ] },
-          { titel: 'De T-rij', uitleg: '[PLACEHOLDER: tientallen: 4-7 geeft tekort, uitleg]', highlight: ['s2a-t','s2b-t','s2inv2-h','s2inv2-t','s2inv2-e'], animaties: [
-            { type:'vulIn', cel:'s2inv2-t', waarde:'3' },
+          { titel: 'De T-rij', uitleg: '4 tientallen en er gaan 7 tientallen vanaf, dus... een tekort, van 30. We schrijven dan een min-teken voor de 30. Later zullen we die 30 aftrekken van de rest.', highlight: ['s2a-t','s2b-t','s2inv2-h','s2inv2-t','s2inv2-e'], animaties: [
+            { type:'vulIn', cel:'s2inv2-h', waarde:'' },
+            { type:'vulIn', cel:'s2inv2-t', waarde:'-3' },
             { type:'vulIn', cel:'s2inv2-e', waarde:'0' }
           ] },
-          { titel: 'De E-rij', uitleg: '[PLACEHOLDER: eenheden: 2-5 geeft tekort, uitleg]', highlight: ['s2a-e','s2b-e','s2inv3-h','s2inv3-t','s2inv3-e'], animaties: [
-            { type:'vulIn', cel:'s2inv3-e', waarde:'7' }
+          { titel: 'De E-rij', uitleg: 'Ook hier een tekort! 2-5, dan heb je er 3 te weinig natuurlijk. Dus we schrijven een 3 met een min-teken ervoor in de E-rij.', highlight: ['s2a-e','s2b-e','s2inv3-h','s2inv3-t','s2inv3-e'], animaties: [
+            { type:'vulIn', cel:'s2inv3-e', waarde:'-3' }
           ] }
         ]
       },
