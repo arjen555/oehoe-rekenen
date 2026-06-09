@@ -5546,6 +5546,130 @@ var UITLEG_DEFINITIES = {
         ]
       }
     ]
+  },
+
+  'kolomsgewijs-aftrekken': {
+    titel: 'Kolomsgewijs aftrekken',
+    stappen: [
+
+      /* ── Stap 1: Hoe lees je zo'n aftreksom? ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'a-h',tekst:'7'}, {id:'a-t',tekst:'5'}, {id:'a-e',tekst:'8'} ] },
+            { cellen: [ {type:'op',tekst:'-'}, {id:'b-h',tekst:'3'}, {id:'b-t',tekst:'2'}, {id:'b-e',tekst:'4'} ] },
+            { type:'hr', colspan:4 },
+            { cellen: [ {type:'lbl',tekst:'H'}, {id:'inv1-h',type:'input',tekst:''}, {id:'inv1-t',type:'input',tekst:''}, {id:'inv1-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:'T'}, {id:'inv2-h',type:'input',tekst:''}, {id:'inv2-t',type:'input',tekst:''}, {id:'inv2-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:'E'}, {id:'inv3-h',type:'input',tekst:''}, {id:'inv3-t',type:'input',tekst:''}, {id:'inv3-e',type:'input',tekst:''} ] },
+            { type:'hr', colspan:4 },
+            { cellen: [ {type:'op',tekst:''}, {id:'ans-h',type:'input',tekst:''}, {id:'ans-t',type:'input',tekst:''}, {id:'ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: 'Hoe moet je zo\'n aftreksom lezen?',
+        uitleg: 'Bij kolomsgewijs aftrekken zetten we de som onder elkaar en trekken we per kolom de getallen van elkaar af.',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          { titel: 'Per kolom', uitleg: '[PLACEHOLDER: uitleg over per kolom aftrekken]', highlight: [], animaties: [] },
+          { titel: 'Cijferwaardes', uitleg: '[PLACEHOLDER: uitleg over H-kolom en waardes]', highlight: ['a-h','b-h','inv1-h','inv2-h','inv3-h','ans-h'], animaties: [] },
+          { titel: 'Tientallen', uitleg: '[PLACEHOLDER: uitleg over T-kolom]', highlight: ['a-t','b-t','inv1-t','inv2-t','inv3-t','ans-t'], animaties: [] },
+          { titel: 'Eenheden', uitleg: '[PLACEHOLDER: uitleg over E-kolom]', highlight: ['a-e','b-e','inv1-e','inv2-e','inv3-e','ans-e'], animaties: [] }
+        ]
+      },
+
+      /* ── Stap 2: Per kolom aftrekken — Som 1 (758 - 324) ── */
+      {
+        som: null,
+        titel: 'Per kolom aftrekken',
+        uitleg: '[PLACEHOLDER: intro per kolom aftrekken Som 1]',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          { titel: 'De rijen', uitleg: '[PLACEHOLDER: uitleg over de rijen]', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e','inv2-h','inv3-h','ans-h'], animaties: [] },
+          { titel: 'De H-rij', uitleg: '[PLACEHOLDER: honderdtallen aftrekken: 7-3=4]', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [
+            { type:'vulIn', cel:'inv1-h', waarde:'4' },
+            { type:'vulIn', cel:'inv1-t', waarde:'0' },
+            { type:'vulIn', cel:'inv1-e', waarde:'0' }
+          ] },
+          { titel: 'De T-rij', uitleg: '[PLACEHOLDER: tientallen aftrekken: 5-2=3]', highlight: ['a-t','b-t','inv2-h','inv2-t','inv2-e'], animaties: [
+            { type:'vulIn', cel:'inv2-t', waarde:'3' },
+            { type:'vulIn', cel:'inv2-e', waarde:'0' }
+          ] },
+          { titel: 'De E-rij', uitleg: '[PLACEHOLDER: eenheden aftrekken: 8-4=4]', highlight: ['a-e','b-e','inv3-h','inv3-t','inv3-e'], animaties: [
+            { type:'vulIn', cel:'inv3-e', waarde:'4' }
+          ] }
+        ]
+      },
+
+      /* ── Stap 3: Uitkomsten samenvoegen — Som 1 ── */
+      {
+        som: null,
+        titel: 'Uitkomsten samenvoegen',
+        uitleg: '[PLACEHOLDER: intro samenvoegen Som 1]',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          { titel: 'Naar de einduitkomst', uitleg: '[PLACEHOLDER: uitleg samenvoegen]', highlight: ['inv1-h','inv1-t','inv1-e','inv2-h','inv2-t','inv2-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
+          { titel: 'Honderdtallen', uitleg: '[PLACEHOLDER: 4 honderdtallen invullen]', highlight: ['inv1-h','ans-h'], animaties: [ { type:'vulIn', cel:'ans-h', waarde:'4' } ] },
+          { titel: 'Tientallen', uitleg: '[PLACEHOLDER: 3 tientallen invullen]', highlight: ['inv2-t','ans-t'], animaties: [ { type:'vulIn', cel:'ans-t', waarde:'3' } ] },
+          { titel: 'De som is klaar!', uitleg: '[PLACEHOLDER: 4 eenheden invullen, uitkomst 434]', highlight: ['inv3-e','ans-e'], animaties: [ { type:'vulIn', cel:'ans-e', waarde:'4' } ] }
+        ]
+      },
+
+      /* ── Stap 4: Per kolom aftrekken — Som 2 (642 - 275) ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'s2a-h',tekst:'6'}, {id:'s2a-t',tekst:'4'}, {id:'s2a-e',tekst:'2'} ] },
+            { cellen: [ {type:'op',tekst:'-'}, {id:'s2b-h',tekst:'2'}, {id:'s2b-t',tekst:'7'}, {id:'s2b-e',tekst:'5'} ] },
+            { type:'hr', colspan:4 },
+            { cellen: [ {type:'lbl',tekst:'H'}, {id:'s2inv1-h',type:'input',tekst:''}, {id:'s2inv1-t',type:'input',tekst:''}, {id:'s2inv1-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:'T'}, {id:'s2inv2-h',type:'input',tekst:''}, {id:'s2inv2-t',type:'input',tekst:''}, {id:'s2inv2-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:'E'}, {id:'s2inv3-h',type:'input',tekst:''}, {id:'s2inv3-t',type:'input',tekst:''}, {id:'s2inv3-e',type:'input',tekst:''} ] },
+            { type:'hr', colspan:4 },
+            { cellen: [ {type:'op',tekst:''}, {id:'s2ans-h',type:'input',tekst:''}, {id:'s2ans-t',type:'input',tekst:''}, {id:'s2ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: 'Aftrekken met een tekort',
+        uitleg: '[PLACEHOLDER: intro Som 2 — wat is een tekort?]',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          { titel: 'Het tekort', uitleg: '[PLACEHOLDER: uitleg wat er mis gaat bij E-kolom: 2-5 kan niet]', highlight: ['s2a-e','s2b-e'], animaties: [] },
+          { titel: 'De H-rij', uitleg: '[PLACEHOLDER: honderdtallen: 6-2=4]', highlight: ['s2a-h','s2b-h','s2inv1-h','s2inv1-t','s2inv1-e'], animaties: [
+            { type:'vulIn', cel:'s2inv1-h', waarde:'4' },
+            { type:'vulIn', cel:'s2inv1-t', waarde:'0' },
+            { type:'vulIn', cel:'s2inv1-e', waarde:'0' }
+          ] },
+          { titel: 'De T-rij', uitleg: '[PLACEHOLDER: tientallen: 4-7 geeft tekort, uitleg]', highlight: ['s2a-t','s2b-t','s2inv2-h','s2inv2-t','s2inv2-e'], animaties: [
+            { type:'vulIn', cel:'s2inv2-t', waarde:'3' },
+            { type:'vulIn', cel:'s2inv2-e', waarde:'0' }
+          ] },
+          { titel: 'De E-rij', uitleg: '[PLACEHOLDER: eenheden: 2-5 geeft tekort, uitleg]', highlight: ['s2a-e','s2b-e','s2inv3-h','s2inv3-t','s2inv3-e'], animaties: [
+            { type:'vulIn', cel:'s2inv3-e', waarde:'7' }
+          ] }
+        ]
+      },
+
+      /* ── Stap 5: Uitkomsten samenvoegen — Som 2 ── */
+      {
+        som: null,
+        titel: 'Uitkomsten samenvoegen',
+        uitleg: '[PLACEHOLDER: intro samenvoegen Som 2]',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          { titel: 'Naar de einduitkomst', uitleg: '[PLACEHOLDER: uitleg samenvoegen Som 2]', highlight: ['s2inv1-h','s2inv1-t','s2inv1-e','s2inv2-h','s2inv2-t','s2inv2-e','s2inv3-h','s2inv3-t','s2inv3-e'], animaties: [] },
+          { titel: 'Honderdtallen', uitleg: '[PLACEHOLDER: 4 honderdtallen invullen]', highlight: ['s2inv1-h','s2ans-h'], animaties: [ { type:'vulIn', cel:'s2ans-h', waarde:'3' } ] },
+          { titel: 'Tientallen', uitleg: '[PLACEHOLDER: tientallen invullen]', highlight: ['s2inv2-t','s2ans-t'], animaties: [ { type:'vulIn', cel:'s2ans-t', waarde:'6' } ] },
+          { titel: 'De som is klaar!', uitleg: '[PLACEHOLDER: eenheden invullen, uitkomst 367]', highlight: ['s2inv3-e','s2ans-e'], animaties: [ { type:'vulIn', cel:'s2ans-e', waarde:'7' } ] }
+        ]
+      }
+
+    ]
   }
 };
 </script>
