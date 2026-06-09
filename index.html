@@ -572,8 +572,8 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
   overflow-y:auto;  /* scrollbar zichtbaar als tekst te lang is */
   box-sizing:border-box;
 }
-.uitleg-stap-titel-tekst{font-size:calc(var(--font-size)*1.1);font-weight:800;color:var(--text);margin-bottom:8px;display:block;}
-.uitleg-stap-uitleg{font-size:calc(var(--font-size)*1.0);color:var(--text);line-height:1.6;}
+.uitleg-stap-titel-tekst{font-size:clamp(calc(var(--font-size)*1.1),2.2vh,2rem);font-weight:800;color:var(--text);margin-bottom:8px;display:block;}
+.uitleg-stap-uitleg{font-size:clamp(calc(var(--font-size)*1.0),2vh,1.8rem);color:var(--text);line-height:1.6;}
 
 /* ── Navigatiekolom: bolletjes kleiner bij smallere viewport ── */
 @media(max-width:1300px){
