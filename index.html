@@ -5688,6 +5688,126 @@ var UITLEG_DEFINITIES = {
       }
 
     ]
+  },
+
+  /* ================================================================
+     KOLOMSGEWIJS VERMENIGVULDIGEN  —  345 × 27
+     Tabel: 5 kolommen (D, H, T, E) + lege opkolom links
+     6 tussenuitkomstrijen + einduitkomst
+     ================================================================ */
+  'kolomsgewijs-vermenigvuldigen': {
+    titel: 'Kolomsgewijs vermenigvuldigen',
+    stappen: [
+
+      /* ── Stap 1: Hoe lees je zo'n vermenigvuldigsom? ── */
+      {
+        som: {
+          tabel: [
+            /* Kolomkoppen: lege opkolom + D + H + T + E */
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            /* Getal 1: 345 */
+            { cellen: [ {type:'op',tekst:''},  {tekst:''}, {id:'g1-h',tekst:'3'}, {id:'g1-t',tekst:'4'}, {id:'g1-e',tekst:'5'} ] },
+            /* Getal 2: ×27 */
+            { cellen: [ {type:'op',tekst:'×'}, {tekst:''}, {tekst:''}, {id:'g2-t',tekst:'2'}, {id:'g2-e',tekst:'7'} ] },
+            { type:'hr', colspan:5 },
+            /* Tussenuitkomsten ×7 */
+            { cellen: [ {type:'lbl',tekst:''}, {tekst:''}, {tekst:''}, {id:'r1-t',type:'input',tekst:''}, {id:'r1-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:''}, {tekst:''}, {id:'r2-h',type:'input',tekst:''}, {id:'r2-t',type:'input',tekst:''}, {id:'r2-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:''}, {id:'r3-d',type:'input',tekst:''}, {id:'r3-h',type:'input',tekst:''}, {id:'r3-t',type:'input',tekst:''}, {id:'r3-e',type:'input',tekst:''} ] },
+            /* Tussenuitkomsten ×20 */
+            { cellen: [ {type:'lbl',tekst:''}, {tekst:''}, {id:'r4-h',type:'input',tekst:''}, {id:'r4-t',type:'input',tekst:''}, {id:'r4-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:''}, {id:'r5-d',type:'input',tekst:''}, {id:'r5-h',type:'input',tekst:''}, {id:'r5-t',type:'input',tekst:''}, {id:'r5-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'lbl',tekst:''}, {id:'r6-d',type:'input',tekst:''}, {id:'r6-h',type:'input',tekst:''}, {id:'r6-t',type:'input',tekst:''}, {id:'r6-e',type:'input',tekst:''} ] },
+            { type:'hr', colspan:5 },
+            /* Einduitkomst: 9315 */
+            { cellen: [ {type:'op',tekst:''}, {id:'ans-d',type:'input',tekst:''}, {id:'ans-h',type:'input',tekst:''}, {id:'ans-t',type:'input',tekst:''}, {id:'ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: 'Hoe lees je zo\'n vermenigvuldigsom?',
+        uitleg: '[PLACEHOLDER: intro vermenigvuldigen]',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          { titel: 'De opbouw', uitleg: '[PLACEHOLDER: uitleg opbouw tabel]', highlight: [], animaties: [] },
+          { titel: 'Getal 1', uitleg: '[PLACEHOLDER: uitleg getal 1 — 345]', highlight: ['g1-h','g1-t','g1-e'], animaties: [] },
+          { titel: 'Getal 2', uitleg: '[PLACEHOLDER: uitleg getal 2 — 27]', highlight: ['g2-t','g2-e'], animaties: [] },
+          { titel: 'De tussenuitkomsten', uitleg: '[PLACEHOLDER: uitleg over de 6 tussenrijen]', highlight: ['r1-t','r1-e','r2-h','r2-t','r2-e','r3-d','r3-h','r3-t','r3-e','r4-h','r4-t','r4-e','r5-d','r5-h','r5-t','r5-e','r6-d','r6-h','r6-t','r6-e'], animaties: [] }
+        ]
+      },
+
+      /* ── Stap 2: Vermenigvuldigen met de eenheden (×7) ── */
+      {
+        som: null,
+        titel: 'Vermenigvuldigen met de eenheden',
+        uitleg: '[PLACEHOLDER: intro ×7]',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          { titel: '5×7', uitleg: '[PLACEHOLDER: 5×7=35, schrijf 35 op rij 1]', highlight: ['g1-e','g2-e','r1-t','r1-e'], animaties: [
+            { type:'vulIn', cel:'r1-t', waarde:'3' },
+            { type:'vulIn', cel:'r1-e', waarde:'5' }
+          ] },
+          { titel: '40×7', uitleg: '[PLACEHOLDER: 40×7=280, schrijf 280 op rij 2]', highlight: ['g1-t','g2-e','r2-h','r2-t','r2-e'], animaties: [
+            { type:'vulIn', cel:'r2-h', waarde:'2' },
+            { type:'vulIn', cel:'r2-t', waarde:'8' },
+            { type:'vulIn', cel:'r2-e', waarde:'0' }
+          ] },
+          { titel: '300×7', uitleg: '[PLACEHOLDER: 300×7=2100, schrijf 2100 op rij 3]', highlight: ['g1-h','g2-e','r3-d','r3-h','r3-t','r3-e'], animaties: [
+            { type:'vulIn', cel:'r3-d', waarde:'2' },
+            { type:'vulIn', cel:'r3-h', waarde:'1' },
+            { type:'vulIn', cel:'r3-t', waarde:'0' },
+            { type:'vulIn', cel:'r3-e', waarde:'0' }
+          ] }
+        ]
+      },
+
+      /* ── Stap 3: Vermenigvuldigen met de tientallen (×20) ── */
+      {
+        som: null,
+        titel: 'Vermenigvuldigen met de tientallen',
+        uitleg: '[PLACEHOLDER: intro ×20]',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          { titel: '5×20', uitleg: '[PLACEHOLDER: 5×20=100, schrijf 100 op rij 4]', highlight: ['g1-e','g2-t','r4-h','r4-t','r4-e'], animaties: [
+            { type:'vulIn', cel:'r4-h', waarde:'1' },
+            { type:'vulIn', cel:'r4-t', waarde:'0' },
+            { type:'vulIn', cel:'r4-e', waarde:'0' }
+          ] },
+          { titel: '40×20', uitleg: '[PLACEHOLDER: 40×20=800, schrijf 800 op rij 5]', highlight: ['g1-t','g2-t','r5-d','r5-h','r5-t','r5-e'], animaties: [
+            { type:'vulIn', cel:'r5-d', waarde:'' },
+            { type:'vulIn', cel:'r5-h', waarde:'8' },
+            { type:'vulIn', cel:'r5-t', waarde:'0' },
+            { type:'vulIn', cel:'r5-e', waarde:'0' }
+          ] },
+          { titel: '300×20', uitleg: '[PLACEHOLDER: 300×20=6000, schrijf 6000 op rij 6]', highlight: ['g1-h','g2-t','r6-d','r6-h','r6-t','r6-e'], animaties: [
+            { type:'vulIn', cel:'r6-d', waarde:'6' },
+            { type:'vulIn', cel:'r6-h', waarde:'0' },
+            { type:'vulIn', cel:'r6-t', waarde:'0' },
+            { type:'vulIn', cel:'r6-e', waarde:'0' }
+          ] }
+        ]
+      },
+
+      /* ── Stap 4: Alles optellen tot einduitkomst ── */
+      {
+        som: null,
+        titel: 'Alles optellen',
+        uitleg: '[PLACEHOLDER: intro optellen tussenuitkomsten]',
+        highlight: [],
+        animaties: [],
+        deelstappen: [
+          { titel: 'Alle rijen', uitleg: '[PLACEHOLDER: uitleg alle rijen optellen]', highlight: ['r1-t','r1-e','r2-h','r2-t','r2-e','r3-d','r3-h','r3-t','r3-e','r4-h','r4-t','r4-e','r5-h','r5-t','r5-e','r6-d','r6-h','r6-t','r6-e'], animaties: [] },
+          { titel: 'De uitkomst', uitleg: '[PLACEHOLDER: 35+280+2100+100+800+6000=9315]', highlight: ['ans-d','ans-h','ans-t','ans-e'], animaties: [
+            { type:'vulIn', cel:'ans-d', waarde:'9' },
+            { type:'vulIn', cel:'ans-h', waarde:'3' },
+            { type:'vulIn', cel:'ans-t', waarde:'1' },
+            { type:'vulIn', cel:'ans-e', waarde:'5' }
+          ] }
+        ]
+      }
+
+    ]
   }
 };
 </script>
