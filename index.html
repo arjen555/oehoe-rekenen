@@ -839,7 +839,13 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <div id="setup-form"></div>
   </div>
   <div class="btn-row btn-row-twee">
-    <button class="btn-uitleg-eerst" id="btn-uitleg-eerst">&#128218; Eerst uitleg, dan beginnen</button>
+    <div class="tooltip-wrap">
+      <button class="btn-uitleg-eerst" id="btn-uitleg-eerst">&#128218; Eerst uitleg, dan beginnen</button>
+      <div class="tooltip-box">
+        <div class="tooltip-title">&#128218; Uitleg eerst</div>
+        <div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>Je krijgt uitleg over de methode en bewerking die je hierboven geselecteerd hebt.</span></div>
+      </div>
+    </div>
     <button class="btn-meteen" id="start-ex">&#9654; Meteen aan de slag!</button>
   </div>
 </div>
@@ -1038,6 +1044,9 @@ function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
   window._basePixelRatio=window.devicePixelRatio||1;
   // Controleer bij resize én bij wheel+ctrl
   window.addEventListener('resize',window.checkLogoZoom);
+  window.addEventListener('resize',function(){
+    if(typeof _herberekeningTekstHoogte==='function') setTimeout(_herberekeningTekstHoogte,80);
+  });
   window.addEventListener('wheel',function(e){
     if(e.ctrlKey)setTimeout(window.checkLogoZoom,100);
   },{passive:true});
@@ -4932,6 +4941,26 @@ function _bouwSom(somDef){
   wrap.appendChild(_bouwTabel(somDef.tabel)); c.appendChild(wrap);
 }
 
+function _herberekeningTekstHoogte(){
+  var tekstSectie=document.querySelector('.uitleg-tekst-sectie');
+  var inhoud=document.querySelector('.uitleg-inhoud');
+  var titEl2=document.getElementById('uitleg-stap-titel');
+  var tekEl2=document.getElementById('uitleg-stap-tekst');
+  if(!tekstSectie||!inhoud||!tekEl2)return;
+  // Niet aanpassen als tekst verborgen is door de toggle
+  if(tekstSectie.classList.contains('verborgen'))return;
+  var beschikbaar=inhoud.clientHeight;
+  if(beschikbaar<=0)return;
+  var titHoogte=(titEl2&&titEl2.style.display!=='none')?titEl2.scrollHeight:0;
+  var tekHoogte=tekEl2.scrollHeight;
+  var inhoudsHoogte=titHoogte+tekHoogte+56;
+  var maxHoogte=Math.floor(beschikbaar*0.35);
+  var doelHoogte=Math.min(Math.max(inhoudsHoogte,60),maxHoogte);
+  var pct=Math.round((doelHoogte/beschikbaar)*100);
+  tekstSectie.style.flexBasis=pct+'%';
+  tekstSectie.style.maxHeight=pct+'%';
+}
+
 function _renderStap(si,di){
   if(_uitlegAnimTimeout){clearTimeout(_uitlegAnimTimeout);_uitlegAnimTimeout=null;}
   var def=_uitlegDef; var stap=def.stappen[si]; if(!stap)return;
@@ -4950,25 +4979,7 @@ function _renderStap(si,di){
   if(tekEl)tekEl.textContent=uitlegTekst;
 
   // Pas tekst-sectie dynamisch aan op werkelijke teksthoogte
-  setTimeout(function(){
-    var tekstSectie=document.querySelector('.uitleg-tekst-sectie');
-    var inhoud=document.querySelector('.uitleg-inhoud');
-    var titEl2=document.getElementById('uitleg-stap-titel');
-    var tekEl2=document.getElementById('uitleg-stap-tekst');
-    if(tekstSectie&&inhoud&&tekEl2){
-      var beschikbaar=inhoud.clientHeight;
-      // Meet de werkelijke hoogte van titel + tekst
-      var titHoogte=(titEl2&&titEl2.style.display!=='none')?titEl2.scrollHeight:0;
-      var tekHoogte=tekEl2.scrollHeight;
-      var inhoudsHoogte=titHoogte+tekHoogte+56; // +56 voor padding kaart + tekst-sectie
-      // Clamp: minimaal 60px, maximaal 35% van beschikbare hoogte
-      var maxHoogte=Math.floor(beschikbaar*0.35);
-      var doelHoogte=Math.min(Math.max(inhoudsHoogte,60),maxHoogte);
-      var pct=Math.round((doelHoogte/beschikbaar)*100);
-      tekstSectie.style.flexBasis=pct+'%';
-      tekstSectie.style.maxHeight=pct+'%';
-    }
-  },30);
+  setTimeout(_herberekeningTekstHoogte, 80);
   _uitlegHighlight(highlights||[]);
   _updateNavKolom(si,di);
   _updateUilPijlen(si,di);
@@ -5128,12 +5139,13 @@ function _bouwUitlegScherm(def){
     }
     (function(s){
       bol.addEventListener('keydown',function(e){
-        if(e.key==='Enter'||e.key===' '){
+        if(e.key==='Enter'){
           e.preventDefault();
           _uitlegFocusInNav=false;
           bolRij.click();
           setTimeout(function(){var k=document.getElementById('uitleg-stap-kaart');if(k)k.focus();},120);
         }
+        // Spatiebalk: tekst-toggle (niet afvangen hier, bubbles omhoog naar scherm-handler)
       });
     })(si);
     (function(s){
@@ -5266,13 +5278,8 @@ function _bouwUitlegScherm(def){
 
   scherm.addEventListener('keydown',function(e){
     if(e.key==='Escape'){sluitUitleg();return;}
-    // Spatiebalk: tekst aan/uit (voorkomt ook standaard browser-scroll)
-    if(e.key===' '){
-      var actNow=document.activeElement;
-      // Niet afvangen als focus op een bol staat (spatie activeert die bol)
-      var opBol=actNow&&(actNow.classList.contains('uitleg-bol')||actNow.classList.contains('uitleg-deelbol'));
-      if(!opBol){e.preventDefault();_toggleUitlegTekst();return;}
-    }
+    // Spatiebalk: tekst aan/uit (onderdrukt standaard browser-scroll)
+    if(e.key===' '){e.preventDefault();_toggleUitlegTekst();return;}
     if(e.key==='ArrowDown'||e.key==='ArrowUp'){
       var actief2=document.activeElement;
       var kaart2=document.getElementById('uitleg-stap-kaart');
