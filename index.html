@@ -680,6 +680,37 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 }
 .uitleg-zweef-actie:hover{opacity:0.88;}
 .uitleg-zweef-actie:focus,.uitleg-zweef-terug:focus{outline:3px solid #FCD34D;}
+
+/* ── Tekst-toggle knop (altijd zichtbaar in uitlegscherm) ── */
+.uitleg-tekst-toggle{
+  position:fixed;
+  top:12px; left:72px; /* naast de terugpijl */
+  z-index:200;
+  background:var(--surface);
+  border:2px solid var(--border);
+  color:var(--text);
+  border-radius:50%;
+  width:48px; height:48px;
+  font-size:1.3em;
+  cursor:pointer;
+  display:none; /* standaard verborgen, JS zet hem aan */
+  align-items:center; justify-content:center;
+  box-shadow:0 4px 16px rgba(0,0,0,0.5);
+  transition:background 0.15s;
+}
+.uitleg-tekst-toggle:hover{background:var(--blue-light);}
+.uitleg-tekst-toggle:focus{outline:3px solid #FCD34D;}
+.uitleg-tekst-toggle.tekst-uit{background:#b45309;border-color:#f59e0b;color:#fff;}
+
+/* ── Tekst-sectie verborgen staat ── */
+.uitleg-tekst-sectie.verborgen{
+  flex-basis:0!important;
+  max-height:0!important;
+  min-height:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  transition:flex-basis 0.25s ease, max-height 0.25s ease;
+}
 </style>
 </head>
 <body>
@@ -5221,10 +5252,27 @@ function _bouwUitlegScherm(def){
   zweefWrap.appendChild(zweefActie);
   scherm.appendChild(zweefWrap);
 
+  // Tekst-toggle knop (oog-icoon, altijd zichtbaar in uitlegscherm)
+  var toggleKnop=document.createElement('button');
+  toggleKnop.className='uitleg-tekst-toggle';
+  toggleKnop.id='uitleg-tekst-toggle';
+  toggleKnop.innerHTML='&#128065;'; // 👁
+  toggleKnop.setAttribute('aria-label','Uitlegtekst verbergen');
+  toggleKnop.style.display='flex';
+  toggleKnop.addEventListener('click',_toggleUitlegTekst);
+  scherm.appendChild(toggleKnop);
+
   scherm.addEventListener('wheel',_handleWheel,{passive:false});
 
   scherm.addEventListener('keydown',function(e){
     if(e.key==='Escape'){sluitUitleg();return;}
+    // Spatiebalk: tekst aan/uit (voorkomt ook standaard browser-scroll)
+    if(e.key===' '){
+      var actNow=document.activeElement;
+      // Niet afvangen als focus op een bol staat (spatie activeert die bol)
+      var opBol=actNow&&(actNow.classList.contains('uitleg-bol')||actNow.classList.contains('uitleg-deelbol'));
+      if(!opBol){e.preventDefault();_toggleUitlegTekst();return;}
+    }
     if(e.key==='ArrowDown'||e.key==='ArrowUp'){
       var actief2=document.activeElement;
       var kaart2=document.getElementById('uitleg-stap-kaart');
@@ -5307,6 +5355,10 @@ function _bouwUitlegScherm(def){
       var za=document.getElementById('uitleg-zweef-actie');
       if(za&&isZichtbaar(za)) volgorde.push({el:za,tekst:za.getAttribute('aria-label')||'Doorgaan'});
 
+      // Tekst-toggle knop — altijd in TAB-volgorde als zichtbaar
+      var tt=document.getElementById('uitleg-tekst-toggle');
+      if(tt&&isZichtbaar(tt)) volgorde.push({el:tt,tekst:tt.getAttribute('aria-label')||'Uitlegtekst toggle'});
+
       var huidig=document.activeElement;
       var idx=-1;
       for(var vi=0;vi<volgorde.length;vi++){if(volgorde[vi].el===huidig){idx=vi;break;}}
@@ -5350,6 +5402,22 @@ function _bouwUitlegScherm(def){
       return;
     }
   });
+}
+
+// ── Tekst aan/uit toggle ───────────────────────────────────────
+function _toggleUitlegTekst(){
+  var sectie=document.querySelector('.uitleg-tekst-sectie');
+  var knop=document.getElementById('uitleg-tekst-toggle');
+  if(!sectie||!knop)return;
+  var uitgeschakeld=sectie.classList.toggle('verborgen');
+  knop.classList.toggle('tekst-uit',uitgeschakeld);
+  knop.setAttribute('aria-label',uitgeschakeld?'Uitlegtekst tonen':'Uitlegtekst verbergen');
+  knop.innerHTML=uitgeschakeld?'&#128065;&#x20D7;':'&#128065;'; // oog met streep vs gewoon oog
+  if(uitgeschakeld){
+    _uitlegSpreekDirect('Uitlegtekst verborgen');
+  } else {
+    _uitlegSpreekDirect('Uitlegtekst zichtbaar');
+  }
 }
 
 function openUitleg(methode,bewerking,vanuitKeuzemenu){
