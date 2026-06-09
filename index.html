@@ -5724,14 +5724,15 @@ var UITLEG_DEFINITIES = {
           ]
         },
         titel: 'Hoe lees je zo\'n vermenigvuldigsom?',
-        uitleg: '[PLACEHOLDER: intro vermenigvuldigen]',
+        uitleg: 'Als voorbeeld hebben we de som 345 x 27 netjes onder elkaar gezet. Ieder getal gaan we zo meteen met een ander getal vermenigvuldigen.',
         highlight: [],
         animaties: [],
         deelstappen: [
-          { titel: 'De opbouw', uitleg: '[PLACEHOLDER: uitleg opbouw tabel]', highlight: [], animaties: [] },
-          { titel: 'Getal 1', uitleg: '[PLACEHOLDER: uitleg getal 1 — 345]', highlight: ['g1-h','g1-t','g1-e'], animaties: [] },
-          { titel: 'Getal 2', uitleg: '[PLACEHOLDER: uitleg getal 2 — 27]', highlight: ['g2-t','g2-e'], animaties: [] },
-          { titel: 'De tussenuitkomsten', uitleg: '[PLACEHOLDER: uitleg over de 6 tussenrijen]', highlight: ['r1-t','r1-e','r2-h','r2-t','r2-e','r3-d','r3-h','r3-t','r3-e','r4-h','r4-t','r4-e','r5-d','r5-h','r5-t','r5-e','r6-d','r6-h','r6-t','r6-e'], animaties: [] }
+          { titel: 'De opbouw', uitleg: 'Als voorbeeld hebben we de som 345 x 27 netjes onder elkaar gezet. Ieder getal gaan we zo meteen met een ander getal vermenigvuldigen.', highlight: [], animaties: [] },
+          { titel: 'Duizendtallen', uitleg: 'We hebben te maken met 4 kolommen, de kolom van de duizendtallen, vandaar de letter D. Deze kolom is nu nog leeg.', highlight: ['r3-d','r6-d','ans-d'], animaties: [] },
+          { titel: 'Honderdtallen', uitleg: 'Hierboven staat de letter H. Je raadt het vast al, dat zijn de honderdtallen.', highlight: ['g1-h','r2-h','r3-h','r4-h','r5-h','r6-h','ans-h'], animaties: [] },
+          { titel: 'Tientallen', uitleg: 'De letter T staat voor de tientallen, in dit geval de 4 en de 2.', highlight: ['g1-t','g2-t','r1-t','r2-t','r3-t','r4-t','r5-t','r6-t','ans-t'], animaties: [] },
+          { titel: 'Eenheden', uitleg: 'En tenslotte de losse getallen, ook wel eenheden genoemd, vandaar de letter E.', highlight: ['g1-e','g2-e','r1-e','r2-e','r3-e','r4-e','r5-e','r6-e','ans-e'], animaties: [] }
         ]
       },
 
@@ -5743,7 +5744,8 @@ var UITLEG_DEFINITIES = {
         highlight: [],
         animaties: [],
         deelstappen: [
-          { titel: '5×7', uitleg: '[PLACEHOLDER: 5×7=35, schrijf 35 op rij 1]', highlight: ['g1-e','g2-e','r1-t','r1-e'], animaties: [
+          { titel: '×7', uitleg: 'We beginnen door ieder cijfer van het getal 345 stap voor stap te vermenigvuldigen met de 7.', highlight: ['g2-e'], animaties: [] },
+          { titel: '5×7', uitleg: 'Eerst 5×7. We vullen het antwoord in op de eerste invulrij.', highlight: ['g2-e','g1-e','r1-t','r1-e'], animaties: [
             { type:'vulIn', cel:'r1-t', waarde:'3' },
             { type:'vulIn', cel:'r1-e', waarde:'5' }
           ] },
