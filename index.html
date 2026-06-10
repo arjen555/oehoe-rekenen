@@ -5742,7 +5742,7 @@ var UITLEG_DEFINITIES = {
         uitleg: 'We beginnen door ieder cijfer van het getal 345 stap voor stap te vermenigvuldigen met de 7.',
         highlight: [], animaties: [],
         deelstappen: [
-          { titel: 'x7', uitleg: 'We beginnen door ieder cijfer van het getal 345 stap voor stap te vermenigvuldigen met de 7.', highlight: ['g2-e'], animaties: [] },
+          { titel: 'x7', uitleg: 'We beginnen door ieder cijfer van het getal 345 stap voor stap te vermenigvuldigen met de 7. Straks doen we dat ook met de 2, die natuurlijk 20 voorstelt.', highlight: ['g2-e'], animaties: [] },
           { titel: '5x7', uitleg: 'Eerst 5x7. We vullen het antwoord in op de eerste invulrij.', highlight: ['g2-e','g1-e','r1-t','r1-e'], animaties: [
             { type:'vulIn', cel:'r1-t', waarde:'3' },
             { type:'vulIn', cel:'r1-e', waarde:'5' }
@@ -5847,5 +5847,97 @@ var UITLEG_DEFINITIES = {
       }
 
     ]
-  }};
+  }
+  ,
+
+  /* ================================================================
+     CIJFEREND OPTELLEN
+     Som 1: 246 + 342  (geen onthouden)
+     Som 2: 658 + 535  (met onthouden)
+     Tabel: D / H / T / E  +  onthoudvakjes boven de kolommen
+     ================================================================ */
+  'cijferend-optellen': {
+    titel: 'Cijferend optellen',
+    stappen: [
+
+      /* ── Stap 1: Hoe lees je zo'n som? ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {id:'g1-d',type:'input',tekst:''}, {id:'g1-h',tekst:'2'}, {id:'g1-t',tekst:'4'}, {id:'g1-e',tekst:'6'} ] },
+            { cellen: [ {id:'g2-d',type:'input',tekst:''}, {id:'g2-h',tekst:'3'}, {id:'g2-t',tekst:'4'}, {id:'g2-e',tekst:'2'} ] },
+            { type:'hr', colspan:4 },
+            { cellen: [ {id:'ans-d',type:'input',tekst:''}, {id:'ans-h',type:'input',tekst:''}, {id:'ans-t',type:'input',tekst:''}, {id:'ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: "Hoe lees je zo'n som?",
+        uitleg: 'We gaan 246 + 342 uitrekenen. Eerst zetten we alles netjes onder elkaar.',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'De opbouw', uitleg: 'We gaan 246 + 342 uitrekenen. Eerst zetten we alles netjes onder elkaar.', highlight: [], animaties: [] },
+          { titel: 'Honderdtallen', uitleg: 'De honderdtallen 2 en 3 in de H-kolom, H is van honderdtallen.', highlight: ['g1-h','g2-h','ans-h'], animaties: [] },
+          { titel: 'Tientallen', uitleg: 'De 4 en de 4 zetten we in de kolom van de tientallen, de T-kolom.', highlight: ['g1-t','g2-t','ans-t'], animaties: [] },
+          { titel: 'Eenheden', uitleg: 'Tenslotte de 6 en de 2, die zetten we in de kolom van de losse getallen, die we ook vaak eenheden noemen, vandaar de E-kolom.', highlight: ['g1-e','g2-e','ans-e'], animaties: [] }
+        ]
+      },
+
+      /* ── Stap 2: Som 1 — 246 + 342, geen onthouden ── */
+      {
+        som: null,
+        titel: 'Per kolom optellen',
+        uitleg: 'Nu kunnen we gaan optellen. We beginnen altijd rechts, bij de eenheden.',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'Eenheden', uitleg: 'Nu kunnen we gaan optellen. Eerst de eenheden: 6 + 2. We vullen het antwoord in onder deze cijfers.', highlight: ['g1-e','g2-e','ans-e'], animaties: [
+            { type:'vulIn', cel:'ans-e', waarde:'8' }
+          ] },
+          { titel: 'Tientallen', uitleg: 'Nu zijn de tientallen aan de beurt. 4 + 4 = 8, dat schrijven we weer onder deze getallen.', highlight: ['g1-t','g2-t','ans-t'], animaties: [
+            { type:'vulIn', cel:'ans-t', waarde:'8' }
+          ] },
+          { titel: 'Honderdtallen', uitleg: 'Tenslotte de honderdtallen: 2 + 3 = 5. De 5 zetten we in de H-kolom. Onze som is klaar! Maar één ding is nog belangrijk om ook te leren...', highlight: ['g1-h','g2-h','ans-h'], animaties: [
+            { type:'vulIn', cel:'ans-h', waarde:'5' }
+          ] }
+        ]
+      },
+
+      /* ── Stap 3: Som 2 — 658 + 535, met onthouden ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            /* Onthoudvakjes boven de getallen */
+            { cellen: [ {id:'oth-d',type:'input',tekst:''}, {id:'oth-h',type:'input',tekst:''}, {id:'oth-t',type:'input',tekst:''}, {id:'oth-e',type:'input',tekst:''} ] },
+            { cellen: [ {id:'s2g1-d',type:'input',tekst:''}, {id:'s2g1-h',tekst:'6'}, {id:'s2g1-t',tekst:'5'}, {id:'s2g1-e',tekst:'8'} ] },
+            { cellen: [ {id:'s2g2-d',type:'input',tekst:''}, {id:'s2g2-h',tekst:'5'}, {id:'s2g2-t',tekst:'3'}, {id:'s2g2-e',tekst:'5'} ] },
+            { type:'hr', colspan:4 },
+            { cellen: [ {id:'s2ans-d',type:'input',tekst:''}, {id:'s2ans-h',type:'input',tekst:''}, {id:'s2ans-t',type:'input',tekst:''}, {id:'s2ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: 'Optellen met onthouden',
+        uitleg: 'Een nieuwe som. Er is iets anders. Kijk eens goed naar de eenheden. Hoeveel hebben we die?',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'Een nieuwe som', uitleg: 'Een nieuwe som. Er is iets anders. Kijk eens goed naar de eenheden. Hoeveel hebben we die?', highlight: [], animaties: [] },
+          { titel: 'Eenheden', uitleg: 'We hebben 8 + 5 = 13 eenheden. En de 1 van 13 is een tiental. Die hoort dus bij de volgende kolom!', highlight: ['s2g1-e','s2g2-e'], animaties: [] },
+          { titel: 'Onthouden', uitleg: 'We schrijven de 1 dan ook alvast boven de 5 in de kolom van de tientallen. De 3 van 13 zetten we bij de eenheden.', highlight: ['s2ans-e','oth-t'], animaties: [
+            { type:'vulIn', cel:'s2ans-e', waarde:'3' },
+            { type:'vulIn', cel:'oth-t', waarde:'1' }
+          ] },
+          { titel: 'Tientallen', uitleg: 'Nu de tientallen. We hebben dus 1 + 5 + 3 tientallen, samen is dat 9, die vullen we onderaan in.', highlight: ['oth-t','s2g1-t','s2g2-t','s2ans-t'], animaties: [
+            { type:'vulIn', cel:'s2ans-t', waarde:'9' }
+          ] },
+          { titel: 'Honderdtallen', uitleg: 'Tenslotte de honderdtallen: 6 + 5 = 11. Nou ja, 1100 dus. Een 1 is een duizendtal, de andere 1 is een honderdtal.', highlight: ['s2g1-h','s2g2-h'], animaties: [] },
+          { titel: 'De som is klaar!', uitleg: 'Omdat er geen duizendtallen meer op te tellen zijn, mag je die 1 direct onderin bij het eindantwoord zetten in de D-kolom. De andere 1 zet je in de H-kolom. De som is klaar!', highlight: ['s2ans-d','s2ans-h'], animaties: [
+            { type:'vulIn', cel:'s2ans-d', waarde:'1' },
+            { type:'vulIn', cel:'s2ans-h', waarde:'1' },
+            { type:'vulIn', cel:'s2ans-t', waarde:'9' },
+            { type:'vulIn', cel:'s2ans-e', waarde:'3' }
+          ] }
+        ]
+      }
+
+    ]
+  }
+};
 </script>
