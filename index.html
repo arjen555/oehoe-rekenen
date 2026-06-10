@@ -738,6 +738,8 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
       <span class="start-sub">Als je leerkracht iets klaar heeft gezet</span>
     </button>
   </div>
+  <!-- Suggestiesknop in flow: zichtbaar als knoppen onder elkaar staan bij hoge zoom -->
+  <button class="suggesties-btn suggesties-inline" id="btn-suggesties-inline" onclick="openSuggestiesForm()" style="display:none;margin-top:1rem;position:static;width:auto;padding:6px 14px;font-size:0.85em;">&#128172; Suggesties ter verbetering?</button>
 </div>
 <a href="https://arjen555.github.io/oehoe-rekenen/leerkracht.html" target="_blank" class="suggesties-btn" style="right:auto;left:20px;background:rgba(147,197,253,0.15);border-color:rgba(147,197,253,0.4);color:#93C5FD;font-size:16px;padding:11px 20px;">&#128203; Leerkracht</a>
 <button class="suggesties-btn" id="btn-suggesties" onclick="openSuggestiesForm()">&#128172; Suggesties ter verbetering?</button>
@@ -1036,9 +1038,15 @@ function bind(id,fn){document.getElementById(id).addEventListener('click',fn);}
     });
     // Suggesties-knoppen ook verbergen bij te grote zoom (net als de logo's)
     document.querySelectorAll('.suggesties-btn').forEach(function(b){
+      if(b.id==='btn-suggesties-inline') return; // inline knop apart behandeld
       if(teGroot){b.style.display='none';}
       else{b.style.display=(schermId==='screen-role')?'flex':'none';}
     });
+    // Inline suggestiesknop: tonen als zoom groot én op startpagina
+    var inlineBtn=document.getElementById('btn-suggesties-inline');
+    if(inlineBtn){
+      inlineBtn.style.display=(teGroot&&schermId==='screen-role')?'inline-flex':'none';
+    }
     // Som-uil ook verbergen bij te grote zoom
     var somUil=document.getElementById('uil-som');
     if(somUil&&somUil.src)somUil.style.visibility=teGroot?'hidden':'visible';
@@ -1116,7 +1124,12 @@ function showScreen(id){
   }
   var logoZichtbaar=(id==='screen-role'||id==='screen-setup');
   document.querySelectorAll('.logo-vast').forEach(function(el){el.style.display=logoZichtbaar?'block':'none';});
-  document.querySelectorAll('.suggesties-btn').forEach(function(b){b.style.display=(id==='screen-role')?'flex':'none';});
+  document.querySelectorAll('.suggesties-btn').forEach(function(b){
+    if(b.id==='btn-suggesties-inline') return;
+    b.style.display=(id==='screen-role')?'flex':'none';
+  });
+  var inlineBtn=document.getElementById('btn-suggesties-inline');
+  if(inlineBtn) inlineBtn.style.display='none'; // checkLogoZoom beslist of hij zichtbaar wordt
   if(typeof checkLogoZoom==='function') checkLogoZoom();
 }
 function goHome(){
