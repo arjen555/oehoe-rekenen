@@ -538,6 +538,8 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 .uitleg-interactief td.uitleg-leeg{background:transparent!important;border:none!important;}
 .uitleg-interactief td.uitleg-leeg.uitleg-highlight{border-color:#FCD34D!important;box-shadow:0 0 0 3px #FCD34D!important;background:#3d3200!important;color:#FCD34D!important;}
 .uitleg-interactief td.uitleg-highlight{border-color:#FCD34D!important;box-shadow:0 0 0 3px #FCD34D!important;background:#3d3200!important;color:#FCD34D!important;}
+.uitleg-interactief td.uitleg-highlight-uit{border-color:#22c55e!important;box-shadow:0 0 0 3px #22c55e!important;background:#052e16!important;color:#86efac!important;}
+.uitleg-interactief td.uitleg-highlight-oth{border-color:#f97316!important;box-shadow:0 0 0 3px #f97316!important;background:#7c3500!important;color:#fed7aa!important;}
 
 /* Tekst-sectie: maximaal 35%, krimpt als tekst klein is */
 .uitleg-tekst-sectie{
@@ -4881,11 +4883,17 @@ function _uitlegSpreekDirect(tekst){
   speechSynthesis.speak(u);
 }
 function _uitlegClearHighlights(){
-  Object.values(_uitlegCells).forEach(function(td){td.classList.remove('uitleg-highlight');});
+  Object.values(_uitlegCells).forEach(function(td){
+    td.classList.remove('uitleg-highlight');
+    td.classList.remove('uitleg-highlight-uit');
+    td.classList.remove('uitleg-highlight-oth');
+  });
 }
-function _uitlegHighlight(sleutels){
+function _uitlegHighlight(sleutels, sleutelsUit, sleutelsOth){
   _uitlegClearHighlights();
   (sleutels||[]).forEach(function(s){if(_uitlegCells[s])_uitlegCells[s].classList.add('uitleg-highlight');});
+  (sleutelsUit||[]).forEach(function(s){if(_uitlegCells[s])_uitlegCells[s].classList.add('uitleg-highlight-uit');});
+  (sleutelsOth||[]).forEach(function(s){if(_uitlegCells[s])_uitlegCells[s].classList.add('uitleg-highlight-oth');});
 }
 function _uitlegVulIn(sleutel,waarde,klasse){
   var td=_uitlegCells[sleutel]; if(!td)return;
@@ -4934,8 +4942,22 @@ function _voerActieUit(a){
   switch(a.type){
     case 'vulIn': _uitlegVulIn(a.cel,a.waarde,a.cls); break;
     case 'wis': _uitlegWis(a.cel); break;
-    case 'highlight': _uitlegHighlight(a.cellen); break;
+    case 'highlight': _uitlegHighlight(a.cellen, a.cellenUit); break;
     case 'clearHighlight': _uitlegClearHighlights(); break;
+    case 'leenVis':
+      // Doorstreep-visualisatie: oude waarde rood doorgestreept + nieuwe waarde wit
+      // a.cel = cel-id, a.oud = oud getal, a.nieuw = nieuw getal
+      // a.geleend = cel-id waar geleende 1 (geel) bij komt
+      var tdL=_uitlegCells[a.cel]; if(!tdL)break;
+      tdL.innerHTML='<span style="text-decoration:line-through;color:#f87171;font-size:0.7em;">'+a.oud+'</span><span style="color:#fff;">'+a.nieuw+'</span>';
+      tdL.className='';
+      if(a.geleend&&_uitlegCells[a.geleend]){
+        var tdG=_uitlegCells[a.geleend];
+        var huidig=tdG.textContent||'';
+        tdG.innerHTML='<span style="color:#FCD34D;">1</span><span style="color:#fff;">'+huidig+'</span>';
+        tdG.className='';
+      }
+      break;
   }
 }
 
@@ -4992,6 +5014,8 @@ function _renderStap(si,di){
   var titelTekst=stap.titel||('Stap '+(si+1));
   var uitlegTekst=(deelstap?deelstap.uitleg:stap.uitleg)||'';
   var highlights=deelstap?deelstap.highlight:stap.highlight;
+  var highlightsUit=deelstap?deelstap.highlightUit:stap.highlightUit;
+  var highlightsOth=deelstap?deelstap.highlightOth:stap.highlightOth;
   var titEl=document.getElementById('uitleg-stap-titel');
   var tekEl=document.getElementById('uitleg-stap-tekst');
   var toonTitel=(di===0||!stap.deelstappen||stap.deelstappen.length<=1);
@@ -5000,7 +5024,7 @@ function _renderStap(si,di){
 
   // Pas tekst-sectie dynamisch aan op werkelijke teksthoogte
   setTimeout(_herberekeningTekstHoogte, 80);
-  _uitlegHighlight(highlights||[]);
+  _uitlegHighlight(highlights||[], highlightsUit||[], highlightsOth||[]);
   _updateNavKolom(si,di);
   _updateUilPijlen(si,di);
   var spreekTekst=(stap.deelstappen&&stap.deelstappen.length>1)?uitlegTekst:titelTekst+'. '+uitlegTekst;
@@ -5298,8 +5322,8 @@ function _bouwUitlegScherm(def){
 
   scherm.addEventListener('keydown',function(e){
     if(e.key==='Escape'){sluitUitleg();return;}
-    // Spatiebalk: tekst aan/uit (onderdrukt standaard browser-scroll)
-    if(e.key===' '){e.preventDefault();_toggleUitlegTekst();return;}
+    // Spatiebalk: tekst aan/uit (onderdrukt standaard browser-scroll én globale handlers)
+    if(e.key===' '){e.preventDefault();e.stopPropagation();_toggleUitlegTekst();return;}
     if(e.key==='ArrowDown'||e.key==='ArrowUp'){
       var actief2=document.activeElement;
       var kaart2=document.getElementById('uitleg-stap-kaart');
@@ -5537,17 +5561,17 @@ var UITLEG_DEFINITIES = {
         animaties: [],
         deelstappen: [
           { titel: 'De rijen', uitleg: 'Zoals er een kolom van boven naar beneden is voor de honderdtallen, zo is er ook een rij van links naar rechts voor de honderdtallen: de H-rij.', highlight: ['inv1-h','inv1-t','inv1-e'], animaties: [] },
-          { titel: 'De H-rij', uitleg: 'In de H-rij tellen we de honderdtallen van de som bij elkaar en vullen die in, zoals hier.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [
+          { titel: 'De H-rij', uitleg: 'In de H-rij tellen we de honderdtallen van de som bij elkaar en vullen die in, zoals hier.', highlight: ['a-h','b-h'], highlightUit: ['inv1-h','inv1-t','inv1-e'], animaties: [
             { type:'vulIn', cel:'inv1-h', waarde:'5' },
             { type:'vulIn', cel:'inv1-t', waarde:'0' },
             { type:'vulIn', cel:'inv1-e', waarde:'0' }
           ] },
-          { titel: 'De T-rij', uitleg: 'Na de honderdtallen zijn de tientallen aan de beurt, de 4 en de 5. Die optelsom schrijven we in de T-rij. Let er goed op dat je begint in te vullen in de T-kolom, het zijn immers tientallen.', highlight: ['a-t','b-t','inv2-h','inv2-t','inv2-e'], animaties: [
+          { titel: 'De T-rij', uitleg: 'Na de honderdtallen zijn de tientallen aan de beurt, de 4 en de 5. Die optelsom schrijven we in de T-rij. Let er goed op dat je begint in te vullen in de T-kolom, het zijn immers tientallen.', highlight: ['a-t','b-t'], highlightUit: ['inv2-h','inv2-t','inv2-e'], animaties: [
             { type:'vulIn', cel:'inv2-t', waarde:'9' },
             { type:'vulIn', cel:'inv2-e', waarde:'0' }
           ] },
-          { titel: 'De E-rij', uitleg: 'Tenslotte moeten we de eenheden nog optellen. We kijken naar de E-kolom en vullen in op de E-rij. Maar let op:', highlight: ['a-e','b-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
-          { titel: 'Doorschuiven', uitleg: '7+6=13. Wat is de 1 in dit getal? Juist, een tiental. Dus de 1 schrijven we in de kolom van de tientallen op de rij van de eenheden. En de 3 komt daar natuurlijk gezellig naast te staan.', highlight: ['a-e','b-e','inv3-t','inv3-e'], animaties: [
+          { titel: 'De E-rij', uitleg: 'Tenslotte moeten we de eenheden nog optellen. We kijken naar de E-kolom en vullen in op de E-rij. Maar let op:', highlight: ['a-e','b-e'], highlightUit: ['inv3-h','inv3-t','inv3-e'], animaties: [] },
+          { titel: 'Doorschuiven', uitleg: '7 + 6 = 13. Wat is de 1 in dit getal? Juist, een tiental. Dus de 1 schrijven we in de kolom van de tientallen op de rij van de eenheden. En de 3 komt daar natuurlijk gezellig naast te staan.', highlight: ['a-e','b-e'], highlightUit: ['inv3-t','inv3-e'], animaties: [
             { type:'vulIn', cel:'inv3-t', waarde:'1' },
             { type:'vulIn', cel:'inv3-e', waarde:'3' }
           ] }
@@ -5560,13 +5584,13 @@ var UITLEG_DEFINITIES = {
         highlight: [],
         animaties: [],
         deelstappen: [
-          { titel: 'Naar de einduitkomst', uitleg: 'Nu gaan we wat we al opgeteld hebben, samenvoegen tot één einduitkomst.', highlight: ['inv1-h','inv1-t','inv1-e','inv2-h','inv2-t','inv2-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
-          { titel: 'Honderdtallen', uitleg: 'We hebben in totaal 5 honderdtallen opgeschreven, die mag je dus invullen in de einduitkomst bij de honderdtallen.', highlight: ['inv1-h','ans-h'], animaties: [ { type:'vulIn', cel:'ans-h', waarde:'5' } ] },
-          { titel: 'Tien tientallen', uitleg: 'In de T-kolom hebben we 9+1. O jee, dat zijn 10 tientallen en dat is 100: nog een honderdtal! En we hebben daar al een 5 geschreven. Dat moet een 6 worden.', highlight: ['inv2-t','inv3-t','ans-t','ans-h'], animaties: [
+          { titel: 'Naar de einduitkomst', uitleg: 'Nu gaan we wat we al opgeteld hebben, samenvoegen tot één einduitkomst.', highlight: [], highlightUit: ['inv1-h','inv1-t','inv1-e','inv2-h','inv2-t','inv2-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
+          { titel: 'Honderdtallen', uitleg: 'We hebben in totaal 5 honderdtallen opgeschreven, die mag je dus invullen in de einduitkomst bij de honderdtallen.', highlight: ['inv1-h'], highlightUit: ['ans-h'], animaties: [ { type:'vulIn', cel:'ans-h', waarde:'5' } ] },
+          { titel: 'Tien tientallen', uitleg: 'In de T-kolom: 9 + 1 = 10. Een 10 in de kolom van tientallen is 100 waard. En voor honderd hebben we een andere kolom, de H-kolom. Daar moet dus een 1 bij. We hebben er zojuist een 5 gezet, dat moet een 6 worden. En er blijven 0 tientallen over, dus in de T-kolom schrijven we een 0.', highlight: ['inv2-t','inv3-t'], highlightUit: ['ans-t','ans-h'], animaties: [
             { type:'vulIn', cel:'ans-h', waarde:'6' },
             { type:'vulIn', cel:'ans-t', waarde:'0' }
           ] },
-          { titel: 'De som is klaar!', uitleg: 'Tenslotte kijken we naar de eenheden. Die hebben we 3 in onze uitkomstrijen bij de E-kolom staan. En dus vullen we een 3 in op de einduitkomst. Totaal: 603. We zijn klaar!', highlight: ['inv3-e','ans-e'], animaties: [ { type:'vulIn', cel:'ans-e', waarde:'3' } ] }
+          { titel: 'De som is klaar!', uitleg: 'Tenslotte kijken we naar de eenheden. Die hebben we 3 in onze uitkomstrijen bij de E-kolom staan. En dus vullen we een 3 in op de einduitkomst. Totaal: 603. We zijn klaar!', highlight: ['inv3-e'], highlightUit: ['ans-e'], animaties: [ { type:'vulIn', cel:'ans-e', waarde:'3' } ] }
         ]
       }
     ]
@@ -5612,16 +5636,16 @@ var UITLEG_DEFINITIES = {
         animaties: [],
         deelstappen: [
           { titel: 'De rijen', uitleg: 'Zoals er een kolom van boven naar beneden is voor de honderdtallen, zo is er ook een rij van links naar rechts voor de honderdtallen: de H-rij.', highlight: ['inv1-h','inv1-t','inv1-e'], animaties: [] },
-          { titel: 'De H-rij', uitleg: 'In de H-rij trekken we de honderdtallen van de som van elkaar af en vullen die in, zoals hier.', highlight: ['a-h','b-h','inv1-h','inv1-t','inv1-e'], animaties: [
+          { titel: 'De H-rij', uitleg: 'In de H-rij trekken we de honderdtallen van de som van elkaar af en vullen die in, zoals hier.', highlight: ['a-h','b-h'], highlightUit: ['inv1-h','inv1-t','inv1-e'], animaties: [
             { type:'vulIn', cel:'inv1-h', waarde:'4' },
             { type:'vulIn', cel:'inv1-t', waarde:'0' },
             { type:'vulIn', cel:'inv1-e', waarde:'0' }
           ] },
-          { titel: 'De T-rij', uitleg: 'Na de honderdtallen zijn de tientallen aan de beurt, de 5 en de 2. Die uitkomst schrijven we in de T-rij. Let er goed op dat je begint in te vullen in de T-kolom, het zijn immers tientallen.', highlight: ['a-t','b-t','inv2-h','inv2-t','inv2-e'], animaties: [
+          { titel: 'De T-rij', uitleg: 'Na de honderdtallen zijn de tientallen aan de beurt, de 5 en de 2. Die uitkomst schrijven we in de T-rij. Let er goed op dat je begint in te vullen in de T-kolom, het zijn immers tientallen.', highlight: ['a-t','b-t'], highlightUit: ['inv2-h','inv2-t','inv2-e'], animaties: [
             { type:'vulIn', cel:'inv2-t', waarde:'3' },
             { type:'vulIn', cel:'inv2-e', waarde:'0' }
           ] },
-          { titel: 'De E-rij', uitleg: 'Tenslotte moeten we de eenheden nog van elkaar aftrekken. We kijken naar de E-kolom: 8-4 en vullen de uitkomst in op de E-rij, bij de E-kolom.', highlight: ['a-e','b-e','inv3-h','inv3-t','inv3-e'], animaties: [
+          { titel: 'De E-rij', uitleg: 'Tenslotte moeten we de eenheden nog van elkaar aftrekken. We kijken naar de E-kolom: 8-4 en vullen de uitkomst in op de E-rij, bij de E-kolom.', highlight: ['a-e','b-e'], highlightUit: ['inv3-h','inv3-t','inv3-e'], animaties: [
             { type:'vulIn', cel:'inv3-e', waarde:'4' }
           ] }
         ]
@@ -5635,10 +5659,10 @@ var UITLEG_DEFINITIES = {
         highlight: [],
         animaties: [],
         deelstappen: [
-          { titel: 'Naar de einduitkomst', uitleg: 'Nu hoeven we alleen nog maar de uitkomsten bij elkaar op te tellen. Dat klinkt verwarrend, we zijn immers met een aftreksom bezig. Maar het aftrekken hebben we al gedaan, we tellen nu op wat over is gebleven.', highlight: ['inv1-h','inv1-t','inv1-e','inv2-h','inv2-t','inv2-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
-          { titel: 'Honderdtallen', uitleg: 'We hebben 4 honderdtallen en schrijven op de einduitkomstrij dus een 4 in de H-kolom.', highlight: ['inv1-h','ans-h'], animaties: [ { type:'vulIn', cel:'ans-h', waarde:'4' } ] },
-          { titel: 'Tientallen', uitleg: 'We hebben 3 tientallen en schrijven dus een 3 in de T-kolom.', highlight: ['inv2-t','ans-t'], animaties: [ { type:'vulIn', cel:'ans-t', waarde:'3' } ] },
-          { titel: 'De som is klaar!', uitleg: 'We hebben 4 eenheden en schrijven dus een 4 in de E-kolom. En dan zeggen we: Klaar!', highlight: ['inv3-e','ans-e'], animaties: [ { type:'vulIn', cel:'ans-e', waarde:'4' } ] }
+          { titel: 'Naar de einduitkomst', uitleg: 'Nu hoeven we alleen nog maar de uitkomsten bij elkaar op te tellen. Dat klinkt verwarrend, we zijn immers met een aftreksom bezig. Maar het aftrekken hebben we al gedaan, we tellen nu op wat over is gebleven.', highlight: [], highlightUit: ['inv1-h','inv1-t','inv1-e','inv2-h','inv2-t','inv2-e','inv3-h','inv3-t','inv3-e'], animaties: [] },
+          { titel: 'Honderdtallen', uitleg: 'We hebben 4 honderdtallen en schrijven op de einduitkomstrij dus een 4 in de H-kolom.', highlight: ['inv1-h'], highlightUit: ['ans-h'], animaties: [ { type:'vulIn', cel:'ans-h', waarde:'4' } ] },
+          { titel: 'Tientallen', uitleg: 'We hebben 3 tientallen en schrijven dus een 3 in de T-kolom.', highlight: ['inv2-t'], highlightUit: ['ans-t'], animaties: [ { type:'vulIn', cel:'ans-t', waarde:'3' } ] },
+          { titel: 'De som is klaar!', uitleg: 'We hebben 4 eenheden en schrijven dus een 4 in de E-kolom. En dan zeggen we: Klaar!', highlight: ['inv3-e'], highlightUit: ['ans-e'], animaties: [ { type:'vulIn', cel:'ans-e', waarde:'4' } ] }
         ]
       },
 
@@ -5663,17 +5687,17 @@ var UITLEG_DEFINITIES = {
         animaties: [],
         deelstappen: [
           { titel: 'Het tekort', uitleg: 'Maar vaak zijn er sommen waarbij je meer moet aftrekken dan je eigenlijk hebt. Dan heb je een TEKORT. Kijk maar eens mee.', highlight: [], animaties: [] },
-          { titel: 'De H-rij', uitleg: 'Hier nog niets bijzonders: We hebben 6 honderdtallen en halen er 2 vanaf, dus we vullen 400 in bij de H-rij, maar dan...!', highlight: ['s2a-h','s2b-h','s2inv1-h','s2inv1-t','s2inv1-e'], animaties: [
+          { titel: 'De H-rij', uitleg: 'Hier nog niets bijzonders: We hebben 6 honderdtallen en halen er 2 vanaf, dus we vullen 400 in bij de H-rij, maar dan...!', highlight: ['s2a-h','s2b-h'], highlightUit: ['s2inv1-h','s2inv1-t','s2inv1-e'], animaties: [
             { type:'vulIn', cel:'s2inv1-h', waarde:'4' },
             { type:'vulIn', cel:'s2inv1-t', waarde:'0' },
             { type:'vulIn', cel:'s2inv1-e', waarde:'0' }
           ] },
-          { titel: 'De T-rij', uitleg: '4 tientallen en er gaan 7 tientallen vanaf, dus... een tekort, van 30. We schrijven dan een min-teken voor de 30. Later zullen we die 30 aftrekken van de rest.', highlight: ['s2a-t','s2b-t','s2inv2-h','s2inv2-t','s2inv2-e'], animaties: [
+          { titel: 'De T-rij', uitleg: '4 tientallen en er gaan 7 tientallen vanaf, dus... een tekort, van 30. We schrijven dan een min-teken voor de 30. Later zullen we die 30 aftrekken van de rest.', highlight: ['s2a-t','s2b-t'], highlightUit: ['s2inv2-h','s2inv2-t','s2inv2-e'], animaties: [
             { type:'vulIn', cel:'s2inv2-h', waarde:'-' },
             { type:'vulIn', cel:'s2inv2-t', waarde:'3' },
             { type:'vulIn', cel:'s2inv2-e', waarde:'0' }
           ] },
-          { titel: 'De E-rij', uitleg: 'Ook een tekort bij de eenheden: 2-5, dat is 3 te weinig. We schrijven dus een minteken voor de 3 op de E-rij.', highlight: ['s2a-e','s2b-e','s2inv3-h','s2inv3-t','s2inv3-e'], animaties: [
+          { titel: 'De E-rij', uitleg: 'Ook een tekort bij de eenheden: 2-5, dat is 3 te weinig. We schrijven dus een minteken voor de 3 op de E-rij.', highlight: ['s2a-e','s2b-e'], highlightUit: ['s2inv3-h','s2inv3-t','s2inv3-e'], animaties: [
             { type:'vulIn', cel:'s2inv3-t', waarde:'-' },
             { type:'vulIn', cel:'s2inv3-e', waarde:'3' }
           ] }
@@ -5688,18 +5712,18 @@ var UITLEG_DEFINITIES = {
         highlight: [],
         animaties: [],
         deelstappen: [
-          { titel: 'Naar de einduitkomst', uitleg: 'Nu gaan we de uitkomsten bij elkaar voegen. Soms moet je hier iets optellen, soms iets aftrekken.', highlight: ['s2inv1-h','s2inv1-t','s2inv1-e','s2inv2-h','s2inv2-t','s2inv2-e','s2inv3-h','s2inv3-t','s2inv3-e'], animaties: [] },
-          { titel: 'Honderdtallen', uitleg: 'We beginnen met 400, dat is de uitkomst van de honderdtallen.', highlight: ['s2inv1-h','s2ans-h','s2ans-t','s2ans-e'], animaties: [
+          { titel: 'Naar de einduitkomst', uitleg: 'Nu gaan we de uitkomsten bij elkaar voegen. Soms moet je hier iets optellen, soms iets aftrekken.', highlight: [], highlightUit: ['s2inv1-h','s2inv1-t','s2inv1-e','s2inv2-h','s2inv2-t','s2inv2-e','s2inv3-h','s2inv3-t','s2inv3-e'], animaties: [] },
+          { titel: 'Honderdtallen', uitleg: 'We beginnen met 400, dat is de uitkomst van de honderdtallen.', highlight: ['s2inv1-h'], highlightUit: ['s2ans-h','s2ans-t','s2ans-e'], animaties: [
             { type:'vulIn', cel:'s2ans-h', waarde:'4' },
             { type:'vulIn', cel:'s2ans-t', waarde:'0' },
             { type:'vulIn', cel:'s2ans-e', waarde:'0' }
           ] },
-          { titel: 'Tientallen', uitleg: 'Nu de tientallen, we hebben 30 tekort. Die kunnen we van 400 aftrekken. 400 - 30 = 370.', highlight: ['s2inv2-h','s2inv2-t','s2inv2-e','s2ans-h','s2ans-t','s2ans-e'], animaties: [
+          { titel: 'Tientallen', uitleg: 'Nu de tientallen, we hebben 30 tekort. Die kunnen we van 400 aftrekken. 400 - 30 = 370.', highlight: ['s2inv2-h','s2inv2-t','s2inv2-e'], highlightUit: ['s2ans-h','s2ans-t','s2ans-e'], animaties: [
             { type:'vulIn', cel:'s2ans-h', waarde:'3' },
             { type:'vulIn', cel:'s2ans-t', waarde:'7' },
             { type:'vulIn', cel:'s2ans-e', waarde:'0' }
           ] },
-          { titel: 'De som is klaar!', uitleg: 'Tenslotte de eenheden: 3 tekort. Dus wordt het 370 - 3 = 367. Klaar!', highlight: ['s2inv3-t','s2inv3-e','s2ans-h','s2ans-t','s2ans-e'], animaties: [
+          { titel: 'De som is klaar!', uitleg: 'Tenslotte de eenheden: 3 tekort. Dus wordt het 370 - 3 = 367. Klaar!', highlight: ['s2inv3-t','s2inv3-e'], highlightUit: ['s2ans-h','s2ans-t','s2ans-e'], animaties: [
             { type:'vulIn', cel:'s2ans-h', waarde:'3' },
             { type:'vulIn', cel:'s2ans-t', waarde:'6' },
             { type:'vulIn', cel:'s2ans-e', waarde:'7' }
@@ -5760,16 +5784,16 @@ var UITLEG_DEFINITIES = {
         highlight: [], animaties: [],
         deelstappen: [
           { titel: 'x7', uitleg: 'We beginnen door ieder cijfer van het getal 345 stap voor stap te vermenigvuldigen met de 7. Straks doen we dat ook met de 2, die natuurlijk 20 voorstelt.', highlight: ['g2-e'], animaties: [] },
-          { titel: '5x7', uitleg: 'Eerst 5x7. We vullen het antwoord in op de eerste invulrij.', highlight: ['g2-e','g1-e','r1-t','r1-e'], animaties: [
+          { titel: '5x7', uitleg: 'Eerst 5x7. We vullen het antwoord in op de eerste invulrij.', highlight: ['g2-e','g1-e'], highlightUit: ['r1-t','r1-e'], animaties: [
             { type:'vulIn', cel:'r1-t', waarde:'3' },
             { type:'vulIn', cel:'r1-e', waarde:'5' }
           ] },
-          { titel: '40x7', uitleg: 'Nu is de 4 aan de beurt van het bovenste getal. Dat wordt dan 40x7=280. Dat zetten we op de volgende invulregel, eenheden bij eenheden, tientallen bij tientallen enz.', highlight: ['g2-e','g1-t','r2-h','r2-t','r2-e'], animaties: [
+          { titel: '40x7', uitleg: 'Nu is de 4 aan de beurt van het bovenste getal. Dat wordt dan 40x7=280. Dat zetten we op de volgende invulregel, eenheden bij eenheden, tientallen bij tientallen enz.', highlight: ['g2-e','g1-t'], highlightUit: ['r2-h','r2-t','r2-e'], animaties: [
             { type:'vulIn', cel:'r2-h', waarde:'2' },
             { type:'vulIn', cel:'r2-t', waarde:'8' },
             { type:'vulIn', cel:'r2-e', waarde:'0' }
           ] },
-          { titel: '300x7', uitleg: 'Nu de 3 nog van het bovenste getal, die staat voor 300, dus: 300x7=2100, op de volgende invulregel.', highlight: ['g2-e','g1-h','r3-d','r3-h','r3-t','r3-e'], animaties: [
+          { titel: '300x7', uitleg: 'Nu de 3 nog van het bovenste getal, die staat voor 300, dus: 300x7=2100, op de volgende invulregel.', highlight: ['g2-e','g1-h'], highlightUit: ['r3-d','r3-h','r3-t','r3-e'], animaties: [
             { type:'vulIn', cel:'r3-d', waarde:'2' },
             { type:'vulIn', cel:'r3-h', waarde:'1' },
             { type:'vulIn', cel:'r3-t', waarde:'0' },
@@ -5784,17 +5808,17 @@ var UITLEG_DEFINITIES = {
         uitleg: 'Nu we ieder getal van 345 met 7 vermenigvuldigd hebben, is de 20 aan de beurt van het getal 27.',
         highlight: [], animaties: [],
         deelstappen: [
-          { titel: '5x20', uitleg: 'Nu we ieder getal van 345 met 7 vermenigvuldigd hebben, is de 20 aan de beurt van het getal 27. Eerst 5x20=100, op de volgende invulrij.', highlight: ['g2-t','g1-e','r4-h','r4-t','r4-e'], animaties: [
+          { titel: '5x20', uitleg: 'Nu we ieder getal van 345 met 7 vermenigvuldigd hebben, is de 20 aan de beurt van het getal 27. Eerst 5x20=100, op de volgende invulrij.', highlight: ['g2-t','g1-e'], highlightUit: ['r4-h','r4-t','r4-e'], animaties: [
             { type:'vulIn', cel:'r4-h', waarde:'1' },
             { type:'vulIn', cel:'r4-t', waarde:'0' },
             { type:'vulIn', cel:'r4-e', waarde:'0' }
           ] },
-          { titel: '40x20', uitleg: 'Dan 40x20=800.', highlight: ['g2-t','g1-t','r5-h','r5-t','r5-e'], animaties: [
+          { titel: '40x20', uitleg: 'Dan 40x20=800.', highlight: ['g2-t','g1-t'], highlightUit: ['r5-h','r5-t','r5-e'], animaties: [
             { type:'vulIn', cel:'r5-h', waarde:'8' },
             { type:'vulIn', cel:'r5-t', waarde:'0' },
             { type:'vulIn', cel:'r5-e', waarde:'0' }
           ] },
-          { titel: '300x20', uitleg: 'En tenslotte 300x20=6000.', highlight: ['g2-t','g1-h','r6-d','r6-h','r6-t','r6-e'], animaties: [
+          { titel: '300x20', uitleg: 'En tenslotte 300x20=6000.', highlight: ['g2-t','g1-h'], highlightUit: ['r6-d','r6-h','r6-t','r6-e'], animaties: [
             { type:'vulIn', cel:'r6-d', waarde:'6' },
             { type:'vulIn', cel:'r6-h', waarde:'0' },
             { type:'vulIn', cel:'r6-t', waarde:'0' },
@@ -5809,25 +5833,25 @@ var UITLEG_DEFINITIES = {
         uitleg: 'Nu we alle vermenigvuldigingen gedaan hebben, is het tijd om alles op te tellen.',
         highlight: [], animaties: [],
         deelstappen: [
-          { titel: 'Duizendtallen', uitleg: 'Nu we alle vermenigvuldigingen gedaan hebben, is het tijd om alles op te tellen. Eerst de duizendtallen: 2 + 6 = 8000.', highlight: ['r3-d','r6-d','op1-d','op1-h','op1-t','op1-e'], animaties: [
+          { titel: 'Duizendtallen', uitleg: 'Nu we alle vermenigvuldigingen gedaan hebben, is het tijd om alles op te tellen. Eerst de duizendtallen: 2 + 6 = 8000.', highlight: ['r3-d','r6-d'], highlightUit: ['op1-d','op1-h','op1-t','op1-e'], animaties: [
             { type:'vulIn', cel:'op1-d', waarde:'8' },
             { type:'vulIn', cel:'op1-h', waarde:'0' },
             { type:'vulIn', cel:'op1-t', waarde:'0' },
             { type:'vulIn', cel:'op1-e', waarde:'0' }
           ] },
-          { titel: 'Honderdtallen', uitleg: 'Nu zijn de honderdtallen aan de beurt: 2+1+1+8 = 12 honderdtallen. Op de volgende rij vullen we dus in 1200.', highlight: ['r2-h','r3-h','r4-h','r5-h','r6-h','op2-d','op2-h','op2-t','op2-e'], animaties: [
+          { titel: 'Honderdtallen', uitleg: 'Nu zijn de honderdtallen aan de beurt: 2+1+1+8 = 12 honderdtallen. Op de volgende rij vullen we dus in 1200.', highlight: ['r2-h','r3-h','r4-h','r5-h','r6-h'], highlightUit: ['op2-d','op2-h','op2-t','op2-e'], animaties: [
             { type:'vulIn', cel:'op2-d', waarde:'1' },
             { type:'vulIn', cel:'op2-h', waarde:'2' },
             { type:'vulIn', cel:'op2-t', waarde:'0' },
             { type:'vulIn', cel:'op2-e', waarde:'0' }
           ] },
-          { titel: 'Tientallen', uitleg: 'Tientallen hebben we 3+8=11, dus 110. Dit schrijven we op de nieuwe regel.', highlight: ['r1-t','r2-t','r3-t','r4-t','r5-t','r6-t','op3-d','op3-h','op3-t','op3-e'], animaties: [
+          { titel: 'Tientallen', uitleg: 'Tientallen hebben we 3 + 8 = 11, dus 110. Dit schrijven we op de nieuwe regel.', highlight: ['r1-t','r2-t','r3-t','r4-t','r5-t','r6-t'], highlightUit: ['op3-d','op3-h','op3-t','op3-e'], animaties: [
             { type:'vulIn', cel:'op3-d', waarde:'' },
             { type:'vulIn', cel:'op3-h', waarde:'1' },
             { type:'vulIn', cel:'op3-t', waarde:'1' },
             { type:'vulIn', cel:'op3-e', waarde:'0' }
           ] },
-          { titel: 'Eenheden', uitleg: 'En ook nog 5 eenheden, die we weer opschrijven.', highlight: ['r1-e','r2-e','r3-e','r4-e','r5-e','r6-e','op4-d','op4-h','op4-t','op4-e'], animaties: [
+          { titel: 'Eenheden', uitleg: 'En ook nog 5 eenheden, die we weer opschrijven.', highlight: ['r1-e','r2-e','r3-e','r4-e','r5-e','r6-e'], highlightUit: ['op4-d','op4-h','op4-t','op4-e'], animaties: [
             { type:'vulIn', cel:'op4-d', waarde:'' },
             { type:'vulIn', cel:'op4-h', waarde:'' },
             { type:'vulIn', cel:'op4-t', waarde:'' },
@@ -5842,19 +5866,19 @@ var UITLEG_DEFINITIES = {
         uitleg: 'En nu nog de eindoptelling.',
         highlight: [], animaties: [],
         deelstappen: [
-          { titel: 'Duizendtallen', uitleg: 'En nu alles bij elkaar tellen: Eerst de kolom van de duizendtallen: 8 + 1 = 9.', highlight: ['op1-d','op2-d','op3-d','op4-d','ans-d'], animaties: [
+          { titel: 'Duizendtallen', uitleg: 'En nu alles bij elkaar tellen: Eerst de kolom van de duizendtallen: 8 + 1 = 9.', highlight: ['op1-d','op2-d','op3-d','op4-d'], highlightUit: ['ans-d'], animaties: [
             { type:'vulIn', cel:'ans-d', waarde:'9' }
           ] },
-          { titel: 'Honderdtallen', uitleg: 'Nu de honderdtallen: 2 + 1 = 3.', highlight: ['op1-h','op2-h','op3-h','op4-h','ans-h'], animaties: [
+          { titel: 'Honderdtallen', uitleg: 'Nu de honderdtallen: 2 + 1 = 3.', highlight: ['op1-h','op2-h','op3-h','op4-h'], highlightUit: ['ans-h'], animaties: [
             { type:'vulIn', cel:'ans-d', waarde:'9' },
             { type:'vulIn', cel:'ans-h', waarde:'3' }
           ] },
-          { titel: 'Tientallen', uitleg: 'Nu de tientallen: er is er maar 1, die schrijven we op.', highlight: ['op1-t','op2-t','op3-t','op4-t','ans-t'], animaties: [
+          { titel: 'Tientallen', uitleg: 'Nu de tientallen: er is er maar 1, die schrijven we op.', highlight: ['op1-t','op2-t','op3-t','op4-t'], highlightUit: ['ans-t'], animaties: [
             { type:'vulIn', cel:'ans-d', waarde:'9' },
             { type:'vulIn', cel:'ans-h', waarde:'3' },
             { type:'vulIn', cel:'ans-t', waarde:'1' }
           ] },
-          { titel: 'De som is klaar!', uitleg: 'En tenslotte de eenheden: 5. En dan zijn we er: 9315, we zijn klaar!', highlight: ['op1-e','op2-e','op3-e','op4-e','ans-e'], animaties: [
+          { titel: 'De som is klaar!', uitleg: 'En tenslotte de eenheden: 5. En dan zijn we er: 9315, we zijn klaar!', highlight: ['op1-e','op2-e','op3-e','op4-e'], highlightUit: ['ans-e'], animaties: [
             { type:'vulIn', cel:'ans-d', waarde:'9' },
             { type:'vulIn', cel:'ans-h', waarde:'3' },
             { type:'vulIn', cel:'ans-t', waarde:'1' },
@@ -5906,13 +5930,13 @@ var UITLEG_DEFINITIES = {
         uitleg: 'Nu kunnen we gaan optellen. We beginnen altijd rechts, bij de eenheden.',
         highlight: [], animaties: [],
         deelstappen: [
-          { titel: 'Eenheden', uitleg: 'Nu kunnen we gaan optellen. Eerst de eenheden: 6 + 2. We vullen het antwoord in onder deze cijfers.', highlight: ['g1-e','g2-e','ans-e'], animaties: [
+          { titel: 'Eenheden', uitleg: 'Nu kunnen we gaan optellen. Eerst de eenheden: 6 + 2. We vullen het antwoord in onder deze cijfers.', highlight: ['g1-e','g2-e'], highlightUit: ['ans-e'], animaties: [
             { type:'vulIn', cel:'ans-e', waarde:'8' }
           ] },
-          { titel: 'Tientallen', uitleg: 'Nu zijn de tientallen aan de beurt. 4 + 4 = 8, dat schrijven we weer onder deze getallen.', highlight: ['g1-t','g2-t','ans-t'], animaties: [
+          { titel: 'Tientallen', uitleg: 'Nu zijn de tientallen aan de beurt. 4 + 4 = 8, dat schrijven we weer onder deze getallen.', highlight: ['g1-t','g2-t'], highlightUit: ['ans-t'], animaties: [
             { type:'vulIn', cel:'ans-t', waarde:'8' }
           ] },
-          { titel: 'Honderdtallen', uitleg: 'Tenslotte de honderdtallen: 2 + 3 = 5. De 5 zetten we in de H-kolom. Onze som is klaar! Maar één ding is nog belangrijk om ook te leren...', highlight: ['g1-h','g2-h','ans-h'], animaties: [
+          { titel: 'Honderdtallen', uitleg: 'Tenslotte de honderdtallen: 2 + 3 = 5. De 5 zetten we in de H-kolom. Onze som is klaar! Maar één ding is nog belangrijk om ook te leren...', highlight: ['g1-h','g2-h'], highlightUit: ['ans-h'], animaties: [
             { type:'vulIn', cel:'ans-h', waarde:'5' }
           ] }
         ]
@@ -5927,8 +5951,8 @@ var UITLEG_DEFINITIES = {
             { cellen: [ {id:'oth-d',type:'input',tekst:''}, {id:'oth-h',type:'input',tekst:''}, {id:'oth-t',type:'input',tekst:''}, {id:'oth-e',type:'input',tekst:''} ] },
             { cellen: [ {id:'s2g1-d',type:'input',tekst:''}, {id:'s2g1-h',tekst:'6'}, {id:'s2g1-t',tekst:'5'}, {id:'s2g1-e',tekst:'8'} ] },
             { cellen: [ {id:'s2g2-d',type:'input',tekst:''}, {id:'s2g2-h',tekst:'5'}, {id:'s2g2-t',tekst:'3'}, {id:'s2g2-e',tekst:'5'} ] },
-            { type:'hr', colspan:4 },
-            { cellen: [ {id:'s2ans-d',type:'input',tekst:''}, {id:'s2ans-h',type:'input',tekst:''}, {id:'s2ans-t',type:'input',tekst:''}, {id:'s2ans-e',type:'input',tekst:''} ] }
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''}, {id:'s2ans-d',type:'input',tekst:''}, {id:'s2ans-h',type:'input',tekst:''}, {id:'s2ans-t',type:'input',tekst:''}, {id:'s2ans-e',type:'input',tekst:''} ] }
           ]
         },
         titel: 'Optellen met onthouden',
@@ -5937,20 +5961,334 @@ var UITLEG_DEFINITIES = {
         deelstappen: [
           { titel: 'Een nieuwe som', uitleg: 'Een nieuwe som. Er is iets anders. Kijk eens goed naar de eenheden. Hoeveel hebben we die?', highlight: [], animaties: [] },
           { titel: 'Eenheden', uitleg: 'We hebben 8 + 5 = 13 eenheden. En de 1 van 13 is een tiental. Die hoort dus bij de volgende kolom!', highlight: ['s2g1-e','s2g2-e'], animaties: [] },
-          { titel: 'Onthouden', uitleg: 'We schrijven de 1 dan ook alvast boven de 5 in de kolom van de tientallen. De 3 van 13 zetten we bij de eenheden.', highlight: ['s2ans-e','oth-t'], animaties: [
+          { titel: 'Onthouden', uitleg: 'We schrijven de 1 dan ook alvast boven de 5 in de kolom van de tientallen. De 3 van 13 zetten we bij de eenheden.', highlight: ['oth-t'], highlightUit: ['s2ans-e'], animaties: [
             { type:'vulIn', cel:'s2ans-e', waarde:'3' },
             { type:'vulIn', cel:'oth-t', waarde:'1' }
           ] },
-          { titel: 'Tientallen', uitleg: 'Nu de tientallen. We hebben dus 1 + 5 + 3 tientallen, samen is dat 9, die vullen we onderaan in.', highlight: ['oth-t','s2g1-t','s2g2-t','s2ans-t'], animaties: [
+          { titel: 'Tientallen', uitleg: 'Nu de tientallen. We hebben dus 1 + 5 + 3 tientallen, samen is dat 9, die vullen we onderaan in.', highlight: ['oth-t','s2g1-t','s2g2-t'], highlightUit: ['s2ans-t'], animaties: [
             { type:'vulIn', cel:'s2ans-t', waarde:'9' }
           ] },
-          { titel: 'Honderdtallen', uitleg: 'Tenslotte de honderdtallen: 6 + 5 = 11. Nou ja, 1100 dus. Een 1 is een duizendtal, de andere 1 is een honderdtal.', highlight: ['s2g1-h','s2g2-h'], animaties: [] },
-          { titel: 'De som is klaar!', uitleg: 'Omdat er geen duizendtallen meer op te tellen zijn, mag je die 1 direct onderin bij het eindantwoord zetten in de D-kolom. De andere 1 zet je in de H-kolom. De som is klaar!', highlight: ['s2ans-d','s2ans-h'], animaties: [
+          { titel: 'Honderdtallen', uitleg: 'Tenslotte de honderdtallen: 6 + 5 = 11. Dat is dus 1100. Duizend en honderd. Je schrijft een 1 in de D-kolom en de andere 1 in de H-kolom. De som is klaar!', highlight: ['s2g1-h','s2g2-h'], highlightUit: ['s2ans-d','s2ans-h'], animaties: [
             { type:'vulIn', cel:'s2ans-d', waarde:'1' },
             { type:'vulIn', cel:'s2ans-h', waarde:'1' },
             { type:'vulIn', cel:'s2ans-t', waarde:'9' },
             { type:'vulIn', cel:'s2ans-e', waarde:'3' }
           ] }
+        ]
+      }
+
+    ]
+  }
+
+  ,
+
+  /* ================================================================
+     CIJFEREND AFTREKKEN
+     Som 1: 867 - 342  (geen lenen)
+     Som 2: 543 - 326  (met lenen)
+     Som 3: 806 - 109  (lenen met 0)
+     Som 4: 4004 - 197 (lenen met twee nullen)
+     ================================================================ */
+  'cijferend-aftrekken': {
+    titel: 'Cijferend aftrekken',
+    stappen: [
+
+      /* ── Stap 1: Hoe lees je zo'n aftreksom? ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'afi1g1-d',type:'input',tekst:''}, {id:'afi1g1-h',tekst:'8'}, {id:'afi1g1-t',tekst:'6'}, {id:'afi1g1-e',tekst:'7'} ] },
+            { cellen: [ {type:'op',tekst:'-'}, {id:'afi1g2-d',type:'input',tekst:''}, {id:'afi1g2-h',tekst:'3'}, {id:'afi1g2-t',tekst:'4'}, {id:'afi1g2-e',tekst:'2'} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''},  {id:'afi1ans-d',type:'input',tekst:''}, {id:'afi1ans-h',type:'input',tekst:''}, {id:'afi1ans-t',type:'input',tekst:''}, {id:'afi1ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: "Hoe lees je zo'n aftreksom?",
+        uitleg: 'We gaan de som 867 - 342 maken. Eerst zetten we de getallen die bij elkaar horen, onder elkaar.',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'De opbouw', uitleg: 'We gaan de som 867 - 342 maken. Eerst zetten we de getallen die bij elkaar horen, onder elkaar.', highlight: [], animaties: [] },
+          { titel: 'Honderdtallen', uitleg: 'De 8 en de 3 zijn honderdtallen, die zetten we onder elkaar in de H-kolom (H=honderdtallen).', highlight: ['afi1g1-h','afi1g2-h','afi1ans-h'], animaties: [] },
+          { titel: 'Tientallen', uitleg: 'De 6 en de 4 zijn tientallen, daarvoor is de T-kolom (T=tientallen).', highlight: ['afi1g1-t','afi1g2-t','afi1ans-t'], animaties: [] },
+          { titel: 'Eenheden', uitleg: 'De 7 en de 2 zijn losse getallen, die noemen we ook vaak eenheden, vandaar de E-kolom.', highlight: ['afi1g1-e','afi1g2-e','afi1ans-e'], animaties: [] }
+        ]
+      },
+
+      /* ── Stap 2: Som 1 — 867 - 342, geen lenen ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'op',tekst:''}, {id:'af1g1-d',type:'input',tekst:''}, {id:'af1g1-h',tekst:'8'}, {id:'af1g1-t',tekst:'6'}, {id:'af1g1-e',tekst:'7'} ] },
+            { cellen: [ {type:'op',tekst:'-'}, {id:'af1g2-d',type:'input',tekst:''}, {id:'af1g2-h',tekst:'3'}, {id:'af1g2-t',tekst:'4'}, {id:'af1g2-e',tekst:'2'} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''}, {id:'af1ans-d',type:'input',tekst:''}, {id:'af1ans-h',type:'input',tekst:''}, {id:'af1ans-t',type:'input',tekst:''}, {id:'af1ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: 'Aftrekken zonder lenen',
+        uitleg: '[PLACEHOLDER: intro som 1]',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'Eenheden', uitleg: '7-2 is 5. De 5 zetten we natuurlijk op de juiste plek, in de E-kolom.', highlight: ['af1g1-e','af1g2-e'], highlightUit: ['af1ans-e'], animaties: [
+            { type:'vulIn', cel:'af1ans-e', waarde:'5' }
+          ] },
+          { titel: 'Tientallen', uitleg: '6 - 4 = 2. De 2 hoort in de T-kolom. Het zijn immers tientallen.', highlight: ['af1g1-t','af1g2-t'], highlightUit: ['af1ans-t'], animaties: [
+            { type:'vulIn', cel:'af1ans-t', waarde:'2' }
+          ] },
+          { titel: 'Honderdtallen', uitleg: '8 - 3 = 5, we hebben dus 5 honderdtallen.', highlight: ['af1g1-h','af1g2-h'], highlightUit: ['af1ans-h'], animaties: [
+            { type:'vulIn', cel:'af1ans-h', waarde:'5' }
+          ] },
+          { titel: 'Klaar!', uitleg: 'Klaar!\n\nMaar soms gaat het iets anders in een som, dat leer je hierna.', highlight: [], highlightUit: ['af1ans-h','af1ans-t','af1ans-e'], animaties: [] }
+        ]
+      },
+
+      /* ── Stap 2: Som 2 — 543 - 326, met lenen ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'op',tekst:''}, {id:'af2g1-d',type:'input',tekst:''}, {id:'af2g1-h',tekst:'5'}, {id:'af2g1-t',tekst:'4'}, {id:'af2g1-e',tekst:'3'} ] },
+            { cellen: [ {type:'op',tekst:'-'}, {id:'af2g2-d',type:'input',tekst:''}, {id:'af2g2-h',tekst:'3'}, {id:'af2g2-t',tekst:'2'}, {id:'af2g2-e',tekst:'6'} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''}, {id:'af2ans-d',type:'input',tekst:''}, {id:'af2ans-h',type:'input',tekst:''}, {id:'af2ans-t',type:'input',tekst:''}, {id:'af2ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: 'Aftrekken met lenen',
+        uitleg: '[PLACEHOLDER: intro som 2 — lenen]',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'Het probleem', uitleg: 'Kijk, hier is een probleem. We moeten 3 - 6 doen. Er is een tekort! Mmm... hoe gaan we dát oplossen?', highlight: ['af2g1-e','af2g2-e'], animaties: [] },
+          { titel: 'Lenen', uitleg: 'We hebben genoeg tientallen. Als we nu eens een tiental omruilen voor tien eenheden?\n\nDan worden de 4 tientallen er 3, dus we strepen de 4 door. En die tien eenheden zetten we bij de 3. Nu hebben we wél genoeg, 13 zelfs!', highlight: ['af2g1-t','af2g1-e'], animaties: [
+            { type:'leenVis', cel:'af2g1-t', oud:'4', nieuw:'3', geleend:'af2g1-e' }
+          ] },
+          { titel: 'Zelf lenen', uitleg: 'Als je dadelijk zelf een som maakt, kun je lenen bij een hogere kolom door met de muis te klikken op het getal waar je van wilt lenen. Of je tikt de letter van de kolom waar je van wilt lenen. Dat werkt ook!', highlight: ['af2g1-t','af2g1-e'], animaties: [] },
+          { titel: 'Eenheden', uitleg: '13 - 6 = 7 en dat vullen we in bij de uitkomst in de E-kolom.', highlight: ['af2g1-e','af2g2-e'], highlightUit: ['af2ans-e'], animaties: [
+            { type:'vulIn', cel:'af2ans-e', waarde:'7' }
+          ] },
+          { titel: 'Tientallen', uitleg: 'Aangezien we er eentje afgehaald hebben, is de som bij de T-kolom nu: 3 - 2 = 1. Die vullen we in bij de uitkomst.', highlight: ['af2g1-t','af2g2-t'], highlightUit: ['af2ans-t'], animaties: [
+            { type:'vulIn', cel:'af2ans-t', waarde:'1' }
+          ] },
+          { titel: 'Honderdtallen', uitleg: 'Tenslotte de honderdtallen: 5 - 3 = 2 en dan zijn we...', highlight: ['af2g1-h','af2g2-h'], highlightUit: ['af2ans-h'], animaties: [
+            { type:'vulIn', cel:'af2ans-h', waarde:'2' }
+          ] },
+          { titel: 'Klaar!', uitleg: 'Klaar! Maar hoe is het als we niet meteen kunnen lenen?', highlight: [], highlightUit: ['af2ans-h','af2ans-t','af2ans-e'], animaties: [] }
+        ]
+      },
+
+      /* ── Stap 3: Som 3 — 806 - 109, lenen met 0 ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'op',tekst:''}, {id:'af3g1-d',type:'input',tekst:''}, {id:'af3g1-h',tekst:'8'}, {id:'af3g1-t',tekst:'0'}, {id:'af3g1-e',tekst:'6'} ] },
+            { cellen: [ {type:'op',tekst:'-'}, {id:'af3g2-d',type:'input',tekst:''}, {id:'af3g2-h',tekst:'1'}, {id:'af3g2-t',tekst:'0'}, {id:'af3g2-e',tekst:'9'} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''}, {id:'af3ans-d',type:'input',tekst:''}, {id:'af3ans-h',type:'input',tekst:''}, {id:'af3ans-t',type:'input',tekst:''}, {id:'af3ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: 'Lenen met een nul',
+        uitleg: '[PLACEHOLDER: intro som 3 — nul in de weg]',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'Het probleem', uitleg: 'Een nieuwe som. We moeten 6 - 9 doen. Ook hier moeten we dus lenen.', highlight: ['af3g1-e','af3g2-e'], animaties: [] },
+          { titel: 'Maar waarvan?', uitleg: 'Maar waarvan? We hebben 0 tientallen! O jee!', highlight: ['af3g1-t'], animaties: [] },
+          { titel: 'Lenen van H', uitleg: 'We moeten dus eerst tientallen krijgen. Dat doen we door bij de honderd te lenen. We strepen 8 door en maken er 7 van. Nu hebben we tien tientallen erbij.', highlight: ['af3g1-h','af3g1-t'], animaties: [
+            { type:'leenVis', cel:'af3g1-h', oud:'8', nieuw:'7', geleend:'af3g1-t' }
+          ] },
+          { titel: 'Lenen van T', uitleg: 'En aangezien we eenheden nodig hebben, ruilen we direct weer een tiental om voor tien eenheden. Dan hebben we nu dus 16 eenheden!', highlight: ['af3g1-t','af3g1-e'], animaties: [
+            { type:'leenVis', cel:'af3g1-t', oud:'10', nieuw:'9', geleend:'af3g1-e' }
+          ] },
+          { titel: 'Eenheden', uitleg: 'Nu kunnen we vooruit. 16 - 9 = 7.', highlight: ['af3g1-e','af3g2-e'], highlightUit: ['af3ans-e'], animaties: [
+            { type:'vulIn', cel:'af3ans-e', waarde:'7' }
+          ] },
+          { titel: 'Tientallen', uitleg: '9 - 0 = 9.', highlight: ['af3g1-t','af3g2-t'], highlightUit: ['af3ans-t'], animaties: [
+            { type:'vulIn', cel:'af3ans-t', waarde:'9' }
+          ] },
+          { titel: 'Honderdtallen', uitleg: 'En 7 - 1 = 6 en daarmee zijn we...', highlight: ['af3g1-h','af3g2-h'], highlightUit: ['af3ans-h'], animaties: [
+            { type:'vulIn', cel:'af3ans-h', waarde:'6' }
+          ] },
+          { titel: 'Klaar!', uitleg: 'Klaar!\n\nMaar hoe werkt het met twee nullen?', highlight: [], highlightUit: ['af3ans-h','af3ans-t','af3ans-e'], animaties: [] }
+        ]
+      },
+
+      /* ── Stap 4: Som 4 — 4004 - 197, lenen met twee nullen ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'op',tekst:''}, {id:'af4g1-d',tekst:'4'}, {id:'af4g1-h',tekst:'0'}, {id:'af4g1-t',tekst:'0'}, {id:'af4g1-e',tekst:'4'} ] },
+            { cellen: [ {type:'op',tekst:'-'}, {id:'af4g2-d',type:'input',tekst:''}, {id:'af4g2-h',tekst:'1'}, {id:'af4g2-t',tekst:'9'}, {id:'af4g2-e',tekst:'7'} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''}, {id:'af4ans-d',type:'input',tekst:''}, {id:'af4ans-h',type:'input',tekst:''}, {id:'af4ans-t',type:'input',tekst:''}, {id:'af4ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: 'Lenen met twee nullen',
+        uitleg: '[PLACEHOLDER: intro som 4 — twee nullen]',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'Het probleem', uitleg: 'Je ziet het al, hier moeten we 4 - 7 gaan doen.', highlight: ['af4g1-e','af4g2-e'], animaties: [] },
+          { titel: 'Geen tientallen en geen honderdtallen', uitleg: 'En we hebben geen tientallen en óók geen honderdtallen. Maar misschien heb je zelf al een goed idee?', highlight: ['af4g1-t','af4g1-h'], animaties: [] },
+          { titel: 'Lenen van D', uitleg: 'Precies! Eerst lenen van die 4 uit de D-kolom. Dan hebben we nu 10 honderdtallen.', highlight: ['af4g1-d','af4g1-h'], animaties: [
+            { type:'leenVis', cel:'af4g1-d', oud:'4', nieuw:'3', geleend:'af4g1-h' }
+          ] },
+          { titel: 'Lenen van H', uitleg: 'En hup weer een honderdtal omwisselen voor 10 tientallen.', highlight: ['af4g1-h','af4g1-t'], animaties: [
+            { type:'leenVis', cel:'af4g1-h', oud:'10', nieuw:'9', geleend:'af4g1-t' }
+          ] },
+          { titel: 'Lenen van T', uitleg: 'En hup een tiental omwisselen voor 10 eenheden.', highlight: ['af4g1-t','af4g1-e'], animaties: [
+            { type:'leenVis', cel:'af4g1-t', oud:'10', nieuw:'9', geleend:'af4g1-e' }
+          ] },
+          { titel: 'Eenheden', uitleg: '14 - 7 = 7.', highlight: ['af4g1-e','af4g2-e'], highlightUit: ['af4ans-e'], animaties: [
+            { type:'vulIn', cel:'af4ans-e', waarde:'7' }
+          ] },
+          { titel: 'Tientallen', uitleg: '9 - 9 = 0.', highlight: ['af4g1-t','af4g2-t'], highlightUit: ['af4ans-t'], animaties: [
+            { type:'vulIn', cel:'af4ans-t', waarde:'0' }
+          ] },
+          { titel: 'Honderdtallen', uitleg: '9 - 1 = 8.', highlight: ['af4g1-h','af4g2-h'], highlightUit: ['af4ans-h'], animaties: [
+            { type:'vulIn', cel:'af4ans-h', waarde:'8' }
+          ] },
+          { titel: 'Duizendtallen', uitleg: 'En dan nog 3 duizendtallen die we over hadden.', highlight: ['af4g1-d','af4g2-d'], highlightUit: ['af4ans-d'], animaties: [
+            { type:'vulIn', cel:'af4ans-d', waarde:'3' }
+          ] },
+          { titel: 'Klaar!', uitleg: 'Oehoe klaar! En nu jij ;)', highlight: [], highlightUit: ['af4ans-d','af4ans-h','af4ans-t','af4ans-e'], animaties: [] }
+        ]
+      }
+
+    ]
+  }
+
+  ,
+
+  /* ================================================================
+     CIJFEREND VERMENIGVULDIGEN
+     Som: 273 x 18
+     Rij 1: 273 x 8 = 2184
+     Rij 2: 273 x 10 = 2730
+     Einduitkomst: 4914
+     ================================================================ */
+  'cijferend-vermenigvuldigen': {
+    titel: 'Cijferend vermenigvuldigen',
+    stappen: [
+
+      /* ── Stap 1: Hoe lees je zo'n som? ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'lbl',tekst:''},  {id:'cvoth1-d',type:'input',tekst:''}, {id:'cvoth1-h',type:'input',tekst:''}, {id:'cvoth1-t',type:'input',tekst:''}, {id:'cvoth1-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'cv1-d',type:'input',tekst:''}, {id:'cv1-h',tekst:'2'}, {id:'cv1-t',tekst:'7'}, {id:'cv1-e',tekst:'3'} ] },
+            { cellen: [ {type:'op',tekst:'×'}, {id:'cv2-d',type:'input',tekst:''}, {id:'cv2-h',type:'input',tekst:''}, {id:'cv2-t',tekst:'2'}, {id:'cv2-e',tekst:'8'} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''},  {id:'cvr1-d',type:'input',tekst:''}, {id:'cvr1-h',type:'input',tekst:''}, {id:'cvr1-t',type:'input',tekst:''}, {id:'cvr1-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'cvr2-d',type:'input',tekst:''}, {id:'cvr2-h',type:'input',tekst:''}, {id:'cvr2-t',type:'input',tekst:''}, {id:'cvr2-e',type:'input',tekst:''} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''},  {id:'cvans-d',type:'input',tekst:''}, {id:'cvans-h',type:'input',tekst:''}, {id:'cvans-t',type:'input',tekst:''}, {id:'cvans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: "Hoe lees je zo'n som?",
+        uitleg: 'We gaan 273 vermenigvuldigen met 28. Eerst zetten we de getallen die bij elkaar horen onder elkaar:',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'De opbouw', uitleg: 'We gaan 273 vermenigvuldigen met 18. Eerst zetten we de getallen die bij elkaar horen onder elkaar:', highlight: [], animaties: [] },
+          { titel: 'Honderdtallen', uitleg: 'De 2 staat voor 200. De 2 hoort dus in de kolom waar de honderdtallen staan... de H-kolom.', highlight: ['cv1-h','cv2-h','cvr1-h','cvr2-h','cvans-h','cvoth1-h'], animaties: [] },
+          { titel: 'Tientallen', uitleg: 'De 7 en de 2 staan voor 70 en 20. Het zijn dus tientallen en die zetten we in de T-kolom.', highlight: ['cv1-t','cv2-t','cvr1-t','cvr2-t','cvans-t','cvoth1-t'], animaties: [] },
+          { titel: 'Eenheden', uitleg: 'De 3 en de 8 zijn losse getallen. Dat noemen we ook wel eenheden, vandaar de naam E-kolom.', highlight: ['cv1-e','cv2-e','cvr1-e','cvr2-e','cvans-e','cvoth1-e'], animaties: [] }
+        ]
+      },
+
+      /* ── Stap 2: Vermenigvuldigen met de eenheden (×8) ── */
+      {
+        som: null,
+        titel: 'Vermenigvuldigen met de eenheden',
+        uitleg: 'Het getal 273 moeten we met 28 vermenigvuldigen. Dat doen we in stapjes. Eerst gaan we ieder getal van 273 met de 8 vermenigvuldigen.',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: '×8', uitleg: 'Het getal 273 moeten we met 28 vermenigvuldigen. Dat doen we in stapjes. Eerst gaan we ieder getal van 273 met de 8 vermenigvuldigen.', highlight: ['cv2-e'], animaties: [] },
+          { titel: '3×8', uitleg: 'Eerst 3 x 8 = 24. De 4 schrijven we bij de eenheden. De 2 (van 24) is een tiental en die moeten we dus straks bij de tientallen tellen. Om dit niet te vergeten schrijven we die 2 bovenaan de kolom van de tientallen.', highlight: ['cv1-e','cv2-e'], highlightUit: ['cvr1-e'], highlightOth: ['cvoth1-t'], animaties: [
+            { type:'vulIn', cel:'cvr1-e', waarde:'4' },
+            { type:'vulIn', cel:'cvoth1-t', waarde:'2' }
+          ] },
+          { titel: '7×8', uitleg: 'Nu is de 7 aan de beurt om te vermenigvuldigen. 7 x 8 = 56. Maar... weet je nog, we hebben ook nog 2 tientallen over van zojuist. Die tellen we erbij. 56 + 2 = 58.', highlight: ['cv1-t','cv2-e'], highlightOth: ['cvoth1-t'], animaties: [] },
+          { titel: 'De 8 bij de tientallen', uitleg: 'De 8 (van 58) zetten we bij de tientallen in de tussen-uitkomst. En waar denk je dat de 5 (van 58) komt?...', highlight: ['cv1-t','cv2-e'], highlightOth: ['cvoth1-t'], highlightUit: ['cvr1-t'], animaties: [
+            { type:'vulIn', cel:'cvr1-t', waarde:'8' }
+          ] },
+          { titel: 'Onthouden 5', uitleg: 'Precies. Die bewaren we op de hogere kolom, boven de honderdtallen, om zo meteen weer erbij te tellen.', highlight: ['cv1-t','cv2-e'], highlightOth: ['cvoth1-h'], animaties: [
+            { type:'vulIn', cel:'cvoth1-h', waarde:'5' }
+          ] },
+          { titel: '2×8', uitleg: 'Nu moeten we de 2 nog met de 8 vermenigvuldigen: 2 x 8 = 16. Bedenk altijd wel, eigenlijk hebben we het dan over 1600. De 2 staat in de som voor 200 en die hebben we x 8 gedaan. Maar goed, we moeten 16 opschrijven. Of... was er echter niet nog...', highlight: ['cv1-h','cv2-e'], animaties: [] },
+          { titel: 'Onthouden 5 erbij', uitleg: 'iets dat we hadden onthouden... ja, die 5! Die moet erbij. 16 + 5 =', highlight: ['cv1-h','cv2-e'], highlightOth: ['cvoth1-h'], animaties: [] },
+          { titel: '21!', uitleg: '21 natuurlijk. En 21 is 2100. Daarom de 2 in de kolom van de duizendtallen en de 1 in de kolom van de honderdtallen.', highlightUit: ['cvr1-h','cvr1-d'], animaties: [
+            { type:'vulIn', cel:'cvr1-h', waarde:'1' },
+            { type:'vulIn', cel:'cvr1-d', waarde:'2' }
+          ] },
+          { titel: 'Klaar met ×8', uitleg: 'Nu hebben we ieder getal van 273 met 8 vermenigvuldigd. Je hebt vast al een idee welk cijfer nú aan de beurt is.', highlight: ['cv1-h','cv1-t','cv1-e','cv2-e'], highlightOth: ['cv2-e'], highlightUit: ['cvr1-d','cvr1-h','cvr1-t','cvr1-e'], animaties: [
+            { type:'wis', cel:'cvoth1-h' },
+            { type:'wis', cel:'cvoth1-t' },
+            { type:'wis', cel:'cvoth1-d' },
+            { type:'wis', cel:'cvoth1-e' }
+          ] }
+        ]
+      },
+
+      /* ── Stap 3: Vermenigvuldigen met de tientallen (×10) ── */
+      {
+        som: null,
+        titel: 'Vermenigvuldigen met de tientallen',
+        uitleg: '[PLACEHOLDER: intro ×10]',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: '×20', uitleg: 'Heel goed, de 2. Maar de 2 is in het getal 20 waard.', highlight: ['cv1-h','cv1-t','cv1-e'], highlightOth: ['cv2-t'], animaties: [] },
+          { titel: '3×20', uitleg: 'De som die voor ons klaar staat, 3 x 2 is dus eigenlijk 3 x 20. Daarom schrijven we bij de tweede tussenuitkomst-rij altijd eerst een 0.', highlight: ['cv1-e','cv2-t'], highlightUit: ['cvr2-e'], animaties: [
+            { type:'vulIn', cel:'cvr2-e', waarde:'0' }
+          ] },
+          { titel: '3×20 = 60', uitleg: 'Wanneer we nu 3 x 2 doen van de som hierboven en we vullen de 6 in, klopt het. Er staat 60 en de som was eigenlijk ook 3 x 20.', highlight: ['cv1-e','cv2-t'], highlightUit: ['cvr2-t','cvr2-e'], animaties: [
+            { type:'vulIn', cel:'cvr2-t', waarde:'6' }
+          ] },
+          { titel: 'Onthoud: eerst de 0!', uitleg: 'Onthoud daarom altijd voor de tweede invulrij: eerst de 0 schrijven! En mocht er een derde invulrij zijn, als je met een honderdtal vermenigvuldigt: twee nullen schrijven zelfs!', highlight: ['cv1-e','cv2-t'], highlightUit: ['cvr2-e'], animaties: [] },
+          { som: {
+              tabel: [
+                { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+                { cellen: [ {type:'op',tekst:''},  {id:'cv2g1-d',type:'input',tekst:''}, {id:'cv2g1-h',tekst:'2'}, {id:'cv2g1-t',tekst:'7'}, {id:'cv2g1-e',tekst:'3'} ] },
+                { cellen: [ {type:'op',tekst:'×'}, {id:'cv2g2-d',type:'input',tekst:''}, {id:'cv2g2-h',type:'input',tekst:''}, {id:'cv2g2-t',tekst:'2'}, {id:'cv2g2-e',tekst:'8'} ] },
+                { type:'hr', colspan:5 },
+                { cellen: [ {type:'op',tekst:''},  {id:'cv2r1-d',tekst:'2'}, {id:'cv2r1-h',tekst:'1'}, {id:'cv2r1-t',tekst:'8'}, {id:'cv2r1-e',tekst:'4'} ] },
+                { cellen: [ {tekst:''},  {id:'cv2oth2-d',type:'input',tekst:''}, {id:'cv2oth2-h',type:'input',tekst:''}, {id:'cv2oth2-t',type:'input',tekst:''}, {id:'cv2oth2-e',type:'input',tekst:''} ] },
+                { cellen: [ {type:'op',tekst:''},  {id:'cv2r2-d',type:'input',tekst:''}, {id:'cv2r2-h',type:'input',tekst:''}, {id:'cv2r2-t',type:'input',tekst:''}, {id:'cv2r2-e',tekst:'0'} ] },
+                { type:'hr', colspan:5 },
+                { cellen: [ {type:'op',tekst:''},  {id:'cv2ans-d',type:'input',tekst:''}, {id:'cv2ans-h',type:'input',tekst:''}, {id:'cv2ans-t',type:'input',tekst:''}, {id:'cv2ans-e',type:'input',tekst:''} ] }
+              ]
+            },
+            titel: '7×20', uitleg: 'Het volgende getal: 7 x 2 = 14. De 4 kunnen we in de H-kolom schrijven, de 1 gaat naar de D-kolom, want het is een duizendtal. Die onthouden we dus!', highlight: ['cv2g1-t','cv2g2-t'], highlightOth: ['cv2oth2-d'], highlightUit: ['cv2r2-h'], animaties: [
+            { type:'vulIn', cel:'cv2r2-h', waarde:'4' },
+            { type:'vulIn', cel:'cv2oth2-d', waarde:'1' }
+          ] },
+          { titel: '2×20', uitleg: '[PLACEHOLDER: 2×20=40, +1 onthouden=50, schrijf 5 op D, 0 op H]', highlight: ['cv2g1-h','cv2g2-t'], highlightOth: ['cv2oth2-d'], highlightUit: ['cv2r2-d','cv2r2-h'], animaties: [
+            { type:'vulIn', cel:'cv2r2-d', waarde:'5' }
+          ] }
+        ]
+      },
+
+      /* ── Stap 4: Optellen tot einduitkomst ── */
+      {
+        som: null,
+        titel: 'Optellen',
+        uitleg: '[PLACEHOLDER: intro optellen 2184 + 2730]',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'De twee rijen', uitleg: '[PLACEHOLDER: uitleg beide rijen optellen]', highlight: ['cvr1-d','cvr1-h','cvr1-t','cvr1-e','cv2r2-d','cv2r2-h','cv2r2-t','cv2r2-e'], animaties: [] },
+          { titel: 'Eenheden', uitleg: '[PLACEHOLDER: 4+0=4]', highlight: ['cvr1-e','cv2r2-e'], highlightUit: ['cv2ans-e'], animaties: [
+            { type:'vulIn', cel:'cv2ans-e', waarde:'4' }
+          ] },
+          { titel: 'Tientallen', uitleg: '[PLACEHOLDER: 4+6=10, schrijf 1 onthoud 1]', highlight: ['cvr1-t','cv2r2-t'], highlightUit: ['cv2ans-t'], animaties: [
+            { type:'vulIn', cel:'cv2ans-t', waarde:'4' }
+          ] },
+          { titel: 'Honderdtallen', uitleg: '[PLACEHOLDER: 1+7+1=9]', highlight: ['cvr1-h','cv2r2-h'], highlightUit: ['cv2ans-h'], animaties: [
+            { type:'vulIn', cel:'cv2ans-h', waarde:'6' }
+          ] },
+          { titel: 'Duizendtallen', uitleg: '[PLACEHOLDER: 2+2=4]', highlight: ['cvr1-d','cv2r2-d'], highlightUit: ['cv2ans-d'], animaties: [
+            { type:'vulIn', cel:'cv2ans-d', waarde:'4' }
+          ] },
+          { titel: 'Klaar!', uitleg: '[PLACEHOLDER: uitkomst 7644]', highlight: [], highlightUit: ['cv2ans-d','cv2ans-h','cv2ans-t','cv2ans-e'], animaties: [] }
         ]
       }
 
