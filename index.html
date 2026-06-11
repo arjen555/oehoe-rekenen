@@ -4844,6 +4844,17 @@ async function verzendSuggestie(){
     btn.textContent='Versturen \u2192';btn.disabled=false;
   }
 }
+// Globale spatiebalk: uitlegtekst aan/uit als uitlegscherm actief is
+document.addEventListener('keydown',function(e){
+  if(e.key!==' ')return;
+  if(!_uitlegActief)return;
+  // Niet vuren als focus in een invoerveld zit
+  var actief=document.activeElement;
+  if(actief&&(actief.tagName==='INPUT'||actief.tagName==='TEXTAREA'))return;
+  e.preventDefault();
+  e.stopPropagation();
+  _toggleUitlegTekst();
+},{capture:true});
 // Klikken buiten het formulier sluit het
 document.addEventListener('mousedown',function(e){
   var ov=document.getElementById('suggesties-overlay');
@@ -5327,8 +5338,6 @@ function _bouwUitlegScherm(def){
 
   scherm.addEventListener('keydown',function(e){
     if(e.key==='Escape'){sluitUitleg();return;}
-    // Spatiebalk: tekst aan/uit (onderdrukt standaard browser-scroll én globale handlers)
-    if(e.key===' '){e.preventDefault();e.stopPropagation();_toggleUitlegTekst();return;}
     if(e.key==='ArrowDown'||e.key==='ArrowUp'){
       var actief2=document.activeElement;
       var kaart2=document.getElementById('uitleg-stap-kaart');
