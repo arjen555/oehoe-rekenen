@@ -4867,6 +4867,7 @@ var _uitlegAnimTimeout=null, _uitlegCells={};
 var _uitlegOpenStap=-1;
 var _uitlegFocusInNav=false;
 var _uitlegVanuitKeuzemenu=false;
+var _uitlegLaatstGebouwdeSom=null;
 
 // ── Hulpfuncties ───────────────────────────────────────────────
 function _uitlegSpreek(tekst){
@@ -4917,6 +4918,7 @@ function _bouwTabel(tabelDef){
         case 'op': td.className='uitleg-op'; break;
         case 'lbl': td.className='uitleg-lbl'; break;
         case 'input': td.className='uitleg-input'; break;
+        case 'leeg': td.className='uitleg-leeg'; break;
         default: td.className='';
       }
       if(cel.cls)td.classList.add(cel.cls);
@@ -5008,7 +5010,10 @@ function _renderStap(si,di){
   var def=_uitlegDef; var stap=def.stappen[si]; if(!stap)return;
   var huidigeSom=_vindSom(si);
   var vorigeSom=si>0?_vindSom(si-1):null;
-  if(huidigeSom!==vorigeSom||si===0) _bouwSom(huidigeSom);
+  // Altijd herbouwen als de som verschilt van wat er nu in de DOM staat
+  // _uitlegCells bevat de ids van de huidige DOM — check of de som overeenkomt
+  if(huidigeSom!==vorigeSom||si===0||huidigeSom!==_uitlegLaatstGebouwdeSom) _bouwSom(huidigeSom);
+  _uitlegLaatstGebouwdeSom=huidigeSom;
   _herstelToestand(si,di);
   var deelstap=stap.deelstappen?stap.deelstappen[di]:null;
   var titelTekst=stap.titel||('Stap '+(si+1));
@@ -5483,6 +5488,7 @@ function openUitleg(methode,bewerking,vanuitKeuzemenu){
   _uitlegStapIdx=0; _uitlegDeelstapIdx=0;
   _uitlegOpenStap=0;
   _uitlegVanuitKeuzemenu=(vanuitKeuzemenu===true);
+  _uitlegLaatstGebouwdeSom=null;
   _bouwUitlegScherm(def);
   if(typeof showScreen==='function')showScreen('screen-uitleg-interactief');
   var startKnop=document.getElementById('btn-uitleg-start');
@@ -6204,11 +6210,11 @@ var UITLEG_DEFINITIES = {
         highlight: [], animaties: [],
         deelstappen: [
           { titel: '×8', uitleg: 'Het getal 273 moeten we met 28 vermenigvuldigen. Dat doen we in stapjes. Eerst gaan we ieder getal van 273 met de 8 vermenigvuldigen.', highlight: ['cv2-e'], animaties: [] },
-          { titel: '3×8', uitleg: 'Eerst 3 x 8 = 24. De 4 schrijven we bij de eenheden. De 2 (van 24) is een tiental en die moeten we dus straks bij de tientallen tellen. Om dit niet te vergeten schrijven we die 2 bovenaan de kolom van de tientallen.', highlight: ['cv1-e','cv2-e'], highlightUit: ['cvr1-e'], highlightOth: ['cvoth1-t'], animaties: [
+          { titel: 'Onthouden', uitleg: 'Eerst 3 x 8 = 24. De 4 schrijven we bij de eenheden. De 2 (van 24) is een tiental en die moeten we dus straks bij de tientallen tellen. Om dit niet te vergeten schrijven we die 2 bovenaan de kolom van de tientallen.', highlight: ['cv1-e','cv2-e'], highlightUit: ['cvr1-e'], highlightOth: ['cvoth1-t'], animaties: [
             { type:'vulIn', cel:'cvr1-e', waarde:'4' },
             { type:'vulIn', cel:'cvoth1-t', waarde:'2' }
           ] },
-          { titel: '7×8', uitleg: 'Nu is de 7 aan de beurt om te vermenigvuldigen. 7 x 8 = 56. Maar... weet je nog, we hebben ook nog 2 tientallen over van zojuist. Die tellen we erbij. 56 + 2 = 58.', highlight: ['cv1-t','cv2-e'], highlightOth: ['cvoth1-t'], animaties: [] },
+          { titel: '7×8 en...', uitleg: 'Nu is de 7 aan de beurt om te vermenigvuldigen. 7 x 8 = 56. Maar... weet je nog, we hebben ook nog 2 tientallen over van zojuist. Die tellen we erbij. 56 + 2 = 58.', highlight: ['cv1-t','cv2-e'], highlightOth: ['cvoth1-t'], animaties: [] },
           { titel: 'De 8 bij de tientallen', uitleg: 'De 8 (van 58) zetten we bij de tientallen in de tussen-uitkomst. En waar denk je dat de 5 (van 58) komt?...', highlight: ['cv1-t','cv2-e'], highlightOth: ['cvoth1-t'], highlightUit: ['cvr1-t'], animaties: [
             { type:'vulIn', cel:'cvr1-t', waarde:'8' }
           ] },
@@ -6230,11 +6236,11 @@ var UITLEG_DEFINITIES = {
         ]
       },
 
-      /* ── Stap 3: Vermenigvuldigen met de tientallen (×10) ── */
+      /* ── Stap 3: Vermenigvuldigen met de tientallen (×20) deel 1 ── */
       {
         som: null,
         titel: 'Vermenigvuldigen met de tientallen',
-        uitleg: '[PLACEHOLDER: intro ×10]',
+        uitleg: '[PLACEHOLDER: intro ×20]',
         highlight: [], animaties: [],
         deelstappen: [
           { titel: '×20', uitleg: 'Heel goed, de 2. Maar de 2 is in het getal 20 waard.', highlight: ['cv1-h','cv1-t','cv1-e'], highlightOth: ['cv2-t'], animaties: [] },
@@ -6245,24 +6251,35 @@ var UITLEG_DEFINITIES = {
             { type:'vulIn', cel:'cvr2-t', waarde:'6' }
           ] },
           { titel: 'Onthoud: eerst de 0!', uitleg: 'Onthoud daarom altijd voor de tweede invulrij: eerst de 0 schrijven! En mocht er een derde invulrij zijn, als je met een honderdtal vermenigvuldigt: twee nullen schrijven zelfs!', highlight: ['cv1-e','cv2-t'], highlightUit: ['cvr2-e'], animaties: [] },
-          { som: {
-              tabel: [
-                { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
-                { cellen: [ {type:'op',tekst:''},  {id:'cv2g1-d',type:'input',tekst:''}, {id:'cv2g1-h',tekst:'2'}, {id:'cv2g1-t',tekst:'7'}, {id:'cv2g1-e',tekst:'3'} ] },
-                { cellen: [ {type:'op',tekst:'×'}, {id:'cv2g2-d',type:'input',tekst:''}, {id:'cv2g2-h',type:'input',tekst:''}, {id:'cv2g2-t',tekst:'2'}, {id:'cv2g2-e',tekst:'8'} ] },
-                { type:'hr', colspan:5 },
-                { cellen: [ {type:'op',tekst:''},  {id:'cv2r1-d',tekst:'2'}, {id:'cv2r1-h',tekst:'1'}, {id:'cv2r1-t',tekst:'8'}, {id:'cv2r1-e',tekst:'4'} ] },
-                { cellen: [ {tekst:''},  {id:'cv2oth2-d',type:'input',tekst:''}, {id:'cv2oth2-h',type:'input',tekst:''}, {id:'cv2oth2-t',type:'input',tekst:''}, {id:'cv2oth2-e',type:'input',tekst:''} ] },
-                { cellen: [ {type:'op',tekst:''},  {id:'cv2r2-d',type:'input',tekst:''}, {id:'cv2r2-h',type:'input',tekst:''}, {id:'cv2r2-t',type:'input',tekst:''}, {id:'cv2r2-e',tekst:'0'} ] },
-                { type:'hr', colspan:5 },
-                { cellen: [ {type:'op',tekst:''},  {id:'cv2ans-d',type:'input',tekst:''}, {id:'cv2ans-h',type:'input',tekst:''}, {id:'cv2ans-t',type:'input',tekst:''}, {id:'cv2ans-e',type:'input',tekst:''} ] }
-              ]
-            },
-            titel: '7×20', uitleg: 'Het volgende getal: 7 x 2 = 14. De 4 kunnen we in de H-kolom schrijven, de 1 gaat naar de D-kolom, want het is een duizendtal. Die onthouden we dus!', highlight: ['cv2g1-t','cv2g2-t'], highlightOth: ['cv2oth2-d'], highlightUit: ['cv2r2-h'], animaties: [
+          { titel: 'Nieuwe onthoudvakjes', uitleg: 'We gaan nu de som een rij naar boven opschuiven. De eerdere onthoudvakjes hebben we niet meer nodig. Maar we hebben juist nieuwe onthoudvakjes nodig, op een andere plek, kijk maar:', highlight: [], animaties: [] }
+        ]
+      },
+
+      /* ── Stap 4: Vermenigvuldigen met de tientallen (×20) deel 2 — nieuwe tabel ── */
+      {
+        som: {
+          tabel: [
+            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'cv2g1-d',type:'input',tekst:''}, {id:'cv2g1-h',tekst:'2'}, {id:'cv2g1-t',tekst:'7'}, {id:'cv2g1-e',tekst:'3'} ] },
+            { cellen: [ {type:'op',tekst:'×'}, {id:'cv2g2-d',type:'input',tekst:''}, {id:'cv2g2-h',type:'input',tekst:''}, {id:'cv2g2-t',tekst:'2'}, {id:'cv2g2-e',tekst:'8'} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'leeg',tekst:''},  {id:'cv2oth2-d',type:'input',tekst:''}, {id:'cv2oth2-h',type:'input',tekst:''}, {id:'cv2oth2-t',type:'input',tekst:''}, {id:'cv2oth2-e',type:'input',tekst:''} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'cv2r1-d',tekst:'2'}, {id:'cv2r1-h',tekst:'1'}, {id:'cv2r1-t',tekst:'8'}, {id:'cv2r1-e',tekst:'4'} ] },
+            { cellen: [ {type:'op',tekst:''},  {id:'cv2r2-d',type:'input',tekst:''}, {id:'cv2r2-h',type:'input',tekst:''}, {id:'cv2r2-t',tekst:'6'}, {id:'cv2r2-e',tekst:'0'} ] },
+            { type:'hr', colspan:5 },
+            { cellen: [ {type:'op',tekst:''},  {id:'cv2ans-d',type:'input',tekst:''}, {id:'cv2ans-h',type:'input',tekst:''}, {id:'cv2ans-t',type:'input',tekst:''}, {id:'cv2ans-e',type:'input',tekst:''} ] }
+          ]
+        },
+        titel: 'Vermenigvuldigen met de tientallen (vervolg)',
+        uitleg: 'Het volgende getal: 7 x 2 = 14.',
+        highlight: [], animaties: [],
+        deelstappen: [
+          { titel: 'Nu is er plek!', uitleg: 'De vakjes die er nu tussenin zijn geschreven geven mij de ruimte om soms een getal te kunnen onthouden, kijk maar op het volgende plaatje.', highlight: [], animaties: [] },
+          { titel: '7×20', uitleg: 'Het volgende getal: 7 x 2 = 14. De 4 kunnen we in de H-kolom schrijven, de 1 gaat naar de D-kolom, want het is een duizendtal. Die onthouden we dus!', highlight: ['cv2g1-t','cv2g2-t'], highlightOth: ['cv2oth2-d'], highlightUit: ['cv2r2-h'], animaties: [
             { type:'vulIn', cel:'cv2r2-h', waarde:'4' },
             { type:'vulIn', cel:'cv2oth2-d', waarde:'1' }
           ] },
-          { titel: '2×20', uitleg: '[PLACEHOLDER: 2×20=40, +1 onthouden=50, schrijf 5 op D, 0 op H]', highlight: ['cv2g1-h','cv2g2-t'], highlightOth: ['cv2oth2-d'], highlightUit: ['cv2r2-d','cv2r2-h'], animaties: [
+          { titel: '2×20', uitleg: 'Tenslotte nog 2 x 2 = 4. Tel erbij op het duizendtal dat we onthouden hebben. Dus vullen we een 5 in bij de duizendtallen.', highlight: ['cv2g1-h','cv2g2-t'], highlightOth: ['cv2oth2-d'], highlightUit: ['cv2r2-d'], animaties: [
             { type:'vulIn', cel:'cv2r2-d', waarde:'5' }
           ] }
         ]
@@ -6271,24 +6288,28 @@ var UITLEG_DEFINITIES = {
       /* ── Stap 4: Optellen tot einduitkomst ── */
       {
         som: null,
-        titel: 'Optellen',
+        titel: 'Nu alles nog optellen',
         uitleg: '[PLACEHOLDER: intro optellen 2184 + 2730]',
         highlight: [], animaties: [],
         deelstappen: [
-          { titel: 'De twee rijen', uitleg: '[PLACEHOLDER: uitleg beide rijen optellen]', highlight: ['cvr1-d','cvr1-h','cvr1-t','cvr1-e','cv2r2-d','cv2r2-h','cv2r2-t','cv2r2-e'], animaties: [] },
-          { titel: 'Eenheden', uitleg: '[PLACEHOLDER: 4+0=4]', highlight: ['cvr1-e','cv2r2-e'], highlightUit: ['cv2ans-e'], animaties: [
+          { titel: 'Optellen!', uitleg: 'We hebben nu dus 273 x 8 op de ene rij ingevuld. En we hebben 273 x 20 op de andere rij ingevuld. 2184 en 5460. Als we die twee getallen bij elkaar tellen hebben we de einduitkomst!', highlight: [], animaties: [
+            { type:'wis', cel:'cv2oth2-d' }
+          ] },
+          { titel: 'Eenheden', uitleg: '4 + 0 = 4.', highlight: ['cv2r1-e','cv2r2-e'], highlightUit: ['cv2ans-e'], animaties: [
             { type:'vulIn', cel:'cv2ans-e', waarde:'4' }
           ] },
-          { titel: 'Tientallen', uitleg: '[PLACEHOLDER: 4+6=10, schrijf 1 onthoud 1]', highlight: ['cvr1-t','cv2r2-t'], highlightUit: ['cv2ans-t'], animaties: [
-            { type:'vulIn', cel:'cv2ans-t', waarde:'4' }
+          { titel: 'Tientallen', uitleg: '8 + 6 = 14. Je weet het denk ik al hè...: ', highlight: ['cv2r1-t','cv2r2-t'], animaties: [] },
+          { titel: 'Tientallen onthouden', uitleg: 'De 4 schrijven we op en de 1 onthouden we bij de hogere kolom, de honderdtallen in dit geval.', highlight: ['cv2r1-t','cv2r2-t'], highlightUit: ['cv2ans-t'], highlightOth: ['cv2oth2-h'], animaties: [
+            { type:'vulIn', cel:'cv2ans-t', waarde:'4' },
+            { type:'vulIn', cel:'cv2oth2-h', waarde:'1' }
           ] },
-          { titel: 'Honderdtallen', uitleg: '[PLACEHOLDER: 1+7+1=9]', highlight: ['cvr1-h','cv2r2-h'], highlightUit: ['cv2ans-h'], animaties: [
+          { titel: 'Honderdtallen', uitleg: '1 + 4 én de 1 die we onthouden hebben, dat is 6. Die vullen we in.', highlight: ['cv2r1-h','cv2r2-h'], highlightOth: ['cv2oth2-h'], highlightUit: ['cv2ans-h'], animaties: [
             { type:'vulIn', cel:'cv2ans-h', waarde:'6' }
           ] },
-          { titel: 'Duizendtallen', uitleg: '[PLACEHOLDER: 2+2=4]', highlight: ['cvr1-d','cv2r2-d'], highlightUit: ['cv2ans-d'], animaties: [
-            { type:'vulIn', cel:'cv2ans-d', waarde:'4' }
+          { titel: 'Duizendtallen', uitleg: 'Tenslotte nog 2 + 5 = 7. En wat zeg je dan...?:', highlight: ['cv2r1-d','cv2r2-d'], highlightUit: ['cv2ans-d'], animaties: [
+            { type:'vulIn', cel:'cv2ans-d', waarde:'7' }
           ] },
-          { titel: 'Klaar!', uitleg: '[PLACEHOLDER: uitkomst 7644]', highlight: [], highlightUit: ['cv2ans-d','cv2ans-h','cv2ans-t','cv2ans-e'], animaties: [] }
+          { titel: 'Klaar!', uitleg: 'KLAAAAAARRRRRR!', highlight: [], highlightUit: ['cv2ans-d','cv2ans-h','cv2ans-t','cv2ans-e'], animaties: [] }
         ]
       }
 
