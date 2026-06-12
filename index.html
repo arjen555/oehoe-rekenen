@@ -722,7 +722,8 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 <a href="https://www.eduvip.nl" target="_blank" rel="noopener" class="logo-vast logo-links" style="position:fixed;z-index:50;display:block;">
   <img id="eduvip-logo" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/eduvip.png" alt="eduVIP logo" class="eduvip-logo">
 </a>
-<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/Oehoe_rekenen.png" alt="Oehoe Rekenen logo" class="logo-vast logo-rechts">
+<audio id="uil-geluid" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/Uilengeluidje.wav" preload="auto"></audio>
+<img src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/Oehoe_rekenen.png" alt="Oehoe Rekenen logo" class="logo-vast logo-rechts" style="cursor:pointer;" onclick="speelUilGeluid()" title="Oehoe!">
 <img id="uil-som" src="" alt="Uil" style="position:fixed;bottom:20px;right:20px;width:min(480px,25vw);max-height:40vh;object-fit:contain;z-index:45;display:none;border-radius:12px;pointer-events:none;">
 <div class="screen" id="screen-role" role="main">
   <img id="owl-welcome" src="https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/uil_start.png" alt="Uil" class="welcome-img">
@@ -945,6 +946,12 @@ function verbergSomUil(){
 }
 var OWL_WELKOM=BASE_URL+'uil_start.png';
 var OWL_EINDE=BASE_URL+'uil_nakijken.png';
+function speelUilGeluid(){
+  var audio=document.getElementById('uil-geluid');
+  if(!audio)return;
+  audio.currentTime=0;
+  audio.play().catch(function(){});
+}
 var OWL_VRAAGT=BASE_URL+'uil_vraagt.png';
 var OWL_STAART=BASE_URL+'uil_staart.png';
 var EDUVIP_LOGO=BASE_URL+'eduvip.png';
@@ -4490,6 +4497,7 @@ async function stuurResultatenNaarSupabase(){
 
 function showAnalysis(){
   showScreen('screen-analysis');
+  speelUilGeluid();
   // Focus op volgende som / klaar knop zodat Enter werkt
   setTimeout(function(){
     var isLast=session.currentIdx===session.problems.length-1;
