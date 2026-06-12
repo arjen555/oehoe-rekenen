@@ -881,7 +881,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     <div id="tafelkaart-container"></div>
   </div>
   <div id="hulp-area"></div>
-  <div id="step-feedback" class="step-feedback" role="alert" aria-live="assertive" style="margin-top:1rem;">
+  <div id="step-feedback" class="step-feedback" role="alert" aria-live="assertive" aria-atomic="true" style="margin-top:1rem;">
     <div id="feedback-msg-wrap"></div>
   </div>
   <div class="btn-row" id="main-btn-row">
@@ -1550,7 +1550,10 @@ function loadProblem(){
   if(session.currentIdx>session.highestVisited)session.highestVisited=session.currentIdx;
   var total=session.problems.length,cur=session.currentIdx+1;
   document.getElementById('ex-progress').textContent='Opgave '+cur+' van '+total;
-  document.getElementById('progress-fill').style.width=Math.round((cur-1)/total*100)+'%';
+  var pct=Math.round((cur-1)/total*100);
+  document.getElementById('progress-fill').style.width=pct+'%';
+  var pw=document.getElementById('progress-wrap');
+  if(pw){pw.setAttribute('aria-valuenow',pct);pw.setAttribute('aria-label','Voortgang: opgave '+cur+' van '+total);}
   hideFeedback();clearHulp();
   var checked=session.results[session.currentIdx]!==undefined;
   document.getElementById('btn-check').style.display=checked?'none':'inline-flex';
@@ -1814,7 +1817,7 @@ function mkRemember(size,fontSize){
   var el=document.createElement('input');
   el.type='text';el.inputMode='numeric';el.className='cell-remember';el.maxLength=2;el.autocomplete='off';
   el.style.cssText='width:'+size+'px;height:'+size+'px;font-size:'+fontSize+'px;';
-  el.setAttribute('aria-label','Onthoud/leen');
+  el.setAttribute('aria-label','Onthoudvakje');
   el.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var btnCheck=document.getElementById('btn-check');if(btnCheck&&btnCheck.offsetParent!==null){btnCheck.focus();}else{checkStep();}}});
   el.addEventListener('input',function(){
     if(cfg.veelHulp&&cfg.method==='cijferend'&&cfg.op==='+'){
@@ -3401,8 +3404,18 @@ function renderCijferend(p,area){
 }
 
 function addHeaderRow(t,numCols){
-  var hr=t.insertRow();hr.insertCell().className='cell-label-col';
-  for(var c=0;c<numCols;c++){var td=hr.insertCell();td.className='kolom-header';td.textContent=COL_NAMES[numCols-1-c]||'';}
+  var hr=t.insertRow();
+  var lbl=document.createElement('th');lbl.className='cell-label-col';lbl.scope='col';hr.appendChild(lbl);
+  for(var c=0;c<numCols;c++){
+    var th=document.createElement('th');
+    th.scope='col';
+    th.className='kolom-header';
+    var naam=COL_NAMES[numCols-1-c]||'';
+    th.textContent=naam;
+    var volNamen={'E':'eenheden','T':'tientallen','H':'honderdtallen','D':'duizendtallen','TD':'tienduizendtallen','HD':'honderdduizendtallen'};
+    th.setAttribute('aria-label',volNamen[naam]||naam);
+    hr.appendChild(th);
+  }
 }
 function addStaticNumRow(t,label,num,numCols){
   var str=String(Math.abs(num));var r=t.insertRow();var lb=r.insertCell();lb.className='cell-label-col';lb.style.fontSize='12px';lb.textContent=label;
