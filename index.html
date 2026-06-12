@@ -926,6 +926,7 @@ var BASE_URL='https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/ma
 // Som-uil: plaatjes rechtsonder tijdens een som
 var _somUilAantal=25; // verhoog dit als je meer plaatjes toevoegt
 var _somUilVorige=-1;
+var _somUilSrcBewaard='';
 function toonSomUil(){
   var img=document.getElementById('uil-som');
   if(!img||_somUilAantal<1)return;
@@ -933,12 +934,14 @@ function toonSomUil(){
   do{keuze=Math.floor(Math.random()*_somUilAantal)+1;}
   while(_somUilAantal>1&&keuze===_somUilVorige);
   _somUilVorige=keuze;
-  img.src=BASE_URL+'uil_som_'+keuze+'.png';
+  var src=BASE_URL+'uil_som_'+keuze+'.png';
+  img.src=src;
+  _somUilSrcBewaard=src;
   img.style.display='block';
 }
 function verbergSomUil(){
   var img=document.getElementById('uil-som');
-  if(img){img.style.display='none';img.src='';}
+  if(img){img.style.display='none';}
 }
 var OWL_WELKOM=BASE_URL+'uil_start.png';
 var OWL_EINDE=BASE_URL+'uil_nakijken.png';
@@ -1122,7 +1125,7 @@ function showScreen(id){
   } else {
     // Uil weer zichtbaar maken bij terugkeer naar de som
     var img=document.getElementById('uil-som');
-    if(img&&img.src&&img.src!==window.location.href) img.style.display='block';
+    if(img&&_somUilSrcBewaard){img.src=_somUilSrcBewaard;img.style.display='block';}
   }
   var logoZichtbaar=(id==='screen-role'||id==='screen-setup');
   document.querySelectorAll('.logo-vast').forEach(function(el){el.style.display=logoZichtbaar?'block':'none';});
