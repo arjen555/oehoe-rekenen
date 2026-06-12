@@ -4086,7 +4086,7 @@ function speakTabPositie(el){
   }
 
   var tekst=kolNaam+', '+rijNaamStr+(waarde?', '+waarde:'');
-  // Bij cijferend optellen: onthoudwaarde meenemen
+  // Bij cijferend optellen/aftrekken: onthoudwaarde meenemen
   if(cfg.method==='cijferend'&&(cfg.op==='optellen'||cfg.op==='aftrekken')){
     var colTd3=el.closest('td');var colTr3=el.closest('tr');
     var colI3=0;
@@ -4097,6 +4097,44 @@ function speakTabPositie(el){
       if(oeTd3&&oeTr3){for(var ci4=0;ci4<oeTr3.cells.length;ci4++){if(oeTr3.cells[ci4]===oeTd3){oeI3=ci4-1;break;}}}
       if(oeI3===colI3&&oe.value.trim()){tekst+=', onthoud '+oe.value.trim();}
     });
+  }
+  // Bij cijferend vermenigvuldigen einduitkomstrij: lees invulrijen + onthoudvakje optelsom voor
+  if(cfg.method==='cijferend'&&cfg.op==='vermenigvuldigen'&&isEindRij){
+    console.log('CV einduitkomstrij: colIdxM='+colIdxM+', numCols='+numCols+', inputFields='+inputFields.length);
+    var colTdM=el.closest('td');var colTrM=el.closest('tr');
+    var colIdxM=0;
+    if(colTdM&&colTrM){for(var cim=0;cim<colTrM.cells.length;cim++){if(colTrM.cells[cim]===colTdM){colIdxM=cim-1;break;}}}
+    // Verzamel waarden uit de invulrijen in deze kolom (niet de einduitkomstrij zelf)
+    var optelWaarden=[];
+    inputFields.forEach(function(inp,idx){
+      if(rowInfo[idx]===ri)return; // sla einduitkomstrij zelf over
+      // Bepaal kolomindex van dit inputField
+      var inpTd=inp.closest('td');var inpTr=inp.closest('tr');
+      var inpCol=0;
+      if(inpTd&&inpTr){for(var cc=0;cc<inpTr.cells.length;cc++){if(inpTr.cells[cc]===inpTd){inpCol=cc-1;break;}}}
+      if(inpCol===colIdxM&&inp.value.trim()!==''){
+        optelWaarden.push(inp.value.trim());
+      }
+    });
+    // Onthoudvakje optelsom meenemen (cijfVermOptRemInputs)
+    var onthoudWaarde='';
+    if(cijfVermOptRemInputs&&cijfVermOptRemInputs.length){
+      cijfVermOptRemInputs.forEach(function(ri2){
+        if(ri2&&ri2.col!==undefined){
+          // col is vanaf rechts — vergelijk met colIdxM (vanaf links)
+          var maxCol=numCols-1;
+          var colVanRechts=maxCol-colIdxM;
+          if(ri2.col===colVanRechts&&ri2.inp&&ri2.inp.value.trim()){
+            onthoudWaarde=ri2.inp.value.trim();
+          }
+        }
+      });
+    }
+    if(optelWaarden.length>0){
+      tekst=kolNaam+': '+optelWaarden.join(' erbij ');
+      if(onthoudWaarde)tekst+=' erbij '+onthoudWaarde+' onthouden';
+      if(waarde)tekst+=', '+waarde;
+    }
   }
   speakTekst(tekst);
 }
@@ -4883,6 +4921,8 @@ var _uitlegLaatstGebouwdeSom=null;
 // ── Hulpfuncties ───────────────────────────────────────────────
 function _uitlegSpreek(tekst){
   if(!tekst)return;
+  // Vermenigvuldigingsteken voorlezen als 'keer'
+  tekst=tekst.replace(/×/g,' keer ').replace(/\bx\b/g,' keer ');
   if(window.speechSynthesis)speechSynthesis.cancel();
   if(typeof speakTekst==='function'&&cfg&&cfg.autoVoorlezen) speakTekst(tekst,true);
 }
