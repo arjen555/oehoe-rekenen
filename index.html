@@ -2739,12 +2739,12 @@ function renderCijferend(p,area){
           if(nullenNog>0&&rowIdx2>0){
             g1VermCells.forEach(function(d){d.classList.remove('hulp-active');});
             g2VermCells.forEach(function(d){d.classList.remove('hulp-active');});
+            var nulTekst2='Denk aan de nul'+(vr.numNullen>1?'len':'');
             if(cfg.veelHulp)showNulInstructie(vr.dsTd,vr.numNullen,rowIdx2);
             if(cfg.eenBeetjeHulp){
-              var nulTekst='Denk aan de nul'+(vr.numNullen>1?'len':'');
-              vr.dsTd.innerHTML='<div class="cij-deelsom-wrap"><div class="cij-deelsom-som" style="font-size:calc(var(--font-size)*0.85)">'+nulTekst+'</div></div>';
-              if(cfg.autoVoorlezen)speakTekst(nulTekst);
+              vr.dsTd.innerHTML='<div class="cij-deelsom-wrap"><div class="cij-deelsom-som" style="font-size:calc(var(--font-size)*0.85)">'+nulTekst2+'</div></div>';
             }
+            if(cfg.autoVoorlezen)speakTekst(nulTekst2,true);
           } else if(nullenNog>0&&rowIdx2===0){
             // Rij 0: geen melding, maar wél de deelsom tonen
             // colFromRight is hier al de echte kolom (geen nulaftrek nodig voor rij 0)
@@ -2782,7 +2782,7 @@ function renderCijferend(p,area){
               // bKolNaam: kolom van het cijfer van getal B (rowIdx2 = rij, geeft positie van rechts)
               var bKolNaam2=kolNamen2[rowIdx2]||('kolom '+rowIdx2);
               var heeftOnthoud2=remVal2>0;
-              var spreekStr2=aDigit2+' '+aKolNaam2+' keer '+bdVal2+' '+bKolNaam2+(heeftOnthoud2?' en het onthoudvakje':'');
+              var spreekStr2=aDigit2+' '+aKolNaam2+' keer '+bdVal2+' '+bKolNaam2+(heeftOnthoud2?' plus '+remVal2+' onthouden':'');
               // Gebruik setTimeout zodat de hoofdsom eerst klaar is
               setTimeout(function(){
                 if(wachtOpHoofdsom){
@@ -4100,7 +4100,6 @@ function speakTabPositie(el){
   }
   // Bij cijferend vermenigvuldigen einduitkomstrij: lees invulrijen + onthoudvakje optelsom voor
   if(cfg.method==='cijferend'&&cfg.op==='vermenigvuldigen'&&isEindRij){
-    console.log('CV einduitkomstrij: colIdxM='+colIdxM+', numCols='+numCols+', inputFields='+inputFields.length);
     var colTdM=el.closest('td');var colTrM=el.closest('tr');
     var colIdxM=0;
     if(colTdM&&colTrM){for(var cim=0;cim<colTrM.cells.length;cim++){if(colTrM.cells[cim]===colTdM){colIdxM=cim-1;break;}}}
