@@ -3895,6 +3895,45 @@ function analyzeErrors(correctArr){
   var ansLen=String(Math.abs(currentProblem.answer)).length;
   var subWrong=correctArr.slice(0,correctArr.length-ansLen).some(function(c){return !c;});
   var ansWrong=correctArr.slice(-ansLen).some(function(c){return !c;});
+
+  // Check verkeerde bewerking op einduitkomstrij (kolomsgewijs optellen/aftrekken)
+  if((cfg.method==='kolomsgewijs')&&(cfg.op==='optellen'||cfg.op==='aftrekken')&&currentProblem){
+    var p=currentProblem;
+    var aStr=String(Math.abs(p.a)), bStr=String(Math.abs(p.b));
+    var nCols=Math.max(aStr.length,bStr.length);
+    // Einduitkomstrij = hoogste rowInfo waarde
+    var maxRij=-1; rowInfo.forEach(function(r){if(r>maxRij)maxRij=r;});
+    var ansInputs=[];
+    for(var ai=0;ai<inputFields.length;ai++){
+      if(rowInfo[ai]===maxRij)ansInputs.push(inputFields[ai]);
+    }
+    // ansInputs loopt van links (grootste kolom) naar rechts (eenheden)
+    var verkeerdeBewerking=0, totaalGetest=0;
+    for(var ci=0;ci<ansInputs.length;ci++){
+      var colFromRight=ansInputs.length-1-ci;
+      var aIdx=aStr.length-1-colFromRight; var bIdx=bStr.length-1-colFromRight;
+      var aD=aIdx>=0?parseInt(aStr[aIdx]):0;
+      var bD=bIdx>=0?parseInt(bStr[bIdx]):0;
+      var invVal=parseInt(ansInputs[ci].value)||0;
+      var juist=(cfg.op==='optellen')?(aD+bD)%10:((aD-bD+10)%10);
+      var omgekeerd=(cfg.op==='optellen')?((aD-bD+10)%10):((aD+bD)%10);
+      // Alleen tellen als juist en omgekeerd echt verschillen
+      if(juist!==omgekeerd){
+        totaalGetest++;
+        if(invVal===omgekeerd)verkeerdeBewerking++;
+      }
+    }
+    // Als minstens de helft van de testbare cellen de omgekeerde bewerking toont
+    if(totaalGetest>0&&verkeerdeBewerking>=Math.max(1,Math.ceil(totaalGetest/2))){
+      if(cfg.op==='optellen'){
+        msg+='Weet je zeker dat je overal hebt opgeteld en niet per ongeluk eraf hebt gehaald?';
+      } else {
+        msg+='Weet je zeker dat je overal hebt afgetrokken en niet per ongeluk opgeteld?';
+      }
+      return msg;
+    }
+  }
+
   if(cfg.method==='kolomsgewijs'){
     if(subWrong&&!ansWrong)msg+='De tussenresultaten kloppen nog niet helemaal.';
     else if(ansWrong&&!subWrong)msg+='De tussenresultaten zijn goed, maar de eindoptelsom klopt niet.';
