@@ -3896,6 +3896,22 @@ function analyzeErrors(correctArr){
   var subWrong=correctArr.slice(0,correctArr.length-ansLen).some(function(c){return !c;});
   var ansWrong=correctArr.slice(-ansLen).some(function(c){return !c;});
 
+  // Check bijna-goed: eindantwoord is er maar één naast
+  var gebruikerAntwoord=0, verwachtAntwoord=currentProblem.answer;
+  var ansInputs2=[];
+  var maxRijBg=-1; rowInfo.forEach(function(r){if(r>maxRijBg)maxRijBg=r;});
+  for(var bgi=0;bgi<inputFields.length;bgi++){
+    if(rowInfo[bgi]===maxRijBg)ansInputs2.push(inputFields[bgi]);
+  }
+  // Bouw het ingevoerde eindantwoord als getal
+  var ansStr='';
+  ansInputs2.forEach(function(el){ansStr+=(el.value.trim()||'0');});
+  gebruikerAntwoord=parseInt(ansStr)||0;
+  if(Math.abs(gebruikerAntwoord-verwachtAntwoord)===1){
+    msg+='Heel dichtbij! Je zit er maar één naast.';
+    return msg;
+  }
+
   // Check verkeerde bewerking op einduitkomstrij (kolomsgewijs optellen/aftrekken)
   if((cfg.method==='kolomsgewijs')&&(cfg.op==='optellen'||cfg.op==='aftrekken')&&currentProblem){
     var p=currentProblem;
@@ -3935,6 +3951,34 @@ function analyzeErrors(correctArr){
   }
 
   if(cfg.method==='kolomsgewijs'){
+    // Check positiefout: getal klopt maar staat in verkeerde kolom
+    var positieFout=false;
+    // Bouw per rij een map van ingevulde waarden vs verwachte waarden
+    var rijen={};
+    inputFields.forEach(function(el,i){
+      var ri=rowInfo[i]; if(ri<0)return;
+      if(!rijen[ri])rijen[ri]={ingevoerd:[],verwacht:[]};
+      var v=parseInt(el.value)||0;
+      var exp=expectedAnswers[i];
+      if(!isOptional(exp)&&exp!==-2){
+        rijen[ri].ingevoerd.push(v);
+        rijen[ri].verwacht.push(exp);
+      }
+    });
+    Object.keys(rijen).forEach(function(ri){
+      var rij=rijen[ri];
+      if(rij.ingevoerd.length<2)return; // te weinig cellen om positie te beoordelen
+      // Check: zijn alle ingevoerde waarden correct maar in verkeerde volgorde?
+      var ingevoerdSorted=rij.ingevoerd.slice().sort(function(a,b){return a-b;});
+      var verwachtSorted=rij.verwacht.slice().sort(function(a,b){return a-b;});
+      var alleWaardenKloppen=ingevoerdSorted.every(function(v,i){return v===verwachtSorted[i];});
+      var volgordeVerkeerd=rij.ingevoerd.some(function(v,i){return v!==rij.verwacht[i];});
+      if(alleWaardenKloppen&&volgordeVerkeerd)positieFout=true;
+    });
+    if(positieFout){
+      msg+='De getallen kloppen, maar staan ze ook op de goede plek? Let op welk getal bij welke kolom hoort.';
+      return msg;
+    }
     if(subWrong&&!ansWrong)msg+='De tussenresultaten kloppen nog niet helemaal.';
     else if(ansWrong&&!subWrong)msg+='De tussenresultaten zijn goed, maar de eindoptelsom klopt niet.';
     else msg+='Controleer de tussenresultaten én de eindoptelsom.';
@@ -3967,6 +4011,44 @@ function analyzeErrors(correctArr){
       }
       if(omgekeerdGevonden){
         msg+='Let op: je trekt het bovenste getal af van het onderste.<br>Dat moet andersom!';
+        return msg;
+      }
+    }
+    // Cijferend optellen: check of het onthouden vergeten is
+    if(cfg.op==='optellen'&&currentProblem){
+      var pOpt=currentProblem;
+      var aOptStr=String(Math.abs(pOpt.a)), bOptStr=String(Math.abs(pOpt.b));
+      var colsOpt=Math.max(aOptStr.length,bOptStr.length)+1;
+      // Einduitkomstrij = hoogste rowInfo
+      var maxRijOpt=-1; rowInfo.forEach(function(r){if(r>maxRijOpt)maxRijOpt=r;});
+      var ansOpt=[];
+      for(var aio=0;aio<inputFields.length;aio++){
+        if(rowInfo[aio]===maxRijOpt)ansOpt.push({el:inputFields[aio],idx:aio});
+      }
+      // Bereken verwacht antwoord per kolom met onthouden
+      var onthoud=0;
+      var onthoudenVergeten=false;
+      // Loop van rechts naar links
+      for(var co=ansOpt.length-1;co>=0;co--){
+        var colFromRight=ansOpt.length-1-co;
+        var aIdxO=aOptStr.length-1-colFromRight;
+        var bIdxO=bOptStr.length-1-colFromRight;
+        var aDig=aIdxO>=0?parseInt(aOptStr[aIdxO]):0;
+        var bDig=bIdxO>=0?parseInt(bOptStr[bIdxO]):0;
+        var som=aDig+bDig+onthoud;
+        var verwachtCel=som%10;
+        var nieuwOnthoud=Math.floor(som/10);
+        var invulVal=parseInt(ansOpt[co].el.value)||0;
+        // Als de cel fout is, maar zonder onthoud zou kloppen: onthouden vergeten
+        var zonderOnthoud=aDig+bDig;
+        if(invulVal!==verwachtCel&&onthoud>0&&invulVal===zonderOnthoud%10){
+          onthoudenVergeten=true;
+          break;
+        }
+        onthoud=nieuwOnthoud;
+      }
+      if(onthoudenVergeten){
+        msg+='Je antwoord klopt bijna — ben je het onthouden misschien vergeten?';
         return msg;
       }
     }
