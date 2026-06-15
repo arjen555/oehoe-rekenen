@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-R673W29658"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-R673W29658');
-  </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Oehoe Rekenen</title>
@@ -163,7 +155,12 @@ body.inverted #tab-hint{color:var(--text-muted);background:rgba(0,0,0,0.15);bord
 .cell-remember:focus{border-color:#FCD34D;box-shadow:0 0 0 2px rgba(252,211,77,0.3);}
 body.inverted .cell-remember{border-color:#cc0000;border-style:dashed;background:rgba(220,0,0,0.07);color:#cc0000;}
 body.inverted .cell-remember:focus{border-color:#cc0000;box-shadow:0 0 0 2px rgba(200,0,0,0.25);}
-.kolom-header{font-family:var(--font);font-size:calc(var(--font-size) * 0.85);font-weight:800;color:var(--kolom-hdr-color);text-align:center;padding:3px 4px;text-transform:uppercase;letter-spacing:0.04em;}
+.setup-hoofd-sectie{background:rgba(30,58,95,0.45);border:2px solid rgba(99,179,237,0.25);border-radius:14px;padding:16px 18px 14px;margin-bottom:6px;}
+.setup-hoofd-sectie .form-label{color:#fff;font-size:1.15em;font-weight:800;}
+body.inverted .setup-hoofd-sectie{background:rgba(220,230,245,0.5);border-color:rgba(0,0,0,0.2);}
+body.inverted .setup-hoofd-sectie .form-label{color:#000;}
+.setup-hoofd-groep{display:flex;flex-direction:column;gap:6px;margin-bottom:4px;}
+
 .calc-hr{border:none;border-top:3px solid var(--calc-line);margin:3px 0;width:100%;}
 .hulp-hint{background:#431407;border:3px solid #FCD34D;border-radius:var(--radius);padding:12px 16px;margin-top:8px;display:flex;align-items:center;gap:14px;animation:fadeIn 0.3s ease;}
 .hulp-hint-owl{width:60px;flex-shrink:0;border-radius:8px;}
@@ -775,7 +772,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
     </div>
     <div class="sug-bevestiging" id="sug-bevestiging">
       <div class="sug-bevestiging-icoon">&#10004;&#65039;</div>
-      <div class="sug-bevestiging-tekst">Bedankt voor je suggestie!<br>We nemen hem zeker mee.</div>
+      <div class="sug-bevestiging-tekst">Bedankt voor je suggestie.<br>Ik ga er serieus naar kijken!</div>
       <div class="sug-btn-rij" style="justify-content:center;margin-top:16px;">
         <button class="sug-annuleer" onclick="sluitSuggestiesForm()">Sluiten</button>
       </div>
@@ -933,7 +930,7 @@ body.inverted .tooltip-box::after{border-top-color:#f8fafc;}
 var BASE_URL='https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/';
 
 // Som-uil: plaatjes rechtsonder tijdens een som
-var _somUilAantal=28; // verhoog dit als je meer plaatjes toevoegt
+var _somUilAantal=25; // verhoog dit als je meer plaatjes toevoegt
 var _somUilVorige=-1;
 var _somUilSrcBewaard='';
 function toonSomUil(){
@@ -1227,12 +1224,14 @@ function buildForm(tid){
   h+='<button id="setup-speed-btn" class="opt-btn" style="display:'+(cfg.autoVoorlezen?'inline-flex':'none')+';min-width:60px;" aria-label="Spreeksnelheid">'+({1:'1×',2:'2×',3:'3×',4:'4×'}[spreekSnelheid]||'1×')+'</button>';
   h+='<button class="opt-btn" id="btn-tips" style="margin-left:6px;" aria-label="Handige tips bekijken">&#128161; Handige tips</button>';
   h+='</div></div><hr class="divider">';
-  h+='<div><label class="form-label">Rekenmethode</label><div class="option-row">';
+  h+='<div class="setup-hoofd-groep">';
+  h+='<div class="setup-hoofd-sectie"><label class="form-label">Rekenmethode</label><div class="option-row">';
   h+=ob('method','kolomsgewijs','Kolomsgewijs')+ob('method','cijferend','Cijferend');
-  h+='</div></div><hr class="divider">';
-  h+='<div><label class="form-label">Bewerking</label><div class="option-row">';
+  h+='</div></div>';
+  h+='<div class="setup-hoofd-sectie"><label class="form-label">Bewerking</label><div class="option-row">';
   h+=ob('op','optellen','Optellen')+ob('op','aftrekken','Aftrekken')+ob('op','vermenigvuldigen','Vermenigvuldigen');
-  h+='</div></div><hr class="divider">';
+  h+='</div></div>';
+  h+='</div><hr class="divider" style="margin-top:18px;">';
   h+='<div class="form-section-header">Hulp tijdens de som</div>';
   h+='<div class="option-row">';
   h+='<div class="tooltip-wrap" data-speak="Tafelkaart. Tijdens het maken van de som kun je de juiste tafel erbij krijgen als je het even niet meer weet.">';
@@ -3528,7 +3527,7 @@ function checkStep(){
   if(allCorrect){
     if(!wasVerbeterPoging)session.correct++;
     else session.verbeterd++;
-    var posMsg=['Super! Helemaal goed! Geweldig gedaan!','Wat ben jij goed bezig!','Rekenkanjer!','Jij komt er wel!','Toppie topper!','Hatsjikidee, die is goed!','Nou en of, zo moet het dus!','Oehoe oehoe, hier wordt uil blij van!','Alle staartveren, wat knap!','Daar gaan mijn veertjes van wiebelen, zo goed!','Sapperdeflapper dit is top!','Holy moly ja zo moet het!','Je bent een wandelende rekenmachine!','Als ik het niet meer snap, vraag ik het aan jou','Ik wiebel bijna van mijn tak af, zo goed!','Jij hebt een lekker muisje verdiend hoor!','Top, hier ga ik salto\'s van vliegen!','Ga zo door en je krijgt een eigen standbeeld!','Oehoe oe oe oeioeioei wat goe oe oed!','Jij kunt super rekenen, maar kun je ook vliegen?','Mmm, dat heerlijke gevoel van een som die goed is','Top topper de topper die je bent!','Skibbedie goed!','6-7... 6-7... go go goed!','Jij bent zeker een uil, zo goed als jij kunt rekenen!','Alle braakballen in een bakje, wat knap!','Dit is de nobelprijs voor sommen oplossen waard!','Oelaka Boelaka Boebie, nou en of!','Ik val bijna flauw zo top gedaan dit!','Gloeiende glinsterflappers, dat is helemaal goed!','Oehoe nou oe da\'s goe oehoe hoe!','Boem boenga boem la, zo moet je dat doen ja!','Alle blubberende berenbillen, dat is goed zeg!'];
+    var posMsg=['Super! Helemaal goed! Geweldig gedaan!','Wat ben jij goed bezig!','Rekenkanjer!','Jij komt er wel!','Toppie topper!','Hatsjikidee, die is goed!','Nou en of, zo moet het dus!','Oehoe oehoe, hier wordt uil blij van!','Alle staartveren, wat knap!','Daar gaan mijn veertjes van wiebelen, zo goed!','Sapperdeflapper dit is top!','Holy moly ja zo moet het!','Je bent een wandelende rekenmachine!','Als ik het niet meer snap, vraag ik het aan jou','Ik wiebel bijna van mijn tak af, zo goed!','Jij hebt een lekker muisje verdiend hoor!','Top, hier ga ik salto\'s van vliegen!','Ga zo door en je krijgt een eigen standbeeld!','Oehoe oe oe oeioeioei wat goe oe oed!','Jij kunt super rekenen, maar kun je ook vliegen?','Mmm, dat heerlijke gevoel van een som die goed is','Top topper de topper die je bent!','Skibbedie goed!','6-7... 6-7... go go goed!','Jij bent zeker een uil, zo goed als jij kunt rekenen!','Alle braakballen in een bakje, wat knap!','Dit is de nobelprijs voor sommen oplossen waard!','Oelaka Boelaka Boebie, nou en of!','Ik val bijna flauw zo top gedaan dit!'];
     var posMsgVerbeterd=['Oehoe de aanhouder wint!','Jij geeft niet op dus naar de top!','Wist je dat bloemkoolkwallen bestaan? Dat rijmt op goed gedaan!','Oogjes dicht en snaveltjes toe!','Niet de eerste keer, maar nu lekkrrrr wel!','En nu heb je wel een veertje verdiend!','Alle potten pindakaas, zo moet het!','Hupjes en hopjes en huppakee!','Parallelle piepedummedingetje yes!','Hier is je prijs, een voetreis naar Rome!'];
     var gekozenMsg=wasVerbeterPoging?posMsgVerbeterd[Math.floor(Math.random()*posMsgVerbeterd.length)]:posMsg[Math.floor(Math.random()*posMsg.length)];
     showFeedback(gekozenMsg,'ok',OWL_OK);
@@ -4681,7 +4680,6 @@ function showAnalysis(){
     uilImg.src='https://raw.githubusercontent.com/arjen555/rekenen-afbeeldingen/main/'+uilSrc;
   }
   if(pct===100)fb.push({t:'pos',m:'Geweldig! Je hebt alle opgaven goed! Dat is echt heel knap!'});
-  else if(pct>=80&&(total-session.correct)===1){fb.push({t:'pos',m:'Heel goed gedaan! Je begrijpt de methode goed.'});var eenFoutTips=['Ach, wat is nu een foutje. Volgende keer gaat het vast foutloos!','Iedereen maakt wel eens een foutje hè!','Zelfs een professor maakt weleens een foutje!','Foutje of niet, Oehoe is trots op jou!'];fb.push({t:'tip',m:eenFoutTips[Math.floor(Math.random()*eenFoutTips.length)]});}
   else if(pct>=80){fb.push({t:'pos',m:'Heel goed gedaan! Je begrijpt de methode goed.'});var foutTips=['Oefen nog eens, ik beloof, het wordt steeds makkelijker!','Fouten maken, niet erg. Daar leer je van hoor!','Niemand is ooit gegroeid zonder fouten te maken!','Fouten hebben, en dan opgeven, dat is pas fouten hebben!','Om te leren van fouten, moet je eerst weten dat je fouten maakt!','Mensen die geen fouten maken zijn geen mensen.','Goed bezig, je hebt een fout gemaakt, daar leer je van!'];fb.push({t:'tip',m:foutTips[Math.floor(Math.random()*foutTips.length)]});}
   else if(pct>=50){fb.push({t:'tip',m:'Je bent goed op weg, maar er zijn nog wat foutjes.'});var pat=errPattern();if(pat)fb.push({t:'tip',m:pat});}
   else{fb.push({t:'neg',m:'Dit was nog lastig. Vraag je leerkracht om uitleg, of probeer opnieuw met kleinere getallen.'});var pat=errPattern();if(pat)fb.push({t:'tip',m:pat});}
@@ -6117,11 +6115,11 @@ var UITLEG_DEFINITIES = {
       {
         som: {
           tabel: [
-            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
-            { cellen: [ {type:'op',tekst:''}, {id:'g1-d',type:'input',tekst:''}, {id:'g1-h',tekst:'2'}, {id:'g1-t',tekst:'4'}, {id:'g1-e',tekst:'6'} ] },
-            { cellen: [ {type:'op',tekst:'+'}, {id:'g2-d',type:'input',tekst:''}, {id:'g2-h',tekst:'3'}, {id:'g2-t',tekst:'4'}, {id:'g2-e',tekst:'2'} ] },
-            { type:'hr', colspan:5 },
-            { cellen: [ {type:'op',tekst:''}, {id:'ans-d',type:'input',tekst:''}, {id:'ans-h',type:'input',tekst:''}, {id:'ans-t',type:'input',tekst:''}, {id:'ans-e',type:'input',tekst:''} ] }
+            { cellen: [ {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {id:'g1-d',type:'input',tekst:''}, {id:'g1-h',tekst:'2'}, {id:'g1-t',tekst:'4'}, {id:'g1-e',tekst:'6'} ] },
+            { cellen: [ {id:'g2-d',type:'input',tekst:''}, {id:'g2-h',tekst:'3'}, {id:'g2-t',tekst:'4'}, {id:'g2-e',tekst:'2'} ] },
+            { type:'hr', colspan:4 },
+            { cellen: [ {id:'ans-d',type:'input',tekst:''}, {id:'ans-h',type:'input',tekst:''}, {id:'ans-t',type:'input',tekst:''}, {id:'ans-e',type:'input',tekst:''} ] }
           ]
         },
         titel: "Hoe lees je zo'n som?",
@@ -6158,11 +6156,11 @@ var UITLEG_DEFINITIES = {
       {
         som: {
           tabel: [
-            { cellen: [ {type:'lbl',tekst:''}, {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
+            { cellen: [ {type:'lbl',tekst:'D'}, {type:'lbl',tekst:'H'}, {type:'lbl',tekst:'T'}, {type:'lbl',tekst:'E'} ] },
             /* Onthoudvakjes boven de getallen */
-            { cellen: [ {type:'op',tekst:''}, {id:'oth-d',type:'input',tekst:''}, {id:'oth-h',type:'input',tekst:''}, {id:'oth-t',type:'input',tekst:''}, {id:'oth-e',type:'input',tekst:''} ] },
-            { cellen: [ {type:'op',tekst:''}, {id:'s2g1-d',type:'input',tekst:''}, {id:'s2g1-h',tekst:'6'}, {id:'s2g1-t',tekst:'5'}, {id:'s2g1-e',tekst:'8'} ] },
-            { cellen: [ {type:'op',tekst:'+'}, {id:'s2g2-d',type:'input',tekst:''}, {id:'s2g2-h',tekst:'5'}, {id:'s2g2-t',tekst:'3'}, {id:'s2g2-e',tekst:'5'} ] },
+            { cellen: [ {id:'oth-d',type:'input',tekst:''}, {id:'oth-h',type:'input',tekst:''}, {id:'oth-t',type:'input',tekst:''}, {id:'oth-e',type:'input',tekst:''} ] },
+            { cellen: [ {id:'s2g1-d',type:'input',tekst:''}, {id:'s2g1-h',tekst:'6'}, {id:'s2g1-t',tekst:'5'}, {id:'s2g1-e',tekst:'8'} ] },
+            { cellen: [ {id:'s2g2-d',type:'input',tekst:''}, {id:'s2g2-h',tekst:'5'}, {id:'s2g2-t',tekst:'3'}, {id:'s2g2-e',tekst:'5'} ] },
             { type:'hr', colspan:5 },
             { cellen: [ {type:'op',tekst:''}, {id:'s2ans-d',type:'input',tekst:''}, {id:'s2ans-h',type:'input',tekst:''}, {id:'s2ans-t',type:'input',tekst:''}, {id:'s2ans-e',type:'input',tekst:''} ] }
           ]
