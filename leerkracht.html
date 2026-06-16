@@ -14,9 +14,6 @@
 <title>Oehoe Rekenen – Leerkrachtomgeving</title>
 
 <style>
-/* ── CONFIGURATIE: vul hier jouw Supabase-gegevens in ── */
-/* Zie de JavaScript-sectie onderaan */
-
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -56,7 +53,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ── ACHTERGROND ── */
 body::before {
   content: '';
   position: fixed;
@@ -68,11 +64,9 @@ body::before {
   z-index: 0;
 }
 
-/* ── SCHERMEN ── */
 .screen { display: none; min-height: 100vh; position: relative; z-index: 1; }
 .screen.active { display: flex; }
 
-/* ── INLOGSCHERM ── */
 #screen-login {
   align-items: center;
   justify-content: center;
@@ -96,75 +90,20 @@ body::before {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.login-logo {
-  text-align: center;
-  margin-bottom: 2rem;
-}
+.login-logo { text-align: center; margin-bottom: 2rem; }
 .login-logo .owl { font-size: 3.5rem; }
-.login-logo h1 {
-  font-family: var(--font2);
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: var(--accent2);
-  margin-top: 0.5rem;
-}
-.login-logo p {
-  color: var(--text2);
-  font-size: 0.9rem;
-  margin-top: 0.25rem;
-}
+.login-logo h1 { font-family: var(--font2); font-size: 1.6rem; font-weight: 900; color: var(--accent2); margin-top: 0.5rem; }
+.login-logo p { color: var(--text2); font-size: 0.9rem; margin-top: 0.25rem; }
 
 .form-group { margin-bottom: 1.25rem; }
-.form-group label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text2);
-  margin-bottom: 0.4rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.form-group input {
-  width: 100%;
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-family: var(--font);
-  font-size: 1rem;
-  padding: 0.75rem 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
+.form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text2); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.form-group input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font); font-size: 1rem; padding: 0.75rem 1rem; outline: none; transition: border-color 0.2s; }
 .form-group input:focus { border-color: var(--accent); }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.8rem 1.5rem;
-  border-radius: var(--radius-sm);
-  border: none;
-  font-family: var(--font);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-primary {
-  background: var(--accent);
-  color: #fff;
-  width: 100%;
-  font-size: 1.05rem;
-  padding: 0.9rem;
-}
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.8rem 1.5rem; border-radius: var(--radius-sm); border: none; font-family: var(--font); font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-primary { background: var(--accent); color: #fff; width: 100%; font-size: 1.05rem; padding: 0.9rem; }
 .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
-.btn-secondary {
-  background: var(--bg3);
-  color: var(--text);
-  border: 1px solid var(--border2);
-}
+.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border2); }
 .btn-secondary:hover { background: var(--card2); }
 .btn-danger { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
 .btn-danger:hover { background: rgba(248,113,113,0.25); }
@@ -172,134 +111,42 @@ body::before {
 .btn-green:hover { background: var(--green); }
 .btn-sm { padding: 0.4rem 0.9rem; font-size: 0.85rem; }
 
-.login-switch {
-  text-align: center;
-  margin-top: 1.25rem;
-  color: var(--text2);
-  font-size: 0.9rem;
-}
+.login-switch { text-align: center; margin-top: 1.25rem; color: var(--text2); font-size: 0.9rem; }
 .login-switch a { color: var(--accent); cursor: pointer; text-decoration: none; }
 .login-switch a:hover { text-decoration: underline; }
 
-.error-msg {
-  background: rgba(248,113,113,0.1);
-  border: 1px solid rgba(248,113,113,0.3);
-  border-radius: var(--radius-sm);
-  color: var(--red);
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-  display: none;
-}
+.error-msg { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); border-radius: var(--radius-sm); color: var(--red); padding: 0.6rem 1rem; font-size: 0.9rem; margin-bottom: 1rem; display: none; }
 .error-msg.show { display: block; }
 
-/* ── HOOFDSCHERM ── */
-#screen-main {
-  flex-direction: row;
-  align-items: stretch;
-}
+#screen-main { flex-direction: row; align-items: stretch; }
 
-/* ── SIDEBAR ── */
-.sidebar {
-  width: 260px;
-  min-height: 100vh;
-  background: var(--card);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem 0;
-  flex-shrink: 0;
-}
-
-.sidebar-logo {
-  padding: 0 1.5rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1rem;
-}
+.sidebar { width: 260px; min-height: 100vh; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 1.5rem 0; flex-shrink: 0; }
+.sidebar-logo { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
 .sidebar-logo .owl { font-size: 2rem; }
-.sidebar-logo h2 {
-  font-family: var(--font2);
-  font-weight: 900;
-  font-size: 1.1rem;
-  color: var(--accent2);
-  margin-top: 0.25rem;
-}
+.sidebar-logo h2 { font-family: var(--font2); font-weight: 900; font-size: 1.1rem; color: var(--accent2); margin-top: 0.25rem; }
 .sidebar-logo p { color: var(--text3); font-size: 0.8rem; }
 
 .sidebar-nav { flex: 1; padding: 0 0.75rem; }
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0.85rem;
-  border-radius: var(--radius-sm);
-  color: var(--text2);
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-  margin-bottom: 0.2rem;
-}
+.nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.85rem; border-radius: var(--radius-sm); color: var(--text2); font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.15s; margin-bottom: 0.2rem; }
 .nav-item:hover { background: var(--bg3); color: var(--text); }
 .nav-item.active { background: rgba(79,156,249,0.15); color: var(--accent2); font-weight: 600; }
 .nav-item .icon { font-size: 1.1rem; width: 1.5rem; text-align: center; }
 
-.sidebar-footer {
-  padding: 1rem 1.5rem 0;
-  border-top: 1px solid var(--border);
-}
+.sidebar-footer { padding: 1rem 1.5rem 0; border-top: 1px solid var(--border); }
 .leerkracht-info { margin-bottom: 0.75rem; }
 .leerkracht-naam { font-weight: 600; font-size: 0.95rem; }
 .leerkracht-email { color: var(--text3); font-size: 0.8rem; }
 
-/* ── CONTENT ── */
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  overflow-y: auto;
-}
-
+.main-content { flex: 1; padding: 2rem; overflow-y: auto; }
 .page { display: none; }
 .page.active { display: block; animation: fadeUp 0.3s ease; }
-
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-}
-.page-title {
-  font-family: var(--font2);
-  font-size: 1.6rem;
-  font-weight: 800;
-}
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+.page-title { font-family: var(--font2); font-size: 1.6rem; font-weight: 800; }
 .page-title span { color: var(--accent2); }
 
-/* ── KLASSEN OVERZICHT ── */
-.klassen-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.klas-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
-}
-.klas-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--purple));
-}
+.klassen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.klas-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+.klas-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--purple)); }
 .klas-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: var(--shadow); }
 .klas-naam { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.25rem; }
 .klas-code { color: var(--text3); font-size: 0.85rem; font-family: monospace; }
@@ -308,65 +155,16 @@ body::before {
 .klas-stat-num { font-size: 1.4rem; font-weight: 800; color: var(--accent2); }
 .klas-stat-label { font-size: 0.75rem; color: var(--text3); }
 
-.add-klas-card {
-  background: transparent;
-  border: 2px dashed var(--border2);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  color: var(--text3);
-  min-height: 140px;
-}
+.add-klas-card { background: transparent; border: 2px dashed var(--border2); border-radius: var(--radius); padding: 1.5rem; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; color: var(--text3); min-height: 140px; }
 .add-klas-card:hover { border-color: var(--accent); color: var(--accent); }
 .add-klas-card .plus { font-size: 2rem; }
 
-/* ── LEERLINGENOVERZICHT ── */
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--text2);
-  cursor: pointer;
-  font-size: 0.9rem;
-  margin-bottom: 1.5rem;
-  transition: color 0.15s;
-}
+.back-btn { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text2); cursor: pointer; font-size: 0.9rem; margin-bottom: 1.5rem; transition: color 0.15s; }
 .back-btn:hover { color: var(--text); }
 
-.leerlingen-tabel {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.tabel-header {
-  display: grid;
-  grid-template-columns: 1.8fr 1fr 1fr 1.2fr 0.8fr 1.2fr;
-  padding: 0.85rem 1.25rem;
-  background: var(--bg3);
-  border-bottom: 1px solid var(--border);
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text3);
-}
-
-.tabel-rij {
-  display: grid;
-  grid-template-columns: 1.8fr 1fr 1fr 1.2fr 0.8fr 1.2fr;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border);
-  align-items: center;
-  transition: background 0.15s;
-}
+.leerlingen-tabel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.tabel-header { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1.2fr 0.8fr 1.2fr; padding: 0.85rem 1.25rem; background: var(--bg3); border-bottom: 1px solid var(--border); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
+.tabel-rij { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1.2fr 0.8fr 1.2fr; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.15s; }
 .tabel-rij:last-child { border-bottom: none; }
 .res-header { grid-template-columns: 1.4fr 0.8fr 1.1fr 1fr 0.9fr 0.9fr 0.7fr 0.7fr !important; }
 .res-rij { grid-template-columns: 1.4fr 0.8fr 1.1fr 1fr 0.9fr 0.9fr 0.7fr 0.7fr !important; }
@@ -376,14 +174,7 @@ body::before {
 .leerling-naam { font-weight: 600; }
 .leerling-code { font-family: monospace; font-size: 0.85rem; color: var(--text2); }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.6rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
+.badge { display: inline-flex; align-items: center; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
 .badge-blue { background: rgba(79,156,249,0.15); color: var(--accent2); }
 .badge-green { background: rgba(52,211,153,0.15); color: var(--green); }
 .badge-orange { background: rgba(251,146,60,0.15); color: var(--orange); }
@@ -393,192 +184,85 @@ body::before {
 .resultaat-goed { color: var(--green); font-weight: 700; }
 .resultaat-niet-verbeterd { color: var(--red); }
 .resultaat-verbeterd { color: var(--orange); }
-
 .acties { display: flex; gap: 0.4rem; }
 
-/* ── MODAL ── */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(4px);
-  z-index: 100;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 1rem; }
 .modal-overlay.open { display: flex; }
+.modal { background: var(--card); border: 1px solid var(--border2); border-radius: 20px; padding: 2rem; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: fadeUp 0.25s ease; }
+.modal h3 { font-family: var(--font2); font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem; }
+.modal-footer { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
 
-.modal {
-  background: var(--card);
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  padding: 2rem;
-  width: 100%;
-  max-width: 560px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-lg);
-  animation: fadeUp 0.25s ease;
-}
-.modal h3 {
-  font-family: var(--font2);
-  font-size: 1.25rem;
-  font-weight: 800;
-  margin-bottom: 1.5rem;
-}
-
-.modal-footer {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-  margin-top: 1.5rem;
-}
-
-/* ── INSTELLINGEN FORMULIER ── */
 .instelling-sectie { margin-bottom: 1.5rem; }
-.instelling-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 0.6rem;
-  display: block;
-}
-.keuze-rij {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-.keuze-knop {
-  padding: 0.4rem 0.9rem;
-  border-radius: 20px;
-  border: 1px solid var(--border2);
-  background: var(--bg3);
-  color: var(--text2);
-  font-family: var(--font);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
+.instelling-label { font-size: 0.8rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; display: block; }
+.keuze-rij { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.keuze-knop { padding: 0.4rem 0.9rem; border-radius: 20px; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); font-family: var(--font); font-size: 0.85rem; cursor: pointer; transition: all 0.15s; }
 .keuze-knop:hover { border-color: var(--accent); color: var(--accent); }
 .keuze-knop.selected { background: rgba(79,156,249,0.2); border-color: var(--accent); color: var(--accent2); font-weight: 600; }
 
-.email-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+.hulp-uitleg-kader {
+  margin-top: 1rem;
+  background: rgba(79,156,249,0.06);
+  border: 1px solid rgba(79,156,249,0.15);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
 }
-.toggle-switch {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  flex-shrink: 0;
+.hulp-uitleg-titel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent2);
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-  position: absolute;
-  inset: 0;
+.hulp-uitleg-item {
+  font-size: 0.88rem;
+  color: var(--text2);
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+.hulp-uitleg-item:last-child { margin-bottom: 0; }
+.hulp-uitleg-item strong { color: var(--text); }
+.hulp-uitleg-item kbd {
   background: var(--bg3);
   border: 1px solid var(--border2);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  font-family: monospace;
+  font-size: 0.85em;
 }
-.toggle-slider::before {
-  content: '';
-  position: absolute;
-  width: 18px; height: 18px;
-  left: 2px; top: 2px;
-  background: var(--text3);
-  border-radius: 50%;
-  transition: all 0.2s;
-}
+
+.email-toggle { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; }
+.toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: var(--bg3); border: 1px solid var(--border2); border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 2px; top: 2px; background: var(--text3); border-radius: 50%; transition: all 0.2s; }
 .toggle-switch input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
 .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); background: #fff; }
 .toggle-label { font-size: 0.9rem; color: var(--text2); }
 
-/* ── LEGE STAAT ── */
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--text3);
-}
+.empty-state { text-align: center; padding: 4rem 2rem; color: var(--text3); }
 .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
 .empty-state h3 { font-size: 1.1rem; color: var(--text2); margin-bottom: 0.5rem; }
 .empty-state p { font-size: 0.9rem; }
 
-/* ── TOAST ── */
-.toast {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background: var(--card2);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-sm);
-  padding: 0.75rem 1.25rem;
-  font-size: 0.9rem;
-  color: var(--text);
-  box-shadow: var(--shadow);
-  z-index: 200;
-  transform: translateY(100px);
-  opacity: 0;
-  transition: all 0.3s;
-}
+.toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--card2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 0.75rem 1.25rem; font-size: 0.9rem; color: var(--text); box-shadow: var(--shadow); z-index: 200; transform: translateY(100px); opacity: 0; transition: all 0.3s; }
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.success { border-color: var(--green2); color: var(--green); }
 .toast.error { border-color: var(--red); color: var(--red); }
 
-/* ── RESULTATEN DETAIL ── */
-.resultaat-kaart {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-}
-.resultaat-rij {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.9rem;
-}
+.resultaat-kaart { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+.resultaat-rij { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
 .resultaat-rij:last-child { border-bottom: none; }
 .resultaat-key { color: var(--text2); }
 .resultaat-val { font-weight: 600; }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-.stat-kaart {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  text-align: center;
-}
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-kaart { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; text-align: center; }
 .stat-num { font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem; }
 .stat-label { font-size: 0.8rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
 
-/* ── SPINNER ── */
-.spinner {
-  width: 20px; height: 20px;
-  border: 2px solid rgba(255,255,255,0.2);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-  display: inline-block;
-}
+.spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
 .loading { display: flex; align-items: center; justify-content: center; padding: 3rem; gap: 0.75rem; color: var(--text2); }
 </style>
 </head>
@@ -652,12 +336,8 @@ body::before {
       <p style="color:var(--accent);font-size:0.75rem;">→ Naar startpagina</p>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-item active" data-page="klassen">
-        <span class="icon">🏫</span> Klaarzetten
-      </div>
-      <div class="nav-item" data-page="resultaten-overzicht">
-        <span class="icon">📊</span> Resultaten
-      </div>
+      <div class="nav-item active" data-page="klassen"><span class="icon">🏫</span> Klaarzetten</div>
+      <div class="nav-item" data-page="resultaten-overzicht"><span class="icon">📊</span> Resultaten</div>
     </nav>
     <div class="sidebar-footer">
       <div class="leerkracht-info">
@@ -669,19 +349,14 @@ body::before {
   </aside>
 
   <main class="main-content">
-
-    <!-- PAGINA: KLASSEN -->
     <div class="page active" id="page-klassen">
       <div class="page-header">
         <div class="page-title">Mijn <span>groepen</span></div>
         <button class="btn btn-primary btn-sm" id="btn-nieuwe-groep" style="width:auto;">+ Nieuwe groep</button>
       </div>
-      <div class="klassen-grid" id="klassen-grid">
-        <div class="loading"><div class="spinner"></div> Laden…</div>
-      </div>
+      <div class="klassen-grid" id="klassen-grid"><div class="loading"><div class="spinner"></div> Laden…</div></div>
     </div>
 
-    <!-- PAGINA: LEERLINGEN VAN EEN KLAS -->
     <div class="page" id="page-leerlingen">
       <div class="back-btn" id="btn-terug-klassen">← Terug naar klassen</div>
       <div class="page-header">
@@ -691,30 +366,19 @@ body::before {
         </div>
         <button class="btn btn-primary btn-sm" id="btn-nieuwe-leerling" style="width:auto;">+ Leerling toevoegen</button>
       </div>
-      <div class="leerlingen-tabel" id="leerlingen-container">
-        <div class="loading"><div class="spinner"></div> Laden…</div>
-      </div>
+      <div class="leerlingen-tabel" id="leerlingen-container"><div class="loading"><div class="spinner"></div> Laden…</div></div>
     </div>
 
-    <!-- PAGINA: RESULTATEN OVERZICHT -->
     <div class="page" id="page-resultaten-overzicht">
-      <div class="page-header">
-        <div class="page-title">Alle <span>resultaten</span></div>
-      </div>
-      <div id="resultaten-overzicht-content">
-        <div class="loading"><div class="spinner"></div> Laden…</div>
-      </div>
+      <div class="page-header"><div class="page-title">Alle <span>resultaten</span></div></div>
+      <div id="resultaten-overzicht-content"><div class="loading"><div class="spinner"></div> Laden…</div></div>
     </div>
 
-    <!-- PAGINA: RESULTATEN DETAIL (1 leerling) -->
     <div class="page" id="page-resultaten-detail">
       <div class="back-btn" id="btn-terug-resultaten">← Terug naar resultaten</div>
       <div class="page-title" id="resultaat-leerling-naam" style="margin-bottom:1.5rem;">Resultaten</div>
-      <div id="resultaten-detail-content">
-        <div class="loading"><div class="spinner"></div> Laden…</div>
-      </div>
+      <div id="resultaten-detail-content"><div class="loading"><div class="spinner"></div> Laden…</div></div>
     </div>
-
   </main>
 </div>
 
@@ -779,6 +443,13 @@ body::before {
       </div>
       <div style="margin-top:0.5rem;">
         <button class="keuze-knop" id="k-tafelkaart" data-val="tafelkaart">📖 Tafelkaart</button>
+      </div>
+      <div class="hulp-uitleg-kader">
+        <div class="hulp-uitleg-titel">Wat houden deze opties in?</div>
+        <div class="hulp-uitleg-item"><strong>Geen hulp</strong> — De leerling krijgt de som zonder aanwijzingen.</div>
+        <div class="hulp-uitleg-item"><strong>Een beetje hulp</strong> — De cursor start op de juiste plek. De getallen die de leerling nodig heeft voor de berekening worden geaccentueerd.</div>
+        <div class="hulp-uitleg-item"><strong>Veel hulp</strong> — Alles van "een beetje hulp", plus: de leerling ziet steeds welke deelsom gemaakt moet worden. Als de tafelkaart aan staat, kiest het programma automatisch de juiste tafel.</div>
+        <div class="hulp-uitleg-item"><strong>Tafelkaart</strong> — Tijdens de som kan de leerling de tafel van het betreffende getal erbij halen (druk op <kbd>t</kbd> of klik rechtsboven).</div>
       </div>
     </div>
 
@@ -845,26 +516,19 @@ body::before {
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════
-//  ⚙️  CONFIGURATIE — vul hier jouw gegevens in
-// ══════════════════════════════════════════════
 const SUPABASE_URL = 'https://gquzvtchazwzfqzmzxvf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxdXp2dGNoYXp3emZxem16eHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1ODg1NzUsImV4cCI6MjA5NDE2NDU3NX0.llkky1zk0pRby09buBe1syBfBkfb_-c6s_le3RASwUk';
-// ══════════════════════════════════════════════
 
-// Eigen Supabase client via fetch
 let _session = null;
 
 const sb = {
   auth: {
     onAuthStateChange: (cb) => {
       sb.auth._cb = cb;
-      // Herstel sessie uit localStorage
       const stored = localStorage.getItem('sb_session');
       if(stored) {
         try {
           _session = JSON.parse(stored);
-          // Controleer of sessie nog geldig is
           if(_session && _session.expires_at && Date.now()/1000 < _session.expires_at) {
             setTimeout(() => cb('SIGNED_IN', _session), 100);
           } else {
@@ -960,7 +624,6 @@ const sb = {
         } catch(e) { return resolve({data:null,error:{message:e.message}}); }
       }
     };
-    // Maak het awaitable
     return new Proxy(q, {
       get(target, prop) {
         if(prop === 'then') return target.then;
@@ -970,13 +633,10 @@ const sb = {
   }
 };
 
-// ── STATE ──
 let huidigeLK = null;
 let huidigeKlas = null;
 let bewerkLeerlingId = null;
 
-// ── HELPERS ──
-// Bevestigingsvenster
 let _bevestigCallback = null;
 function bevestig(titel, tekst, callback) {
   document.getElementById('bevestig-titel').textContent = titel;
@@ -1030,16 +690,11 @@ function keuzeRijBind(groepId) {
     b.addEventListener('click', () => {
       document.querySelectorAll(`#${groepId} .keuze-knop`).forEach(x => x.classList.remove('selected'));
       b.classList.add('selected');
-      if(groepId==='k-bewerking'||groepId==='k-getal1'){
-        updateGetal2BlokkeringLK();
-      }
+      if(groepId==='k-bewerking'||groepId==='k-getal1') updateGetal2BlokkeringLK();
     });
   });
 }
 
-// ── AUTH ──
-
-// Oogje
 document.getElementById('btn-oogje').addEventListener('click', () => {
   const inp = document.getElementById('login-ww');
   const btn = document.getElementById('btn-oogje');
@@ -1047,7 +702,6 @@ document.getElementById('btn-oogje').addEventListener('click', () => {
   else { inp.type = 'password'; btn.textContent = '👁'; }
 });
 
-// Scherm-wissels
 document.getElementById('link-naar-registreer').addEventListener('click', () => {
   document.getElementById('login-form').style.display = 'none';
   document.getElementById('register-form').style.display = 'block';
@@ -1068,25 +722,20 @@ document.getElementById('link-terug-login').addEventListener('click', () => {
   document.getElementById('login-form').style.display = 'block';
 });
 
-// Wachtwoord vergeten
 document.getElementById('btn-ww-vergeten').addEventListener('click', async () => {
   const email = document.getElementById('ww-vergeten-email').value.trim();
   const err = document.getElementById('ww-vergeten-error');
   const succ = document.getElementById('ww-vergeten-success');
   err.classList.remove('show'); succ.style.display = 'none';
   if(!email) { err.textContent = 'Vul je e-mailadres in.'; err.classList.add('show'); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.href
-  });
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
   if(error) { err.textContent = 'Fout: ' + error.message; err.classList.add('show'); }
   else { succ.style.display = 'block'; }
 });
 
 window.doLogin = async function doLogin() {
-  const emailEl = document.getElementById('login-email');
-  const wwEl = document.getElementById('login-ww');
-  const email = emailEl.value.trim();
-  const ww = wwEl.value;
+  const email = document.getElementById('login-email').value.trim();
+  const ww = document.getElementById('login-ww').value;
   const err = document.getElementById('login-error');
   err.classList.remove('show');
   if(!email || !ww) { err.textContent = 'Vul e-mail en wachtwoord in.'; err.classList.add('show'); return; }
@@ -1094,17 +743,8 @@ window.doLogin = async function doLogin() {
   btn.textContent = 'Bezig…'; btn.disabled = true;
   try {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: ww });
-    if(error) {
-      err.textContent = 'Inloggen mislukt: ' + error.message;
-      err.classList.add('show');
-      btn.textContent = 'Inloggen'; btn.disabled = false;
-    }
-    // Bij succes handelt onAuthStateChange de rest af
-  } catch(e) {
-    err.textContent = 'Verbindingsfout. Probeer het opnieuw.';
-    err.classList.add('show');
-    btn.textContent = 'Inloggen'; btn.disabled = false;
-  }
+    if(error) { err.textContent = 'Inloggen mislukt: ' + error.message; err.classList.add('show'); btn.textContent = 'Inloggen'; btn.disabled = false; }
+  } catch(e) { err.textContent = 'Verbindingsfout. Probeer het opnieuw.'; err.classList.add('show'); btn.textContent = 'Inloggen'; btn.disabled = false; }
 }
 document.getElementById('btn-login').addEventListener('click', doLogin);
 document.getElementById('login-ww').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
@@ -1119,7 +759,6 @@ document.getElementById('btn-registreer').addEventListener('click', async () => 
   if(!naam || !email || !ww) { err.textContent = 'Vul alle velden in.'; err.classList.add('show'); return; }
   const { data, error } = await sb.auth.signUp({ email, password: ww });
   if(error) { err.textContent = 'Registreren mislukt: ' + error.message; err.classList.add('show'); return; }
-  // Sla naam op in leerkrachten-tabel
   await sb.from('leerkrachten').insert({ email, naam, id: data.user.id });
 });
 
@@ -1129,28 +768,21 @@ document.getElementById('btn-uitloggen').addEventListener('click', async () => {
 });
 
 sb.auth.onAuthStateChange(async (event, session) => {
-  // Reset inlogknop altijd
   const loginBtn = document.getElementById('btn-login');
   if(loginBtn) { loginBtn.textContent = 'Inloggen'; loginBtn.disabled = false; }
-
   if(session) {
     const user = session.user;
     try {
       const { data: lk } = await sb.from('leerkrachten').select('*').eq('email', user.email).single();
       huidigeLK = lk || { email: user.email, naam: user.email, id: user.id };
-    } catch(e) {
-      huidigeLK = { email: user.email, naam: user.email, id: user.id };
-    }
+    } catch(e) { huidigeLK = { email: user.email, naam: user.email, id: user.id }; }
     document.getElementById('sidebar-naam').textContent = huidigeLK.naam || user.email;
     document.getElementById('sidebar-email').textContent = user.email;
     toon('screen-main');
     laadKlassen();
-  } else {
-    toon('screen-login');
-  }
+  } else { toon('screen-login'); }
 });
 
-// ── NAVIGATIE ──
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     const page = item.dataset.page;
@@ -1159,7 +791,6 @@ document.querySelectorAll('.nav-item').forEach(item => {
   });
 });
 
-// ── KLASSEN ──
 async function laadKlassen() {
   if(!huidigeLK) return;
   const grid = document.getElementById('klassen-grid');
@@ -1171,10 +802,7 @@ async function laadKlassen() {
       new Promise((_,r) => setTimeout(() => r(new Error('Timeout')), 8000))
     ]);
     klassen = result.data; error = result.error;
-  } catch(e) {
-    grid.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Verbindingsfout</h3><p>Probeer de pagina te vernieuwen.</p></div>';
-    return;
-  }
+  } catch(e) { grid.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Verbindingsfout</h3><p>Probeer de pagina te vernieuwen.</p></div>'; return; }
   if(error) { grid.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Laad fout</h3><p>'+error.message+'</p></div>'; return; }
   grid.innerHTML = '';
   if(klassen && klassen.length > 0) {
@@ -1182,41 +810,18 @@ async function laadKlassen() {
       const aantalLeerlingen = klas.leerlingen?.[0]?.count || 0;
       const card = document.createElement('div');
       card.className = 'klas-card';
-      card.innerHTML = `
-        <div class="klas-naam">${klas.naam}</div>
-        <div class="klas-code">Code: ${klas.klascode}</div>
-        <div class="klas-meta">
-          <div class="klas-stat">
-            <div class="klas-stat-num">${aantalLeerlingen}</div>
-            <div class="klas-stat-label">Leerlingen</div>
-          </div>
-        </div>
-        <div style="margin-top:0.75rem;text-align:right;">
-          <button class="btn btn-danger btn-sm btn-verwijder-groep" data-id="${klas.id}" data-naam="${klas.naam}" style="font-size:1rem;padding:0.3rem 0.6rem;" title="Verwijder groep">🗑</button>
-        </div>`;
-      card.addEventListener('click', (e) => {
-        if(e.target.closest('.btn-verwijder-groep')) return;
-        openKlas(klas);
-      });
+      card.innerHTML = `<div class="klas-naam">${klas.naam}</div><div class="klas-code">Code: ${klas.klascode}</div><div class="klas-meta"><div class="klas-stat"><div class="klas-stat-num">${aantalLeerlingen}</div><div class="klas-stat-label">Leerlingen</div></div></div><div style="margin-top:0.75rem;text-align:right;"><button class="btn btn-danger btn-sm btn-verwijder-groep" data-id="${klas.id}" data-naam="${klas.naam}" style="font-size:1rem;padding:0.3rem 0.6rem;" title="Verwijder groep">🗑</button></div>`;
+      card.addEventListener('click', (e) => { if(e.target.closest('.btn-verwijder-groep')) return; openKlas(klas); });
       card.querySelector('.btn-verwijder-groep').addEventListener('click', async (e) => {
         e.stopPropagation();
-        bevestig(
-          '"'+klas.naam+'" verwijderen?',
-          'Weet je zeker dat je "'+klas.naam+'" wilt verwijderen? Alle leerlingen en resultaten worden ook verwijderd.',
-          async function() {
-            await fetch(SUPABASE_URL+'/rest/v1/klassen?id=eq.'+klas.id, {
-              method:'DELETE',
-              headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY)}
-            });
-            toast('Groep verwijderd.');
-            laadKlassen();
-          }
-        );
+        bevestig('"'+klas.naam+'" verwijderen?', 'Weet je zeker dat je "'+klas.naam+'" wilt verwijderen? Alle leerlingen en resultaten worden ook verwijderd.', async function() {
+          await fetch(SUPABASE_URL+'/rest/v1/klassen?id=eq.'+klas.id, { method:'DELETE', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY)} });
+          toast('Groep verwijderd.'); laadKlassen();
+        });
       });
       grid.appendChild(card);
     });
   }
-  // Voeg "nieuwe klas" kaart toe
   const addCard = document.createElement('div');
   addCard.className = 'add-klas-card';
   addCard.innerHTML = '<div class="plus">+</div><div>Nieuwe klas</div>';
@@ -1226,21 +831,14 @@ async function laadKlassen() {
 
 document.getElementById('btn-nieuwe-groep').addEventListener('click', () => openModal('modal-nieuwe-groep'));
 document.getElementById('btn-annuleer-groep').addEventListener('click', () => sluitModal('modal-nieuwe-groep'));
-
-document.getElementById('nieuwe-groep-code').addEventListener('input', e => {
-  e.target.value = e.target.value.toUpperCase();
-});
+document.getElementById('nieuwe-groep-code').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
 
 document.getElementById('btn-opslaan-groep').addEventListener('click', async () => {
   const naam = document.getElementById('nieuwe-groep-naam').value.trim();
   const code = document.getElementById('nieuwe-groep-code').value.trim().toUpperCase();
   if(!naam || !code) { toast('Vul naam en code in.', 'error'); return; }
   try {
-    const r = await fetch(SUPABASE_URL+'/rest/v1/klassen', {
-      method:'POST',
-      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=minimal'},
-      body: JSON.stringify({naam, klascode: code, leerkracht_id: huidigeLK.id})
-    });
+    const r = await fetch(SUPABASE_URL+'/rest/v1/klassen', { method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=minimal'}, body: JSON.stringify({naam, klascode: code, leerkracht_id: huidigeLK.id}) });
     if(!r.ok){ const d=await r.text(); toast('Fout: '+d, 'error'); return; }
   } catch(e){ toast('Verbindingsfout: '+e.message, 'error'); return; }
   sluitModal('modal-nieuwe-groep');
@@ -1250,7 +848,6 @@ document.getElementById('btn-opslaan-groep').addEventListener('click', async () 
   laadKlassen();
 });
 
-// ── LEERLINGEN ──
 function openKlas(klas) {
   huidigeKlas = klas;
   document.getElementById('klas-titel').textContent = klas.naam;
@@ -1258,46 +855,19 @@ function openKlas(klas) {
   toonPagina('page-leerlingen');
   laadLeerlingen();
 }
-
-document.getElementById('btn-terug-klassen').addEventListener('click', () => {
-  toonPagina('page-klassen');
-  laadKlassen();
-});
+document.getElementById('btn-terug-klassen').addEventListener('click', () => { toonPagina('page-klassen'); laadKlassen(); });
 
 async function laadLeerlingen() {
   const container = document.getElementById('leerlingen-container');
   container.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
-  const { data: leerlingen } = await sb.from('leerlingen')
-    .select('*, oefeningen(*), resultaten(*)')
-    .eq('klas_id', huidigeKlas.id)
-    .order('naam');
-
-  if(!leerlingen || leerlingen.length === 0) {
-    container.innerHTML = `<div class="empty-state">
-      <div class="icon">👦</div>
-      <h3>Nog geen leerlingen</h3>
-      <p>Voeg leerlingen toe via de knop hierboven.</p>
-    </div>`;
-    return;
-  }
-
-  container.innerHTML = `
-    <div class="tabel-header">
-      <div>Naam</div>
-      <div>Code</div>
-      <div>Methode</div>
-      <div>Hulp</div>
-      <div>Aantal sommen</div>
-      <div>Acties</div>
-    </div>`;
-
+  const { data: leerlingen } = await sb.from('leerlingen').select('*, oefeningen(*), resultaten(*)').eq('klas_id', huidigeKlas.id).order('naam');
+  if(!leerlingen || leerlingen.length === 0) { container.innerHTML = '<div class="empty-state"><div class="icon">👦</div><h3>Nog geen leerlingen</h3><p>Voeg leerlingen toe via de knop hierboven.</p></div>'; return; }
+  container.innerHTML = '<div class="tabel-header"><div>Naam</div><div>Code</div><div>Methode</div><div>Hulp</div><div>Aantal sommen</div><div>Acties</div></div>';
   leerlingen.forEach(ll => {
     const oe = ll.oefeningen?.[0];
     const res = ll.resultaten?.find(r => r.leerling_id === ll.id);
     const rij = document.createElement('div');
     rij.className = 'tabel-rij';
-
-    // Hulp badges
     let hulpBadges = '';
     if(oe) {
       if(oe.hulp === 'beetje') hulpBadges += '<span class="badge badge-blue">Beetje hulp</span> ';
@@ -1306,30 +876,13 @@ async function laadLeerlingen() {
       if(oe.tafelkaart) hulpBadges += '<span class="badge badge-orange">Tafelkaart</span>';
     }
     if(!hulpBadges) hulpBadges = '<span class="badge badge-gray">—</span>';
-
     const methodeLabel = oe ? (oe.methode === 'kolomsgewijs' ? 'Koloms.' : 'Cijferend') : '—';
     const bewLabel = oe ? ({optellen:'Optellen',aftrekken:'Aftrekken',vermenigvuldigen:'Verm.'}[oe.bewerking]||oe.bewerking) : '—';
-
-    rij.innerHTML = `
-      <div class="leerling-naam">${ll.naam}</div>
-      <div class="leerling-code">${ll.leerlingcode}</div>
-      <div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '<span class="badge badge-gray">Niet ingesteld</span>'}</div>
-      <div>${hulpBadges}</div>
-      <div class="resultaat-cel">${oe ? (res && res.afgerond ? '<span style="color:var(--text3)">0</span>' : oe.aantal) : '—'}</div>
-      <div class="acties">
-        <button class="btn btn-secondary btn-sm btn-instellingen" data-id="${ll.id}">⚙️ Instellen</button>
-        <button class="btn btn-danger btn-sm btn-verwijder" data-id="${ll.id}" data-naam="${ll.naam}">🗑</button>
-      </div>`;
+    rij.innerHTML = `<div class="leerling-naam">${ll.naam}</div><div class="leerling-code">${ll.leerlingcode}</div><div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '<span class="badge badge-gray">Niet ingesteld</span>'}</div><div>${hulpBadges}</div><div class="resultaat-cel">${oe ? (res && res.afgerond ? '<span style="color:var(--text3)">0</span>' : oe.aantal) : '—'}</div><div class="acties"><button class="btn btn-secondary btn-sm btn-instellingen" data-id="${ll.id}">⚙️ Instellen</button><button class="btn btn-danger btn-sm btn-verwijder" data-id="${ll.id}" data-naam="${ll.naam}">🗑</button></div>`;
     container.appendChild(rij);
   });
-
-  // Bind knoppen
-  container.querySelectorAll('.btn-instellingen').forEach(btn => {
-    btn.addEventListener('click', () => openLeerlingModal(btn.dataset.id, leerlingen));
-  });
-  container.querySelectorAll('.btn-verwijder').forEach(btn => {
-    btn.addEventListener('click', () => verwijderLeerling(btn.dataset.id, btn.dataset.naam));
-  });
+  container.querySelectorAll('.btn-instellingen').forEach(btn => { btn.addEventListener('click', () => openLeerlingModal(btn.dataset.id, leerlingen)); });
+  container.querySelectorAll('.btn-verwijder').forEach(btn => { btn.addEventListener('click', () => verwijderLeerling(btn.dataset.id, btn.dataset.naam)); });
 }
 
 document.getElementById('btn-nieuwe-leerling').addEventListener('click', () => {
@@ -1340,12 +893,8 @@ document.getElementById('btn-nieuwe-leerling').addEventListener('click', () => {
   document.getElementById('leerling-naam-input').disabled = false;
   document.getElementById('leerling-code-input').disabled = false;
   setTimeout(updateGetal2BlokkeringLK, 50);
-  setKeuze('k-methode','kolomsgewijs');
-  setKeuze('k-bewerking','optellen');
-  setKeuze('k-hulp','beetje');
-  setKeuze('k-getal1','100');
-  setKeuze('k-getal2','100');
-  setKeuze('k-aantal','5');
+  setKeuze('k-methode','kolomsgewijs'); setKeuze('k-bewerking','optellen'); setKeuze('k-hulp','beetje');
+  setKeuze('k-getal1','100'); setKeuze('k-getal2','100'); setKeuze('k-aantal','5');
   document.getElementById('k-email').checked = false;
   openModal('modal-leerling');
 });
@@ -1362,12 +911,8 @@ function openLeerlingModal(id, leerlingen) {
   document.getElementById('leerling-code-input').disabled = true;
   setTimeout(updateGetal2BlokkeringLK, 50);
   if(oe) {
-    setKeuze('k-methode', oe.methode);
-    setKeuze('k-bewerking', oe.bewerking);
-    setKeuze('k-hulp', oe.hulp);
-    setKeuze('k-getal1', String(oe.getal1_place));
-    setKeuze('k-getal2', String(oe.getal2_place));
-    setKeuze('k-aantal', String(oe.aantal));
+    setKeuze('k-methode', oe.methode); setKeuze('k-bewerking', oe.bewerking); setKeuze('k-hulp', oe.hulp);
+    setKeuze('k-getal1', String(oe.getal1_place)); setKeuze('k-getal2', String(oe.getal2_place)); setKeuze('k-aantal', String(oe.aantal));
     document.getElementById('k-email').checked = oe.email_bij_klaar || false;
     var tk=document.getElementById('k-tafelkaart');
     if(tk)tk.classList.toggle('selected', oe.tafelkaart||false);
@@ -1380,90 +925,49 @@ document.getElementById('btn-annuleer-leerling').addEventListener('click', () =>
 document.getElementById('btn-opslaan-leerling').addEventListener('click', async () => {
   const naam = document.getElementById('leerling-naam-input').value.trim();
   const code = document.getElementById('leerling-code-input').value.trim().toUpperCase();
-  const methode = getKeuze('k-methode');
-  const bewerking = getKeuze('k-bewerking');
-  const hulp = getKeuze('k-hulp');
-  const getal1 = parseInt(getKeuze('k-getal1'));
-  const getal2 = parseInt(getKeuze('k-getal2'));
-  const aantal = parseInt(getKeuze('k-aantal'));
+  const methode = getKeuze('k-methode'); const bewerking = getKeuze('k-bewerking');
+  const hulp = getKeuze('k-hulp'); const getal1 = parseInt(getKeuze('k-getal1'));
+  const getal2 = parseInt(getKeuze('k-getal2')); const aantal = parseInt(getKeuze('k-aantal'));
   const emailBijKlaar = document.getElementById('k-email').checked;
-
   if(!naam || !code) { toast('Vul naam en code in.', 'error'); return; }
-
   let leerlingId = bewerkLeerlingId;
-
   if(!bewerkLeerlingId) {
-    // Nieuwe leerling via directe fetch
     try {
-      const r = await fetch(SUPABASE_URL+'/rest/v1/leerlingen', {
-        method: 'POST',
-        headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=minimal'},
-        body: JSON.stringify({klas_id: huidigeKlas.id, naam, leerlingcode: code})
-      });
+      const r = await fetch(SUPABASE_URL+'/rest/v1/leerlingen', { method: 'POST', headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=minimal'}, body: JSON.stringify({klas_id: huidigeKlas.id, naam, leerlingcode: code}) });
       if(!r.ok) { const d=await r.json(); toast('Fout: '+(d.message||JSON.stringify(d)), 'error'); return; }
-      // Haal id op via aparte SELECT
-      const llRes = await fetch(SUPABASE_URL+'/rest/v1/leerlingen?klas_id=eq.'+huidigeKlas.id+'&leerlingcode=eq.'+code+'&select=id&order=aangemaakt_op.desc&limit=1', {
-        headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY)}
-      });
+      const llRes = await fetch(SUPABASE_URL+'/rest/v1/leerlingen?klas_id=eq.'+huidigeKlas.id+'&leerlingcode=eq.'+code+'&select=id&order=aangemaakt_op.desc&limit=1', { headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY)} });
       const llData = await llRes.json();
       if(!llData||llData.length===0) { toast('Fout: leerling niet gevonden na opslaan', 'error'); return; }
       leerlingId = llData[0].id;
     } catch(e) { toast('Verbindingsfout: '+e.message, 'error'); return; }
   }
-
-  // Oefening opslaan - eerst bestaande zoeken
   const tafelkaart = document.getElementById('k-tafelkaart').classList.contains('selected');
   const oeData = { leerling_id: leerlingId, methode, bewerking, hulp, tafelkaart, getal1_place: getal1, getal2_place: getal2, aantal, email_bij_klaar: emailBijKlaar };
   const oeDataPatch = { methode, bewerking, hulp, tafelkaart, getal1_place: getal1, getal2_place: getal2, aantal, email_bij_klaar: emailBijKlaar };
   try {
-    const bestaandRes = await fetch(SUPABASE_URL+'/rest/v1/oefeningen?leerling_id=eq.'+leerlingId+'&select=id', {
-      headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Accept':'application/json'}
-    });
+    const bestaandRes = await fetch(SUPABASE_URL+'/rest/v1/oefeningen?leerling_id=eq.'+leerlingId+'&select=id', { headers: {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Accept':'application/json'} });
     const bestaandData = await bestaandRes.json();
     const bestaand = bestaandData && bestaandData.length > 0 ? bestaandData[0] : null;
     if(bestaand) {
-      const patchRes = await fetch(SUPABASE_URL+'/rest/v1/oefeningen?id=eq.'+bestaand.id, {
-        method:'PATCH',
-        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=representation'},
-        body: JSON.stringify(oeDataPatch)
-      });
+      const patchRes = await fetch(SUPABASE_URL+'/rest/v1/oefeningen?id=eq.'+bestaand.id, { method:'PATCH', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=representation'}, body: JSON.stringify(oeDataPatch) });
       if(!patchRes.ok){ const err=await patchRes.json(); toast('Fout opslaan: '+(err.message||JSON.stringify(err)),'error'); return; }
-      // Reset afgerond status zodat aantal sommen weer zichtbaar is
-      await fetch(SUPABASE_URL+'/rest/v1/resultaten?leerling_id=eq.'+leerlingId, {
-        method:'PATCH',
-        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json'},
-        body: JSON.stringify({afgerond: false})
-      });
+      await fetch(SUPABASE_URL+'/rest/v1/resultaten?leerling_id=eq.'+leerlingId, { method:'PATCH', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json'}, body: JSON.stringify({afgerond: false}) });
     } else {
-      await fetch(SUPABASE_URL+'/rest/v1/oefeningen', {
-        method:'POST',
-        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=minimal'},
-        body: JSON.stringify(oeData)
-      });
+      await fetch(SUPABASE_URL+'/rest/v1/oefeningen', { method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY),'Content-Type':'application/json','Prefer':'return=minimal'}, body: JSON.stringify(oeData) });
     }
   } catch(e) { toast('Fout bij opslaan oefening: '+e.message, 'error'); return; }
-
   sluitModal('modal-leerling');
   toast('Opgeslagen! ✓', 'success');
   laadLeerlingen();
 });
 
 async function verwijderLeerling(id, naam) {
-  bevestig(
-    '"'+naam+'" verwijderen?',
-    'Weet je zeker dat je "'+naam+'" wilt verwijderen? Dit verwijdert ook alle resultaten.',
-    async function() {
-      await fetch(SUPABASE_URL+'/rest/v1/leerlingen?id=eq.'+id, {
-        method:'DELETE',
-        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY)}
-      });
-      toast(naam+' verwijderd.');
-      laadLeerlingen();
-    }
-  );
+  bevestig('"'+naam+'" verwijderen?', 'Weet je zeker dat je "'+naam+'" wilt verwijderen? Dit verwijdert ook alle resultaten.', async function() {
+    await fetch(SUPABASE_URL+'/rest/v1/leerlingen?id=eq.'+id, { method:'DELETE', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(_session?.access_token||SUPABASE_KEY)} });
+    toast(naam+' verwijderd.'); laadLeerlingen();
+  });
 }
 
-// ── RESULTATEN OVERZICHT ──
 async function laadResultatenOverzicht() {
   if(!huidigeLK) return;
   const content = document.getElementById('resultaten-overzicht-content');
@@ -1475,16 +979,10 @@ async function laadResultatenOverzicht() {
       new Promise((_,r) => setTimeout(() => r(new Error('Timeout')), 8000))
     ]);
     klassen = result.data; error = result.error;
-  } catch(e) {
-    content.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Verbindingsfout</h3><p>Probeer de pagina te vernieuwen.</p></div>';
-    return;
-  }
+  } catch(e) { content.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Verbindingsfout</h3><p>Probeer de pagina te vernieuwen.</p></div>'; return; }
   if(error) { content.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Laad fout</h3><p>'+error.message+'</p></div>'; return; }
   content.innerHTML = '';
-  if(!klassen || klassen.length === 0) {
-    content.innerHTML = '<div class="empty-state"><div class="icon">📊</div><h3>Nog geen data</h3><p>Maak eerst een klas aan met leerlingen.</p></div>';
-    return;
-  }
+  if(!klassen || klassen.length === 0) { content.innerHTML = '<div class="empty-state"><div class="icon">📊</div><h3>Nog geen data</h3><p>Maak eerst een klas aan met leerlingen.</p></div>'; return; }
   klassen.forEach(klas => {
     const klasDiv = document.createElement('div');
     klasDiv.style.marginBottom = '2rem';
@@ -1492,42 +990,22 @@ async function laadResultatenOverzicht() {
     const tabel = document.createElement('div');
     tabel.className = 'leerlingen-tabel';
     tabel.style.cssText = 'border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);';
-    tabel.innerHTML = `<div class="tabel-header res-header">
-      <div>Naam</div><div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Verbeterd</div><div>Niet verbeterd</div><div>Tijd</div>
-    </div>`;
+    tabel.innerHTML = '<div class="tabel-header res-header"><div>Naam</div><div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Verbeterd</div><div>Niet verbeterd</div><div>Tijd</div></div>';
     (klas.leerlingen||[]).forEach(ll => {
-      const res = (ll.resultaten||[])[0];
-      const oe = (ll.oefeningen||[])[0];
+      const res = (ll.resultaten||[])[0]; const oe = (ll.oefeningen||[])[0];
       const methodeLabel = oe ? (oe.methode==='kolomsgewijs'?'Koloms.':'Cijferend') : '—';
       const bewLabel = oe ? ({optellen:'Optellen',aftrekken:'Aftrekken',vermenigvuldigen:'Verm.'}[oe.bewerking]||oe.bewerking) : '—';
       let hulpB = '';
-      if(oe) {
-        if(oe.hulp==='beetje') hulpB += '<span class="badge badge-blue">Beetje</span> ';
-        if(oe.hulp==='veel') hulpB += '<span class="badge badge-green">Veel</span> ';
-        if(oe.hulp==='geen') hulpB += '<span class="badge badge-gray">Geen</span> ';
-        if(oe.tafelkaart) hulpB += '<span class="badge badge-orange">Tafel</span>';
-      }
+      if(oe) { if(oe.hulp==='beetje') hulpB += '<span class="badge badge-blue">Beetje</span> '; if(oe.hulp==='veel') hulpB += '<span class="badge badge-green">Veel</span> '; if(oe.hulp==='geen') hulpB += '<span class="badge badge-gray">Geen</span> '; if(oe.tafelkaart) hulpB += '<span class="badge badge-orange">Tafel</span>'; }
       if(!hulpB) hulpB = '—';
       const rij = document.createElement('div');
-      rij.className = 'tabel-rij res-rij';
-      rij.style.cursor = 'pointer';
-      rij.dataset.leerlingId = ll.id;
-      rij.dataset.leerlingNaam = ll.naam;
-      rij.innerHTML = `
-        <div class="leerling-naam">${ll.naam}</div>
-        <div style="font-size:0.82rem;color:var(--text2);">${res && res.gestart_op ? new Date(res.gestart_op).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'}</div>
-        <div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '—'}</div>
-        <div>${hulpB}</div>
-        <div class="resultaat-goed">${res ? res.direct_goed+'/'+res.aantal_gemaakt : '—'}</div>
-        <div class="resultaat-verbeterd">${res ? res.na_verbetering_goed : '—'}</div>
-        <div class="resultaat-niet-verbeterd">${res ? res.fout : '—'}</div>
-        <div>${res ? fmtTijd(res.tijdsduur_seconden) : '—'}</div>`;
+      rij.className = 'tabel-rij res-rij'; rij.style.cursor = 'pointer';
+      rij.innerHTML = `<div class="leerling-naam">${ll.naam}</div><div style="font-size:0.82rem;color:var(--text2);">${res && res.gestart_op ? new Date(res.gestart_op).toLocaleDateString('nl-NL',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'}</div><div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '—'}</div><div>${hulpB}</div><div class="resultaat-goed">${res ? res.direct_goed+'/'+res.aantal_gemaakt : '—'}</div><div class="resultaat-verbeterd">${res ? res.na_verbetering_goed : '—'}</div><div class="resultaat-niet-verbeterd">${res ? res.fout : '—'}</div><div>${res ? fmtTijd(res.tijdsduur_seconden) : '—'}</div>`;
       rij.addEventListener('click', () => laadResultatenDetail(ll.id, ll.naam));
       tabel.appendChild(rij);
     });
     klasDiv.appendChild(tabel);
     content.appendChild(klasDiv);
-    // klikken op rij opent detail - al gebonden in forEach hierboven
   });
 }
 
@@ -1537,80 +1015,44 @@ async function laadResultatenDetail(leerlingId, naam) {
   const content = document.getElementById('resultaten-detail-content');
   content.innerHTML = '<div class="loading"><div class="spinner"></div> Laden…</div>';
   const { data: res } = await sb.from('resultaten').select('*, oefeningen(*)').eq('leerling_id', leerlingId).order('gestart_op', {ascending:false});
-  if(!res || res.length === 0) {
-    content.innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>Nog geen resultaten</h3></div>';
-    return;
-  }
+  if(!res || res.length === 0) { content.innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>Nog geen resultaten</h3></div>'; return; }
   content.innerHTML = '';
-  // Tabel met alle oefeningen, nieuwste bovenaan
   const tabel = document.createElement('div');
   tabel.className = 'leerlingen-tabel';
-  tabel.innerHTML = `<div class="tabel-header res-header">
-    <div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Verbeterd</div><div>Niet verbeterd</div><div>Tijd</div>
-  </div>`;
+  tabel.innerHTML = '<div class="tabel-header res-header"><div>Datum</div><div>Methode</div><div>Hulp</div><div>Goed/Totaal</div><div>Verbeterd</div><div>Niet verbeterd</div><div>Tijd</div></div>';
   res.forEach(r => {
     const oe = r.oefeningen;
     const datum = r.gestart_op ? new Date(r.gestart_op).toLocaleDateString('nl-NL', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
     const methodeLabel = oe ? (oe.methode==='kolomsgewijs'?'Koloms.':'Cijferend') : '—';
     const bewLabel = oe ? ({optellen:'Optellen',aftrekken:'Aftrekken',vermenigvuldigen:'Verm.'}[oe.bewerking]||oe.bewerking) : '—';
     let hulpB = '';
-    if(oe) {
-      if(oe.hulp==='beetje') hulpB += '<span class="badge badge-blue">Beetje</span> ';
-      if(oe.hulp==='veel') hulpB += '<span class="badge badge-green">Veel</span> ';
-      if(oe.hulp==='geen') hulpB += '<span class="badge badge-gray">Geen</span> ';
-      if(oe.tafelkaart) hulpB += '<span class="badge badge-orange">Tafel</span>';
-    }
+    if(oe) { if(oe.hulp==='beetje') hulpB += '<span class="badge badge-blue">Beetje</span> '; if(oe.hulp==='veel') hulpB += '<span class="badge badge-green">Veel</span> '; if(oe.hulp==='geen') hulpB += '<span class="badge badge-gray">Geen</span> '; if(oe.tafelkaart) hulpB += '<span class="badge badge-orange">Tafel</span>'; }
     if(!hulpB) hulpB = '—';
     const rij = document.createElement('div');
     rij.className = 'tabel-rij res-rij';
-    rij.innerHTML = `
-      <div style="font-size:0.85rem;color:var(--text2);">${datum}</div>
-      <div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '—'}</div>
-      <div>${hulpB}</div>
-      <div class="resultaat-goed">${r.direct_goed}/${r.aantal_gemaakt}</div>
-      <div class="resultaat-verbeterd">${r.na_verbetering_goed}</div>
-      <div class="resultaat-niet-verbeterd">${r.fout}</div>
-      <div>${fmtTijd(r.tijdsduur_seconden)}</div>`;
+    rij.innerHTML = `<div style="font-size:0.85rem;color:var(--text2);">${datum}</div><div>${oe ? `<span class="badge badge-blue">${methodeLabel}</span> <span class="badge badge-gray">${bewLabel}</span>` : '—'}</div><div>${hulpB}</div><div class="resultaat-goed">${r.direct_goed}/${r.aantal_gemaakt}</div><div class="resultaat-verbeterd">${r.na_verbetering_goed}</div><div class="resultaat-niet-verbeterd">${r.fout}</div><div>${fmtTijd(r.tijdsduur_seconden)}</div>`;
     tabel.appendChild(rij);
   });
   content.appendChild(tabel);
 }
 
-document.getElementById('btn-terug-resultaten').addEventListener('click', () => {
-  toonPagina('page-resultaten-overzicht');
-});
+document.getElementById('btn-terug-resultaten').addEventListener('click', () => { toonPagina('page-resultaten-overzicht'); });
 
-// ── KEUZERIJEN BINDEN ──
 ['k-methode','k-bewerking','k-hulp','k-getal1','k-getal2','k-aantal'].forEach(keuzeRijBind);
-// Tafelkaart toggle
-document.getElementById('k-tafelkaart').addEventListener('click', function(){
-  this.classList.toggle('selected');
-});
+document.getElementById('k-tafelkaart').addEventListener('click', function(){ this.classList.toggle('selected'); });
 
-// Getal2 blokkering bij aftrekken
 function updateGetal2BlokkeringLK(){
   var bew=getKeuze('k-bewerking');
   var g1=parseInt(getKeuze('k-getal1'));
   document.querySelectorAll('#k-getal2 .keuze-knop').forEach(function(b){
     var v=parseInt(b.dataset.val);
-    if(bew==='aftrekken'&&v>g1){
-      b.style.opacity='0.3';b.style.pointerEvents='none';b.style.cursor='not-allowed';
-      b.classList.remove('selected');
-    } else {
-      b.style.opacity='';b.style.pointerEvents='';b.style.cursor='';
-    }
+    if(bew==='aftrekken'&&v>g1){ b.style.opacity='0.3';b.style.pointerEvents='none';b.style.cursor='not-allowed'; b.classList.remove('selected'); }
+    else { b.style.opacity='';b.style.pointerEvents='';b.style.cursor=''; }
   });
-  if(bew==='aftrekken'){
-    var g2=parseInt(getKeuze('k-getal2'));
-    if(!g2||g2>g1){setKeuze('k-getal2',String(g1));}
-  }
+  if(bew==='aftrekken'){ var g2=parseInt(getKeuze('k-getal2')); if(!g2||g2>g1){setKeuze('k-getal2',String(g1));} }
 }
-// Blokkering wordt nu direct in keuzeRijBind afgehandeld
 
-// Leerlingcode automatisch hoofdletters
-document.getElementById('leerling-code-input').addEventListener('input', e => {
-  e.target.value = e.target.value.toUpperCase();
-});
+document.getElementById('leerling-code-input').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
 </script>
 </body>
 </html>
