@@ -414,6 +414,10 @@ body::before {
   box-shadow: var(--shadow-lg);
   animation: fadeUp 0.25s ease;
 }
+.modal::-webkit-scrollbar{ width: 16px; }
+.modal::-webkit-scrollbar-track{ background: var(--card2); border-radius: 10px; margin: 4px; }
+.modal::-webkit-scrollbar-thumb{ background: #FCD34D; border-radius: 10px; border: 3px solid var(--card2); min-height: 36px; }
+.modal::-webkit-scrollbar-thumb:hover{ background: #f59e0b; }
 .modal h3 {
   font-family: var(--font2);
   font-size: 1.25rem;
@@ -497,10 +501,7 @@ body::before {
 .tooltip-wrap{position:relative;display:inline-block;}
 .tooltip-box{
   display:none;
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:calc(100% + 10px);
+  position:fixed;
   background:var(--card2);
   color:var(--text);
   border:1px solid var(--border2);
@@ -526,7 +527,6 @@ body::before {
   border:8px solid transparent;
   border-top-color:var(--card2);
 }
-.tooltip-wrap:hover .tooltip-box,.tooltip-wrap:focus-within .tooltip-box{display:block;}
 
 /* ── LEGE STAAT ── */
 .empty-state {
@@ -1054,6 +1054,39 @@ function toonPagina(id) {
 }
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function sluitModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── TOOLTIPS: positie uitrekenen zodat ze nooit buiten beeld vallen ──
+function initTooltips(){
+  document.querySelectorAll('.tooltip-wrap').forEach(function(wrap){
+    var box = wrap.querySelector('.tooltip-box');
+    if(!box) return;
+    function positioneer(){
+      box.style.display = 'block';
+      var rect = wrap.getBoundingClientRect();
+      var boxRect = box.getBoundingClientRect();
+      var marge = 10;
+      var links = rect.left + rect.width/2 - boxRect.width/2;
+      links = Math.max(marge, Math.min(links, window.innerWidth - boxRect.width - marge));
+      var boven = rect.top - boxRect.height - 12;
+      if(boven < marge) boven = marge;
+      box.style.left = links + 'px';
+      box.style.top = boven + 'px';
+    }
+    function verbergen(){ box.style.display = 'none'; }
+    wrap.addEventListener('mouseenter', positioneer);
+    wrap.addEventListener('mouseleave', verbergen);
+    wrap.addEventListener('focusin', positioneer);
+    wrap.addEventListener('focusout', verbergen);
+  });
+  // Verberg een open tooltip als er in de modal gescrolld wordt, anders blijft hij op een verkeerde plek hangen
+  document.querySelectorAll('.modal').forEach(function(modal){
+    modal.addEventListener('scroll', function(){
+      document.querySelectorAll('.tooltip-box').forEach(function(box){ box.style.display = 'none'; });
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded', initTooltips);
+
 function toast(tekst, type='') {
   const el = document.getElementById('toast');
   el.textContent = tekst;
