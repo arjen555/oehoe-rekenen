@@ -493,6 +493,41 @@ body::before {
 .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); background: #fff; }
 .toggle-label { font-size: 0.9rem; color: var(--text2); }
 
+/* ── TOOLTIP (uitleg bij hover) ── */
+.tooltip-wrap{position:relative;display:inline-block;}
+.tooltip-box{
+  display:none;
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:calc(100% + 10px);
+  background:var(--card2);
+  color:var(--text);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  padding:0.85rem 1.1rem;
+  width:320px;
+  z-index:300;
+  box-shadow:var(--shadow-lg);
+  font-family:var(--font);
+  line-height:1.5;
+  font-size:0.85rem;
+}
+.tooltip-title{font-weight:700;font-size:0.85rem;margin-bottom:0.5rem;color:var(--accent2);}
+.tooltip-item{display:flex;gap:0.5rem;align-items:flex-start;margin-bottom:0.4rem;font-size:0.85rem;}
+.tooltip-item:last-child{margin-bottom:0;}
+.tooltip-bullet{color:var(--accent2);font-weight:700;flex-shrink:0;line-height:1.4;}
+.tooltip-box::after{
+  content:'';
+  position:absolute;
+  top:100%;
+  left:50%;
+  transform:translateX(-50%);
+  border:8px solid transparent;
+  border-top-color:var(--card2);
+}
+.tooltip-wrap:hover .tooltip-box,.tooltip-wrap:focus-within .tooltip-box{display:block;}
+
 /* ── LEGE STAAT ── */
 .empty-state {
   text-align: center;
@@ -766,11 +801,33 @@ body::before {
       <span class="instelling-label">Hulp tijdens de som</span>
       <div class="keuze-rij" id="k-hulp">
         <button class="keuze-knop" data-val="geen">Geen hulp</button>
-        <button class="keuze-knop selected" data-val="beetje">Een beetje hulp</button>
-        <button class="keuze-knop" data-val="veel">Veel hulp</button>
+        <div class="tooltip-wrap">
+          <button class="keuze-knop selected" data-val="beetje">Een beetje hulp</button>
+          <div class="tooltip-box">
+            <div class="tooltip-title">Hulp tijdens de som houdt in:</div>
+            <div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>De cursor start steeds op de plek waar de leerling als eerste iets moet invullen</span></div>
+            <div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>De getallen waar op dat moment een berekening mee gedaan moet worden zijn geaccentueerd</span></div>
+          </div>
+        </div>
+        <div class="tooltip-wrap">
+          <button class="keuze-knop" data-val="veel">Veel hulp</button>
+          <div class="tooltip-box">
+            <div class="tooltip-title">Hulp tijdens de som houdt in:</div>
+            <div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>De cursor start steeds op de plek waar de leerling als eerste iets moet invullen</span></div>
+            <div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>De getallen waar op dat moment een berekening mee gedaan moet worden zijn geaccentueerd</span></div>
+            <div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>De leerling ziet steeds welke som er gemaakt moet worden</span></div>
+            <div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>Als de tafelkaart erbij gekozen is, kiest het programma de juiste tafel bij de som</span></div>
+          </div>
+        </div>
       </div>
       <div style="margin-top:0.5rem;">
-        <button class="keuze-knop" id="k-tafelkaart" data-val="tafelkaart">📖 Tafelkaart</button>
+        <div class="tooltip-wrap">
+          <button class="keuze-knop" id="k-tafelkaart" data-val="tafelkaart">📖 Tafelkaart</button>
+          <div class="tooltip-box">
+            <div class="tooltip-title">Tafelkaart</div>
+            <div class="tooltip-item"><span class="tooltip-bullet">&#8226;</span><span>Tijdens het maken van de som kan de leerling de juiste tafel erbij krijgen als die het even niet meer weet</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
